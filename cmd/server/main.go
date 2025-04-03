@@ -8,6 +8,8 @@ import (
 
 func main() {
 	r := gin.Default()
-	router.Set(r)
+	router.SetStatic(r)
+	router.SetWeb(r)
+	router.SetApi(r)
 	r.Run(":3000")
 }

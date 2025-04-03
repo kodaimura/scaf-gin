@@ -6,9 +6,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Set(r *gin.Engine) *gin.Engine {
+func SetStatic(r *gin.Engine) {	
+	//r.LoadHTMLGlob("web/template/*.html")
+	//r.Static("/css", "web/static/css")
+	//r.Static("/js", "web/static/js")
+	//r.Static("/img", "web/static/img")
+	//r.StaticFile("/favicon.ico", "web/static/favicon.ico")
+	//r.StaticFile("/manifest.json", "web/static/manifest.json")
+
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello, World!")
 	})
-	return r
+}
+
+func SetWeb(r *gin.Engine) {
+
+}
+
+func SetApi(r *gin.Engine) {
+
 }
