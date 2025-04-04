@@ -1,11 +1,9 @@
 package router
 
 import (
-	"net/http"
-	
+	"net/http"	
 	"github.com/gin-gonic/gin"
 
-	"goscaf/pkg/logger"
 	"goscaf/internal/middleware"
 )
 

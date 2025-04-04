@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"github.com/gin-gonic/gin"
 
@@ -52,12 +53,12 @@ func ApiErrorHandler() gin.HandlerFunc {
 		c.Next()
 		if len(c.Errors) > 0 {
 			for _, err := range c.Errors {
-				logger.Error(err.Err)
+				logger.Error(err.Error())
 			}
 
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Internal Server Error",
-				"error":   fmt.Sprintf("%v", c.Errors[0].Err),
+				"error": fmt.Sprintf("%v", c.Errors[0].Error()),
 			})
 		}
 	}

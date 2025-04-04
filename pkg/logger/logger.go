@@ -12,7 +12,7 @@ const (
 	ERROR
 )
 
-var LogLevel DEBUG
+var LogLevel = DEBUG
 
 func init() {
 	log.SetFlags(0)
@@ -38,25 +38,25 @@ func SetLevel(level string) {
 }
 
 func Debug(format string, v ...interface{}) {
-	if logLevel <= DEBUG {
+	if LogLevel <= DEBUG {
 		log.Printf("[DEBUG] "+format, v...)
 	}
 }
 
 func Info(format string, v ...interface{}) {
-	if logLevel <= INFO {
+	if LogLevel <= INFO {
 		log.Printf("[INFO] "+format, v...)
 	}
 }
 
 func Warn(format string, v ...interface{}) {
-	if logLevel <= WARN {
+	if LogLevel <= WARN {
 		log.Printf("[WARN] "+format, v...)
 	}
 }
 
 func Error(format string, v ...interface{}) {
-	if logLevel <= ERROR {
+	if LogLevel <= ERROR {
 		log.Printf("[ERROR] "+format , v...)
 	}
 }
