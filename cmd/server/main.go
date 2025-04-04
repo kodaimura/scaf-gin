@@ -5,6 +5,7 @@ import (
 	"os"
 	"github.com/gin-gonic/gin"
 
+	"goscaf/config"
 	"goscaf/pkg/logger"
 	"goscaf/internal/router"
 )
@@ -16,11 +17,11 @@ func main() {
 	}
     gin.DefaultWriter = io.MultiWriter(os.Stdout, f)
 	logger.SetOutput(f)
-	logger.SetLevel("INFO")
+	logger.SetLevel(config.LogLevel)
 
 	r := gin.Default()
 	router.SetStatic(r)
 	router.SetWeb(r)
 	router.SetApi(r)
-	r.Run(":3000")
+	r.Run(":" + config.AppPort)
 }

@@ -11,7 +11,7 @@ services:
     working_dir: /usr/src/app
     tty: true
     environment:
-      ENV: local
+      ENV: dev
     command: sh -c "go run cmd/server/main.go"
 
   db:
