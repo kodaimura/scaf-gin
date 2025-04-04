@@ -4,6 +4,9 @@ import (
 	"net/http"
 	
 	"github.com/gin-gonic/gin"
+
+	"goscaf/pkg/logger"
+	"goscaf/internal/middleware"
 )
 
 func SetStatic(r *gin.Engine) {	
@@ -24,5 +27,6 @@ func SetWeb(r *gin.Engine) {
 }
 
 func SetApi(r *gin.Engine) {
+	r.Use(middleware.ApiErrorHandler())
 
 }

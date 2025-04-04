@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"os"
 	"log"
 )
 
@@ -11,23 +12,28 @@ const (
 	ERROR
 )
 
-var logLevel int
+var LogLevel DEBUG
 
 func init() {
 	log.SetFlags(0)
+}
 
-	level := "INFO" //:= config.GetConfig().LogLevel
+func SetOutput(file *os.File) {
+	log.SetOutput(file)
+}
+
+func SetLevel(level string) {
 	switch level {
 	case "DEBUG", "debug":
-		logLevel = DEBUG
+		LogLevel = DEBUG
 	case "INFO", "info":
-		logLevel = INFO
+		LogLevel = INFO
 	case "WARN", "warn":
-		logLevel = WARN
+		LogLevel = WARN
 	case "ERROR", "error":
-		return LOG_LEVEL_ERROR
+		LogLevel = ERROR
 	default:
-		return LOG_LEVEL_INFO
+		LogLevel = INFO
 	}
 }
 

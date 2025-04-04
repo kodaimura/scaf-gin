@@ -3,9 +3,9 @@ package main
 import (
 	"io"
 	"os"
-	"log"
 	"github.com/gin-gonic/gin"
 
+	"goscaf/pkg/logger"
 	"goscaf/internal/router"
 )
 
@@ -14,8 +14,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-    gin.DefaultWriter = io.MultiWriter(f)
-	log.SetOutput(f)
+    gin.DefaultWriter = io.MultiWriter(os.Stdout, f)
+	logger.SetOutput(f)
+	logger.SetLevel("INFO")
 
 	r := gin.Default()
 	router.SetStatic(r)
