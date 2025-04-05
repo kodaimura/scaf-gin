@@ -3,8 +3,10 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
+	"goscaf/config"
 	"goscaf/pkg/jwt"
-	"goscaf/pkg/utils"
+	"goscaf/pkg/errs"
+	"goscaf/internal/common"
 	"goscaf/internal/service"
 	"goscaf/internal/dto/input"
 	"goscaf/internal/dto/request"
@@ -83,13 +85,13 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		"account_id":  account.AccountId,
 		"account_nme": account.AccountName,
 	}
-	pl := jwt.NewPayload(in.AccountId, int(config.JwtExpiresSeconds), claims)
-	encoded, err := jwt.EncodeToken(pl)
+	pl := jwt.NewPayload(account.AccountId, int(config.JwtExpiresSeconds), claims)
+	encoded, err := jwt.EncodeToken(pl, config.JwtSecretKey)
 	if err != nil {
 		c.Error(err)
 	}
 
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, encoded, res.ExpiresIn, "/", config.AppHost, false, true)
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, encoded, int(config.JwtExpiresSeconds), "/", config.AppHost, false, true)
 	c.JSON(200, response.Login{
 		AccessToken: encoded,
 		ExpiresIn: int(config.JwtExpiresSeconds),
@@ -98,7 +100,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 			AccountName: account.AccountName,
 			CreatedAt: account.CreatedAt,
 			UpdatedAt: account.UpdatedAt,
-		}
+		},
 	})
 }
 
@@ -138,9 +140,9 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 		return
 	}
 
-	_, err := ctrl.accountService.UpdateOne(input.Account{
+	_, err = ctrl.accountService.UpdateOne(input.Account{
 		AccountId: account.AccountId,
-		AccountPassword = req.NewAccountPassword,
+		AccountPassword: req.NewAccountPassword,
 	})
 	if err != nil {
 		c.Error(err)

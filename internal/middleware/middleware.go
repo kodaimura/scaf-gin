@@ -1,13 +1,15 @@
 package middleware
 
 import (
-	"fmt"
+	"strings"
 	"net/http"
 	"github.com/gin-gonic/gin"
 
 	"goscaf/config"
+	"goscaf/pkg/jwt"
+	"goscaf/pkg/errs"
 	"goscaf/pkg/logger"
-	"goscaf/internal/commom"
+	"goscaf/internal/common"
 )
 
 
@@ -42,7 +44,7 @@ func getAccessToken (c *gin.Context) string {
 func JwtAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := getAccessToken(c)
-		pl, err := jwt.DecodeToken(token)
+		pl, err := jwt.DecodeToken(token, config.JwtSecretKey)
 		if err != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
@@ -58,7 +60,7 @@ func JwtAuth() gin.HandlerFunc {
 func ApiJwtAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {	
 		token := getAccessToken(c)
-		pl, err := jwt.DecodeToken(token)
+		pl, err := jwt.DecodeToken(token, config.JwtSecretKey)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()

@@ -2,12 +2,9 @@ package service
 
 import (
 	"errors"
-	"database/sql"
+	"gorm.io/gorm"
 	"golang.org/x/crypto/bcrypt"
 
-	"goscaf/pkg/jwt"
-	"goscaf/pkg/logger"
-	"goscaf/pkg/utils"
 	"goscaf/pkg/errs"
 	"goscaf/internal/model"
 	"goscaf/internal/repository"
@@ -101,12 +98,12 @@ func (srv *accountService) Signup(in input.Signup) (model.Account, error) {
 		return model.Account{}, errs.NewUnexpectedError(err.Error())
 	}
 
-	account := &model.Account{
+	account := model.Account{
 		AccountName:     in.AccountName,
 		AccountPassword: string(hashed),
 	}
 
-	account, err = srv.accountRepository.Insert(account)
+	account, err = srv.accountRepository.Insert(&account)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return model.Account{}, errs.NewConflictError()

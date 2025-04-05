@@ -27,12 +27,12 @@ func (rep *gormAccountRepository) GetOne(a *model.Account) (model.Account, error
 
 func (rep *gormAccountRepository) Insert(a *model.Account) (model.Account, error) {
 	err := rep.db.Create(a).Error
-	return a, err
+	return *a, err
 }
 
 func (rep *gormAccountRepository) Update(a *model.Account) (model.Account, error) {
-	rerr := rep.db.Save(a).Error
-	return a, err
+	err := rep.db.Save(a).Error
+	return *a, err
 }
 
 func (rep *gormAccountRepository) Delete(a *model.Account) error {
@@ -41,12 +41,12 @@ func (rep *gormAccountRepository) Delete(a *model.Account) error {
 
 func (rep *gormAccountRepository) InsertTx(a *model.Account, tx *gorm.DB) (model.Account, error) {
 	err := tx.Create(a).Error
-	return a, err
+	return *a, err
 }
 
 func (rep *gormAccountRepository) UpdateTx(a *model.Account, tx *gorm.DB) (model.Account, error) {
 	err := tx.Save(a).Error
-	return a, err
+	return *a, err
 }
 
 func (rep *gormAccountRepository) DeleteTx(a *model.Account, tx *gorm.DB) error {

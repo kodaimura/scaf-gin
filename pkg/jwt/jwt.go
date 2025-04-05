@@ -4,49 +4,46 @@ import (
 	"time"
 	"encoding/json"
 	"errors"
-	"strings"
 
 	jwtpackage "github.com/golang-jwt/jwt/v5"
 )
 
 type Payload struct {
-	jwt.StandardClaims
+	jwtpackage.RegisteredClaims
 	CustomClaims map[string]interface{}
 }
 
-func NewPayload(sub string, expires int64, claims map[string]interface{}) Payload {
+func NewPayload(sub int, expires time.Duration, claims map[string]interface{}) Payload {
 	var pl Payload
 
 	pl.CustomClaims = claims
 	pl.Subject = sub
-	pl.ExpiresAt = time.Now().Add(expires).Unix()
-	pl.NotBefore = time.Now().Unix()
-	pl.IssuedAt = time.Now().Unix()
+	pl.ExpiresAt = jwtpackage.NewNumericDate(time.Now().Add(expires))
+	pl.NotBefore = jwtpackage.NewNumericDate(time.Now())
+	pl.IssuedAt = jwtpackage.NewNumericDate(time.Now())
 
 	return pl
 }
 
 func ExpireToken (pl Payload) Payload {
-	pl.IssuedAt =  time.Now().Unix()
-	pl.ExpiresAt = time.Now().Unix()
+	pl.IssuedAt =  jwtpackage.NewNumericDate(time.Now())
+	pl.ExpiresAt = jwtpackage.NewNumericDate(time.Now())
 	return pl
 }  
 
 
-func EncodeToken (pl Payload) (string, error) {
-	cf := config.GetConfig()
+func EncodeToken (pl Payload, secret string) (string, error) {
 	token := jwtpackage.NewWithClaims(jwtpackage.SigningMethodHS256, pl)
-	return token.SignedString([]byte(cf.JwtSecretKey))
+	return token.SignedString([]byte(secret))
 }
 
 
-func DecodeToken (encoded string) (Payload, error) {
-	cf := config.GetConfig()
+func DecodeToken (encoded string, secret string) (Payload, error) {
 	token, err := jwtpackage.Parse(encoded, func(token *jwtpackage.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwtpackage.SigningMethodHMAC); !ok {
 			return nil, errors.New("Unexpected signing method")
 		}
-		return []byte(cf.JwtSecretKey), nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		return Payload{}, err

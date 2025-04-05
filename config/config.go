@@ -31,13 +31,13 @@ var (
 )
 
 var (
-	AuthUser string
-	AuthPass string
+	BasicAuthUser string
+	BasicAuthPass string
 )
 
 var (
 	JwtExpiresSeconds string
-	JWTSecret string
+	JwtSecretKey string
 )
 
 var (
@@ -49,6 +49,7 @@ func init() {
 	if env != "" {
 		env = "." + env
 	}
+	fmt.Println(fmt.Sprintf("config/env/.env%s", env))
 	err := godotenv.Load(fmt.Sprintf("config/env/.env%s", env))
 	if err != nil {
 		log.Panic("Failed to load environment variables:", err)
@@ -70,16 +71,16 @@ func init() {
 	SMTPUser = getEnv("SMTP_USER")
 	SMTPPass = getEnv("SMTP_PASSWORD")
 
-	AuthUser = getEnv("BASIC_AUTH_USER")
-	AuthPass = getEnv("BASIC_AUTH_PASSWORD")
+	BasicAuthUser = getEnv("BASIC_AUTH_USER")
+	BasicAuthPass = getEnv("BASIC_AUTH_PASSWORD")
 
 	JwtExpiresSeconds = getEnv("JWT_EXPIRES_SECONDS", "3600")
-	JWTSecret = getEnv("JWT_SECRET", "secret")
+	JwtSecretKey = getEnv("JWT_SECRET_KEY", "secret")
 
 	LogLevel  = getEnv("LOG_LEVEL", "INFO")
 }
 
-func getEnv(key, defaultValue ...string) string {
+func getEnv(key string, defaultValue ...string) string {
 	value := os.Getenv(key)
 	if value == "" && len(defaultValue) > 0 {
 		return defaultValue[0]
