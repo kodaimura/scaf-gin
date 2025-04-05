@@ -1,0 +1,15 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 100px;
+    box-sizing: border-box;
+}
+
+footer{
+    padding: 10px 10px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
