@@ -21,7 +21,7 @@ func main() {
 
 	r := gin.Default()
 	router.SetStatic(r)
-	router.SetWeb(r)
-	router.SetApi(r)
+	router.SetWeb(r.Group("/"))
+	router.SetApi(r.Group("/api"))
 	r.Run(":" + config.AppPort)
 }

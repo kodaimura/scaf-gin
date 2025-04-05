@@ -32,13 +32,13 @@ func (ctr *AccountController) LoginPage(c *gin.Context) {
 }
 
 // GET /logout
-func (ctr *AccountController) Logout(c *gin.Context) {
+func (ctr *AccountController) ApiLogout(c *gin.Context) {
 	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, false, true)
 	c.Redirect(303, "/login")
 }
 
 // POST /api/signup
-func (ctr *AccountController) Signup(c *gin.Context) {
+func (ctr *AccountController) ApiSignup(c *gin.Context) {
 	var req request.Signup
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
@@ -63,7 +63,7 @@ func (ctr *AccountController) Signup(c *gin.Context) {
 }
 
 // POST /api/login
-func (ctr *AccountController) Login(c *gin.Context) {
+func (ctr *AccountController) ApiLogin(c *gin.Context) {
 	var req request.Login
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
@@ -103,7 +103,7 @@ func (ctr *AccountController) Login(c *gin.Context) {
 }
 
 // GET /api/accounts/me
-func (ctr *AccountController) GetOne(c *gin.Context) {
+func (ctr *AccountController) ApiGetOne(c *gin.Context) {
 	accountId := common.GetAccountId(c)
 	account, err := ctr.accountService.GetOne(input.Account{AccountId: accountId})
 	if err != nil {
@@ -120,7 +120,7 @@ func (ctr *AccountController) GetOne(c *gin.Context) {
 }
 
 // PUT /api/accounts/me/password
-func (ctr *AccountController) PutPassword(c *gin.Context) {
+func (ctr *AccountController) ApiPutPassword(c *gin.Context) {
 	accountName := common.GetAccountName(c)
 
 	var req request.PutAccountPassword
@@ -151,7 +151,7 @@ func (ctr *AccountController) PutPassword(c *gin.Context) {
 }
 
 // PUT /api/accounts/me
-func (ctr *AccountController) Put(c *gin.Context) {
+func (ctr *AccountController) ApiPutOne(c *gin.Context) {
 	accountId := common.GetAccountId(c)
 
 	var req request.PutAccount
@@ -178,7 +178,7 @@ func (ctr *AccountController) Put(c *gin.Context) {
 }
 
 // DELETE /api/accounts/me
-func (ctr *AccountController) Delete(c *gin.Context) {
+func (ctr *AccountController) ApiDeleteOne(c *gin.Context) {
 	accountId := common.GetAccountId(c)
 	if err := ctr.accountService.DeleteOne(input.Account{AccountId: accountId}); err != nil {
 		c.Error(err)
