@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"strconv"
 	"time"
 	"encoding/json"
 	"errors"
@@ -13,12 +14,12 @@ type Payload struct {
 	CustomClaims map[string]interface{}
 }
 
-func NewPayload(sub int, expires time.Duration, claims map[string]interface{}) Payload {
+func NewPayload(sub int, expires int, claims map[string]interface{}) Payload {
 	var pl Payload
 
 	pl.CustomClaims = claims
-	pl.Subject = sub
-	pl.ExpiresAt = jwtpackage.NewNumericDate(time.Now().Add(expires))
+	pl.Subject = strconv.Itoa(sub)
+	pl.ExpiresAt = jwtpackage.NewNumericDate(time.Now().Add(time.Second * time.Duration(expires)))
 	pl.NotBefore = jwtpackage.NewNumericDate(time.Now())
 	pl.IssuedAt = jwtpackage.NewNumericDate(time.Now())
 

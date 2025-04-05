@@ -12,7 +12,7 @@ import (
 	"goscaf/config"
 )
 
-func NewSqlxDB() (*sqlx.DB, error) {
+func NewSqlxDB() *sqlx.DB {
 	dbEngine := config.DBEngine
 	dbName := config.DBName
 	dbHost := config.DBHost
@@ -34,18 +34,18 @@ func NewSqlxDB() (*sqlx.DB, error) {
 		dsn := fmt.Sprintf("%s.db", dbName)
 		db, err = sqlx.Connect("sqlite3", dsn)
 	default:
-		return nil, fmt.Errorf("unsupported DB_ENGINE: %s", dbEngine)
+		log.Panic("Error: must specify a valid DB_DRIVER: 'postgres', 'mysql', or 'sqlite3'.")
 	}
 
 	if err != nil {
-		return nil, err
+		log.Panic(err)
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, err
+		log.Panic(err)
 	}
 
 	log.Println("Successfully connected to SQLx database")
 
-	return db, nil
+	return db
 }

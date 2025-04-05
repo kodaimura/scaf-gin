@@ -34,7 +34,7 @@ func (ctrl *AccountController) LoginPage(c *gin.Context) {
 }
 
 // GET /logout
-func (ctrl *AccountController) ApiLogout(c *gin.Context) {
+func (ctrl *AccountController) Logout(c *gin.Context) {
 	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, false, true)
 	c.Redirect(303, "/login")
 }

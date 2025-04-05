@@ -4,6 +4,7 @@ import (
 	"os"
 	"log"
 	"fmt"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -36,8 +37,8 @@ var (
 )
 
 var (
-	JwtExpiresSeconds string
 	JwtSecretKey string
+	JwtExpiresSeconds int
 )
 
 var (
@@ -49,7 +50,6 @@ func init() {
 	if env != "" {
 		env = "." + env
 	}
-	fmt.Println(fmt.Sprintf("config/env/.env%s", env))
 	err := godotenv.Load(fmt.Sprintf("config/env/.env%s", env))
 	if err != nil {
 		log.Panic("Failed to load environment variables:", err)
@@ -74,8 +74,11 @@ func init() {
 	BasicAuthUser = getEnv("BASIC_AUTH_USER")
 	BasicAuthPass = getEnv("BASIC_AUTH_PASSWORD")
 
-	JwtExpiresSeconds = getEnv("JWT_EXPIRES_SECONDS", "3600")
 	JwtSecretKey = getEnv("JWT_SECRET_KEY", "secret")
+	JwtExpiresSeconds, err = strconv.Atoi(getEnv("JWT_EXPIRES_SECONDS", "3600"))
+	if err != nil {
+		log.Fatalf("unable to convert JWT_EXPIRES_SECONDS from environment to integer: %v", err)
+	}
 
 	LogLevel  = getEnv("LOG_LEVEL", "INFO")
 }

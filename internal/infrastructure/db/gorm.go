@@ -12,7 +12,7 @@ import (
 	"goscaf/config"
 )
 
-func NewGormDB() (*gorm.DB, error) {
+func NewGormDB() *gorm.DB {
 	dbEngine := config.DBEngine
 	dbName := config.DBName
 	dbHost := config.DBHost
@@ -26,6 +26,7 @@ func NewGormDB() (*gorm.DB, error) {
 	switch dbEngine {
 	case "postgres":
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort)
+		fmt.Println(dsn)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	case "mysql":
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
@@ -34,22 +35,22 @@ func NewGormDB() (*gorm.DB, error) {
 		dsn := fmt.Sprintf("%s.db", dbName)
 		db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	default:
-		return nil, fmt.Errorf("unsupported DB_ENGINE: %s", dbEngine)
+		log.Panic("Error: must specify a valid DB_DRIVER: 'postgres', 'mysql', or 'sqlite3'.")
 	}
 
 	if err != nil {
-		return nil, err
+		log.Panic(err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, err
+		log.Panic(err)
 	}
 	if err := sqlDB.Ping(); err != nil {
-		return nil, err
+		log.Panic(err)
 	}
 
 	log.Println("Successfully connected to GORM database")
 
-	return db, nil
+	return db
 }

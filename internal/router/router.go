@@ -1,7 +1,6 @@
 package router
 
 import (
-	"net/http"	
 	"github.com/gin-gonic/gin"
 
 	"goscaf/internal/middleware"
@@ -36,18 +35,18 @@ func SetStatic(r *gin.Engine) {
 	r.StaticFile("/manifest.json", "web/static/manifest.json")
 }
 
-func SetWeb(r *gin.Engine) {
+func SetWeb(r *gin.RouterGroup) {
 	r.GET("/signup", accountController.SignupPage)
 	r.GET("/login", accountController.LoginPage)
 	r.GET("/logout", accountController.Logout)
 
 	auth := r.Group("", middleware.JwtAuth())
 	{
-		auth.GET("/", ic.IndexPage)
+		auth.GET("/", indexController.IndexPage)
 	}
 }
 
-func SetApi(r *gin.Engine) {
+func SetApi(r *gin.RouterGroup) {
 	r.Use(middleware.ApiErrorHandler())
 	r.POST("/signup", accountController.ApiSignup)
 	r.POST("/login", accountController.ApiLogin)
