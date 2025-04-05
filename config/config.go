@@ -42,6 +42,7 @@ var (
 )
 
 var (
+	SecureCookie bool
 	LogLevel  string
 )
 
@@ -80,6 +81,10 @@ func init() {
 		log.Fatalf("unable to convert JWT_EXPIRES_SECONDS from environment to integer: %v", err)
 	}
 
+	SecureCookie, err = strconv.ParseBool(getEnv("SECURE_COOKIE", "false"))
+	if err != nil {
+		log.Fatalf("unable to convert SECURE_COOKIE from environment to boolean: %v", err)
+	}
 	LogLevel  = getEnv("LOG_LEVEL", "INFO")
 }
 

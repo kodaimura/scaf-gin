@@ -35,7 +35,7 @@ func (ctrl *AccountController) LoginPage(c *gin.Context) {
 
 // GET /logout
 func (ctrl *AccountController) Logout(c *gin.Context) {
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, false, true)
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
 	c.Redirect(303, "/login")
 }
 
@@ -85,16 +85,16 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		"account_id":  account.AccountId,
 		"account_name": account.AccountName,
 	}
-	pl := jwt.NewPayload(account.AccountId, int(config.JwtExpiresSeconds), claims)
+	pl := jwt.NewPayload(account.AccountId, config.JwtExpiresSeconds, claims)
 	encoded, err := jwt.EncodeToken(pl, config.JwtSecretKey)
 	if err != nil {
 		c.Error(err)
 	}
 
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, encoded, int(config.JwtExpiresSeconds), "/", config.AppHost, false, true)
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, encoded, config.JwtExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, response.Login{
 		AccessToken: encoded,
-		ExpiresIn: int(config.JwtExpiresSeconds),
+		ExpiresIn: config.JwtExpiresSeconds,
 		Account: response.Account{
 			AccountId: account.AccountId,
 			AccountName: account.AccountName,
