@@ -23,7 +23,6 @@ func NewGormDB() (*gorm.DB, error) {
 	var db *gorm.DB
 	var err error
 
-	// DB_ENGINEによって接続先を選択
 	switch dbEngine {
 	case "postgres":
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort)

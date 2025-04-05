@@ -6,8 +6,9 @@ import (
 	"goscaf/pkg/jwt"
 	"goscaf/pkg/utils"
 	"goscaf/internal/service"
-	"goscaf/internal/dto"
-	"goscaf/internal/request"
+	"goscaf/internal/dto/input"
+	"goscaf/internal/dto/request"
+	"goscaf/internal/dto/response"
 )
 
 type AccountController struct {
@@ -32,42 +33,44 @@ func (ctr *AccountController) LoginPage(c *gin.Context) {
 
 // GET /logout
 func (ctr *AccountController) Logout(c *gin.Context) {
-	jwt.RemoveTokenFromCookie(c)
+	c.SetCookie(COOKIE_KEY_JWT, "", 0, "/", config.AppHost, false, true)
 	c.Redirect(303, "/login")
 }
 
 // POST /api/signup
-func (ctr *AccountController) ApiSignup(c *gin.Context) {
+func (ctr *AccountController) Signup(c *gin.Context) {
 	var req request.Signup
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	var input dto.Signup
-	utils.MapFields(&input, req)
+	var in input.Signup
+	utils.MapFields(&in, req)
 
-	result, err := ctr.accountService.Signup(input)
+	account, err := ctr.accountService.Signup(in)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(200, result)
+	var res response.Account
+	utils.MapFields(&res, account)
+	c.JSON(200, res)
 }
 
 // POST /api/login
-func (ctr *AccountController) ApiLogin(c *gin.Context) {
+func (ctr *AccountController) Login(c *gin.Context) {
 	var req request.Login
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	var input dto.Login
-	utils.MapFields(&input, req)
+	var in input.Login
+	utils.MapFields(&in, req)
 
-	account, err := ctr.accountService.Login(input)
+	account, err := ctr.accountService.Login(in)
 	if err != nil {
 		c.Error(err)
 		return
@@ -79,12 +82,21 @@ func (ctr *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	jwt.SetTokenToCookie(c, pl)
-	c.JSON(200, gin.H{})
+	jwtStr, err := jwt.EncodeJwt(pl)
+	if err != nil {
+		c.Error(err)
+	}
+	var res response.Login
+	res.AccessToken = jwtStr
+	res.ExpiresIn = 3600 //TODO
+	res.Account = account
+
+	c.SetCookie(COOKIE_KEY_JWT, jwtStr, int(JWT_EXPIRES), "/", config.AppHost, false, true)
+	c.JSON(200, res)
 }
 
 // GET /api/accounts/me
-func (ctr *AccountController) ApiGetOne(c *gin.Context) {
+func (ctr *AccountController) GetOne(c *gin.Context) {
 	pl := jwt.GetPayload(c)
 	result, err := ctr.accountService.GetOne(dto.AccountPK{Id: pl.AccountId})
 	if err != nil {
@@ -96,10 +108,10 @@ func (ctr *AccountController) ApiGetOne(c *gin.Context) {
 }
 
 // PUT /api/accounts/me/password
-func (ctr *AccountController) ApiPutPassword(c *gin.Context) {
+func (ctr *AccountController) PutPassword(c *gin.Context) {
 	pl := jwt.GetPayload(c)
 
-	var req request.PutAccountPassword
+	var req request.PutPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
 		return
@@ -123,8 +135,8 @@ func (ctr *AccountController) ApiPutPassword(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-// PUT /api/accounts/me/name
-func (ctr *AccountController) ApiPutName(c *gin.Context) {
+// PUT /api/accounts/me
+func (ctr *AccountController) Put(c *gin.Context) {
 	pl := jwt.GetPayload(c)
 
 	var req request.PutAccountName
@@ -146,7 +158,7 @@ func (ctr *AccountController) ApiPutName(c *gin.Context) {
 }
 
 // DELETE /api/accounts/me
-func (ctr *AccountController) ApiDelete(c *gin.Context) {
+func (ctr *AccountController) Delete(c *gin.Context) {
 	pl := jwt.GetPayload(c)
 	if err := ctr.accountService.Delete(dto.AccountPK{Id: pl.AccountId}); err != nil {
 		c.Error(err)
