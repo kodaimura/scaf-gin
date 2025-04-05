@@ -83,7 +83,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 
 	claims := map[string]interface{}{
 		"account_id":  account.AccountId,
-		"account_nme": account.AccountName,
+		"account_name": account.AccountName,
 	}
 	pl := jwt.NewPayload(account.AccountId, int(config.JwtExpiresSeconds), claims)
 	encoded, err := jwt.EncodeToken(pl, config.JwtSecretKey)
