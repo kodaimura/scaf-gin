@@ -25,26 +25,28 @@ func (repo *gormAccountRepository) GetOne(a *model.Account) (model.Account, erro
 	return account, err
 }
 
-func (repo *gormAccountRepository) Insert(a *model.Account) (int, error) {
+func (repo *gormAccountRepository) Insert(a *model.Account) (model.Account, error) {
 	err := repo.db.Create(a).Error
-	return a.Id, err
+	return a, err
 }
 
-func (repo *gormAccountRepository) Update(a *model.Account) error {
-	return repo.db.Save(a).Error
+func (repo *gormAccountRepository) Update(a *model.Account) (model.Account, error) {
+	rerr := repo.db.Save(a).Error
+	return a, err
 }
 
 func (repo *gormAccountRepository) Delete(a *model.Account) error {
 	return repo.db.Delete(a).Error
 }
 
-func (repo *gormAccountRepository) InsertTx(a *model.Account, tx *gorm.DB) (int, error) {
+func (repo *gormAccountRepository) InsertTx(a *model.Account, tx *gorm.DB) (model.Account, error) {
 	err := tx.Create(a).Error
-	return a.Id, err
+	return a, err
 }
 
-func (repo *gormAccountRepository) UpdateTx(a *model.Account, tx *gorm.DB) error {
-	return tx.Save(a).Error
+func (repo *gormAccountRepository) UpdateTx(a *model.Account, tx *gorm.DB) (model.Account, error) {
+	err := tx.Save(a).Error
+	return a, err
 }
 
 func (repo *gormAccountRepository) DeleteTx(a *model.Account, tx *gorm.DB) error {

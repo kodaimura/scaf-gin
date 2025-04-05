@@ -1,25 +1,25 @@
 package service
 
 import (
+	"errors"
 	"database/sql"
 	"golang.org/x/crypto/bcrypt"
 
-	"goscaf/internal/core/jwt"
-	"goscaf/internal/core/logger"
-	"goscaf/internal/core/errs"
-	"goscaf/internal/core/utils"
-	"goscaf/internal/dto"
+	"goscaf/pkg/jwt"
+	"goscaf/pkg/logger"
+	"goscaf/pkg/utils"
+	"goscaf/pkg/errs"
 	"goscaf/internal/model"
 	"goscaf/internal/repository"
+	"goscaf/internal/dto/input"
 )
 
 type AccountService interface {
-	GetOne(input dto.AccountPK) (dto.Account, error)
-	Delete(input dto.AccountPK) error
-	Update(input dto.UpdateAccount) error
-	Login(input dto.Login) (dto.Account, error)
-	Signup(input dto.Signup) (dto.AccountPK, error)
-	GenerateJwtPayload(input dto.AccountPK) (jwt.Payload, error)
+	GetOne(in input.Account) (model.Account, error)
+	DeleteOne(in input.Account) error
+	UpdateOne(in input.Account) (model.Account, error)
+	Login(in input.Login) (model.Account, error)
+	Signup(in input.Signup) (model.Account, error)
 }
 
 type accountService struct {
@@ -32,117 +32,87 @@ func NewAccountService(accountRepository repository.AccountRepository) AccountSe
 	}
 }
 
-func (srv *accountService) GetOne(input dto.AccountPK) (dto.Account, error) {
-	account, err := srv.accountRepository.GetOne(&model.Account{Id: input.Id})
+func (srv *accountService) GetOne(in input.Account) (model.Account, error) {
+	account, err := srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return dto.Account{}, errs.NewNotFoundError()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.Account{}, errs.NewNotFoundError()
 		}
-		logger.Error(err.Error())
-		return dto.Account{}, errs.NewUnexpectedError(err.Error())
+		return model.Account{}, errs.NewUnexpectedError(err.Error())
 	}
-
-	var ret dto.Account
-	utils.MapFields(&ret, account)
-	return ret, nil
+	return account, nil
 }
 
-func (srv *accountService) Update(input dto.UpdateAccount) error {
-	account, err := srv.accountRepository.GetOne(&model.Account{Id: input.Id})
+func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
+	account, err := srv.GetOne(in)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return errs.NewNotFoundError()
-		}
-		logger.Error(err.Error())
-		return errs.NewUnexpectedError(err.Error())
+		return account, err
 	}
 
-	if input.Name != "" {
-		account.Name = input.Name
+	if in.AccountName != "" {
+		account.AccountName = in.AccountName
 	}
-	if input.Password != "" {
-		hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if in.AccountPassword != "" {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
 		if err != nil {
-			logger.Error(err.Error())
-			return errs.NewUnexpectedError(err.Error())
+			return model.Account{}, errs.NewUnexpectedError(err.Error())
 		}
-		account.Password = string(hashed)
+		account.AccountPassword = string(hashed)
 	}
-	if err := srv.accountRepository.Update(&account, nil); err != nil {
-		if column, ok := GetConflictColumn(err); ok {
-			return errs.NewConflictError(column)
+	account, err = srv.accountRepository.Update(&account)
+	if  err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return model.Account{}, errs.NewConflictError()
 		}
-		logger.Error(err.Error())
+		return model.Account{}, errs.NewUnexpectedError(err.Error())
+	}
+	return account, nil
+}
+
+func (srv *accountService) DeleteOne(in input.Account) error {
+	if err := srv.accountRepository.Delete(&model.Account{AccountId: in.AccountId}); err != nil {
 		return errs.NewUnexpectedError(err.Error())
 	}
 	return nil
 }
 
-func (srv *accountService) Delete(input dto.AccountPK) error {
-	if err := srv.accountRepository.Delete(&model.Account{Id: input.Id}, nil); err != nil {
-		logger.Error(err.Error())
-		return errs.NewUnexpectedError(err.Error())
-	}
-	return nil
-}
-
-func (srv *accountService) Login(input dto.Login) (dto.Account, error) {
-	account, err := srv.accountRepository.GetOne(&model.Account{Name: input.Name})
+func (srv *accountService) Login(in input.Login) (model.Account, error) {
+	account, err := srv.accountRepository.GetOne(&model.Account{AccountName: in.AccountName})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return dto.Account{}, errs.NewUnauthorizedError()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.Account{}, errs.NewUnauthorizedError()
 		}
-		logger.Error(err.Error())
-		return dto.Account{}, errs.NewUnexpectedError(err.Error())
+		return model.Account{}, errs.NewUnexpectedError(err.Error())
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(input.Password)); err != nil {
-		return dto.Account{}, errs.NewUnauthorizedError()
+	if err = bcrypt.CompareHashAndPassword([]byte(account.AccountPassword), []byte(in.AccountPassword)); err != nil {
+		return model.Account{}, errs.NewUnauthorizedError()
 	}
-
-	var ret dto.Account
-	utils.MapFields(&ret, account)
-	return ret, nil
+	return account, nil
 }
 
-func (srv *accountService) Signup(input dto.Signup) (dto.AccountPK, error) {
-	if _, err := srv.accountRepository.GetOne(&model.Account{Name: input.Name}); err == nil {
-		return dto.AccountPK{}, errs.NewConflictError("account_name")
+func (srv *accountService) Signup(in input.Signup) (model.Account, error) {
+	if _, err := srv.accountRepository.GetOne(&model.Account{AccountName: in.AccountName}); err == nil {
+		return model.Account{}, errs.NewConflictError()
 	}
 
-	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
 	if err != nil {
-		logger.Error(err.Error())
-		return dto.AccountPK{}, errs.NewUnexpectedError(err.Error())
+		return model.Account{}, errs.NewUnexpectedError(err.Error())
 	}
 
 	account := &model.Account{
-		Name:     input.Name,
-		Password: string(hashed),
+		AccountName:     in.AccountName,
+		AccountPassword: string(hashed),
 	}
 
-	id, err := srv.accountRepository.Insert(account, nil)
+	account, err = srv.accountRepository.Insert(account)
 	if err != nil {
-		if column, ok := GetConflictColumn(err); ok {
-			return dto.AccountPK{}, errs.NewConflictError(column)
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return model.Account{}, errs.NewConflictError()
 		}
-		logger.Error(err.Error())
-		return dto.AccountPK{}, errs.NewUnexpectedError(err.Error())
+		return model.Account{}, errs.NewUnexpectedError(err.Error())
 	}
 
-	return dto.AccountPK{Id: id}, nil
-}
-
-func (srv *accountService) GenerateJwtPayload(input dto.AccountPK) (jwt.Payload, error) {
-	account, err := srv.accountRepository.GetOne(&model.Account{Id: input.Id})
-	if err != nil {
-		logger.Error(err.Error())
-		return jwt.Payload{}, errs.NewUnexpectedError(err.Error())
-	}
-
-	cc := jwt.CustomClaims{
-		AccountId:   account.Id,
-		AccountName: account.Name,
-	}
-	return jwt.NewPayload(input.Id, int(config.JwtExpiresSeconds) ,cc), nil
+	return account, nil
 }

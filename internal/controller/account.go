@@ -33,7 +33,7 @@ func (ctr *AccountController) LoginPage(c *gin.Context) {
 
 // GET /logout
 func (ctr *AccountController) Logout(c *gin.Context) {
-	c.SetCookie(COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, false, true)
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, false, true)
 	c.Redirect(303, "/login")
 }
 
@@ -45,18 +45,21 @@ func (ctr *AccountController) Signup(c *gin.Context) {
 		return
 	}
 
-	var in input.Signup
-	utils.MapFields(&in, req)
-
-	account, err := ctr.accountService.Signup(in)
+	account, err := ctr.accountService.Signup(input.Signup{
+		AccountName: req.AccountName,
+		AccountPassword: req.AccountPassword,
+	})
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	var res response.Account
-	utils.MapFields(&res, account)
-	c.JSON(200, res)
+	c.JSON(200, response.Account{
+		AccountId: account.AccountId,
+		AccountName: account.AccountName,
+		CreatedAt: account.CreatedAt,
+		UpdatedAt: account.UpdatedAt,
+	})
 }
 
 // POST /api/login
@@ -67,67 +70,79 @@ func (ctr *AccountController) Login(c *gin.Context) {
 		return
 	}
 
-	var in input.Login
-	utils.MapFields(&in, req)
-
-	account, err := ctr.accountService.Login(in)
+	account, err := ctr.accountService.Login(input.Login{
+		AccountName: req.AccountName,
+		AccountPassword: req.AccountPassword,
+	})
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	pl, err := ctr.accountService.GenerateJwtPayload(dto.AccountPK{Id: account.Id})
-	if err != nil {
-		c.Error(err)
-		return
+	claims := map[string]interface{}{
+		"account_id":  account.AccountId,
+		"account_nme": account.AccountName,
 	}
-
+	pl := jwt.NewPayload(in.AccountId, int(config.JwtExpiresSeconds), claims)
 	encoded, err := jwt.EncodeToken(pl)
 	if err != nil {
 		c.Error(err)
 	}
-	var res response.Login
-	res.AccessToken = encoded
-	res.ExpiresIn = int(config.JwtExpiresSeconds)
-	res.Account = account
 
-	c.SetCookie(COOKIE_KEY_ACCESS_TOKEN, encoded, res.ExpiresIn, "/", config.AppHost, false, true)
-	c.JSON(200, res)
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, encoded, res.ExpiresIn, "/", config.AppHost, false, true)
+	c.JSON(200, response.Login{
+		AccessToken: encoded,
+		ExpiresIn: int(config.JwtExpiresSeconds),
+		Account: response.Account{
+			AccountId: account.AccountId,
+			AccountName: account.AccountName,
+			CreatedAt: account.CreatedAt,
+			UpdatedAt: account.UpdatedAt,
+		}
+	})
 }
 
 // GET /api/accounts/me
 func (ctr *AccountController) GetOne(c *gin.Context) {
-	pl := jwt.GetPayload(c)
-	result, err := ctr.accountService.GetOne(dto.AccountPK{Id: pl.AccountId})
+	accountId := common.GetAccountId(c)
+	account, err := ctr.accountService.GetOne(input.Account{AccountId: accountId})
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(200, result)
+	c.JSON(200, response.Account{
+		AccountId: account.AccountId,
+		AccountName: account.AccountName,
+		CreatedAt: account.CreatedAt,
+		UpdatedAt: account.UpdatedAt,
+	})
 }
 
 // PUT /api/accounts/me/password
 func (ctr *AccountController) PutPassword(c *gin.Context) {
-	pl := jwt.GetPayload(c)
+	accountName := common.GetAccountName(c)
 
-	var req request.PutPassword
+	var req request.PutAccountPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	_, err := ctr.accountService.Login(dto.Login{Name: pl.AccountName, Password: req.OldPassword})
+	account, err := ctr.accountService.Login(input.Login{
+		AccountName: accountName, 
+		AccountPassword: req.OldAccountPassword,
+	})
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	var input dto.UpdateAccount
-	utils.MapFields(&input, req)
-	input.Id = pl.AccountId
-
-	if err := ctr.accountService.Update(input); err != nil {
+	_, err := ctr.accountService.UpdateOne(input.Account{
+		AccountId: account.AccountId,
+		AccountPassword = req.NewAccountPassword,
+	})
+	if err != nil {
 		c.Error(err)
 		return
 	}
@@ -137,30 +152,35 @@ func (ctr *AccountController) PutPassword(c *gin.Context) {
 
 // PUT /api/accounts/me
 func (ctr *AccountController) Put(c *gin.Context) {
-	pl := jwt.GetPayload(c)
+	accountId := common.GetAccountId(c)
 
-	var req request.PutAccountName
+	var req request.PutAccount
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	var input dto.UpdateAccount
-	utils.MapFields(&input, req)
-	input.Id = pl.AccountId
-
-	if err := ctr.accountService.Update(input); err != nil {
+	account, err := ctr.accountService.UpdateOne(input.Account{
+		AccountId: accountId,
+		AccountName: req.AccountName,
+	})
+	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(200, response.Account{
+		AccountId: account.AccountId,
+		AccountName: account.AccountName,
+		CreatedAt: account.CreatedAt,
+		UpdatedAt: account.UpdatedAt,
+	})
 }
 
 // DELETE /api/accounts/me
 func (ctr *AccountController) Delete(c *gin.Context) {
-	pl := jwt.GetPayload(c)
-	if err := ctr.accountService.Delete(dto.AccountPK{Id: pl.AccountId}); err != nil {
+	accountId := common.GetAccountId(c)
+	if err := ctr.accountService.DeleteOne(input.Account{AccountId: accountId}); err != nil {
 		c.Error(err)
 		return
 	}
