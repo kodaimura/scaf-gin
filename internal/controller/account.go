@@ -104,6 +104,12 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	})
 }
 
+// GET /api/logout
+func (ctrl *AccountController) ApiLogout(c *gin.Context) {
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
+	c.JSON(200, gin.H{})
+}
+
 // GET /api/accounts/me
 func (ctrl *AccountController) ApiGetOne(c *gin.Context) {
 	accountId := common.GetAccountId(c)
