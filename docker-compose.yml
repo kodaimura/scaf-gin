@@ -12,7 +12,7 @@ services:
     tty: true
     environment:
       ENV: dev
-    command: sh -c "go run cmd/server/main.go"
+    command: sh -c "go run cmd/main.go"
 
   db:
     image: postgres:17.4
