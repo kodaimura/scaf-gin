@@ -5,7 +5,27 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goscaf/internal/middleware"
+	"goscaf/internal/infrastructure/db"
+	"goscaf/internal/controller"
+	"goscaf/internal/service"
+	repository "goscaf/internal/repository/impl"
 )
+
+var gorm = db.NewGormDB()
+var sqlx = db.NewSqlxDB()
+
+/* DI (Repository) */
+var accountRepository = repository.NewGormAccountRepository(gorm)
+
+/* DI (Query) */
+//var xxxQuery = query.NewXxxQuery(gorm)
+
+/* DI (Service) */
+var accountService = service.NewAccountService(accountRepository)
+
+/* DI (Controller) */
+var indexController = controller.NewIndexController()
+var accountController = controller.NewAccountController(accountService)
 
 func SetStatic(r *gin.Engine) {	
 	r.LoadHTMLGlob("web/template/*.html")
@@ -16,13 +36,10 @@ func SetStatic(r *gin.Engine) {
 	r.StaticFile("/manifest.json", "web/static/manifest.json")
 }
 
-var ic = controller.NewIndexController()
-var ac = controller.NewAccountController()
-
 func SetWeb(r *gin.Engine) {
-	r.GET("/signup", ac.SignupPage)
-	r.GET("/login", ac.LoginPage)
-	r.GET("/logout", ac.Logout)
+	r.GET("/signup", accountController.SignupPage)
+	r.GET("/login", accountController.LoginPage)
+	r.GET("/logout", accountController.Logout)
 
 	auth := r.Group("", middleware.JwtAuth())
 	{
@@ -32,14 +49,14 @@ func SetWeb(r *gin.Engine) {
 
 func SetApi(r *gin.Engine) {
 	r.Use(middleware.ApiErrorHandler())
-	r.POST("/signup", ac.ApiSignup)
-	r.POST("/login", ac.ApiLogin)
+	r.POST("/signup", accountController.ApiSignup)
+	r.POST("/login", accountController.ApiLogin)
 
 	auth := r.Group("", middleware.ApiJwtAuth())
 	{
-		auth.GET("/accounts/me", ac.ApiGetOne)
-		auth.PUT("/accounts/me", ac.ApiPutOne)
-		auth.PUT("/accounts/me/password", ac.ApiPutPassword)
-		auth.DELETE("/accounts/me", ac.ApiDeleteOne)
+		auth.GET("/accounts/me", accountController.ApiGetOne)
+		auth.PUT("/accounts/me", accountController.ApiPutOne)
+		auth.PUT("/accounts/me/password", accountController.ApiPutPassword)
+		auth.DELETE("/accounts/me", accountController.ApiDeleteOne)
 	}
 }

@@ -15,37 +15,37 @@ type AccountController struct {
 	accountService service.AccountService
 }
 
-func NewAccountController() *AccountController {
+func NewAccountController(accountService service.AccountService) *AccountController {
 	return &AccountController{
-		accountService: service.NewAccountService(),
+		accountService: accountService,
 	}
 }
 
 // GET /signup
-func (ctr *AccountController) SignupPage(c *gin.Context) {
+func (ctrl *AccountController) SignupPage(c *gin.Context) {
 	c.HTML(200, "signup.html", gin.H{})
 }
 
 // GET /login
-func (ctr *AccountController) LoginPage(c *gin.Context) {
+func (ctrl *AccountController) LoginPage(c *gin.Context) {
 	c.HTML(200, "login.html", gin.H{})
 }
 
 // GET /logout
-func (ctr *AccountController) ApiLogout(c *gin.Context) {
+func (ctrl *AccountController) ApiLogout(c *gin.Context) {
 	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, false, true)
 	c.Redirect(303, "/login")
 }
 
 // POST /api/signup
-func (ctr *AccountController) ApiSignup(c *gin.Context) {
+func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	var req request.Signup
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	account, err := ctr.accountService.Signup(input.Signup{
+	account, err := ctrl.accountService.Signup(input.Signup{
 		AccountName: req.AccountName,
 		AccountPassword: req.AccountPassword,
 	})
@@ -63,14 +63,14 @@ func (ctr *AccountController) ApiSignup(c *gin.Context) {
 }
 
 // POST /api/login
-func (ctr *AccountController) ApiLogin(c *gin.Context) {
+func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	var req request.Login
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	account, err := ctr.accountService.Login(input.Login{
+	account, err := ctrl.accountService.Login(input.Login{
 		AccountName: req.AccountName,
 		AccountPassword: req.AccountPassword,
 	})
@@ -103,9 +103,9 @@ func (ctr *AccountController) ApiLogin(c *gin.Context) {
 }
 
 // GET /api/accounts/me
-func (ctr *AccountController) ApiGetOne(c *gin.Context) {
+func (ctrl *AccountController) ApiGetOne(c *gin.Context) {
 	accountId := common.GetAccountId(c)
-	account, err := ctr.accountService.GetOne(input.Account{AccountId: accountId})
+	account, err := ctrl.accountService.GetOne(input.Account{AccountId: accountId})
 	if err != nil {
 		c.Error(err)
 		return
@@ -120,7 +120,7 @@ func (ctr *AccountController) ApiGetOne(c *gin.Context) {
 }
 
 // PUT /api/accounts/me/password
-func (ctr *AccountController) ApiPutPassword(c *gin.Context) {
+func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 	accountName := common.GetAccountName(c)
 
 	var req request.PutAccountPassword
@@ -129,7 +129,7 @@ func (ctr *AccountController) ApiPutPassword(c *gin.Context) {
 		return
 	}
 
-	account, err := ctr.accountService.Login(input.Login{
+	account, err := ctrl.accountService.Login(input.Login{
 		AccountName: accountName, 
 		AccountPassword: req.OldAccountPassword,
 	})
@@ -138,7 +138,7 @@ func (ctr *AccountController) ApiPutPassword(c *gin.Context) {
 		return
 	}
 
-	_, err := ctr.accountService.UpdateOne(input.Account{
+	_, err := ctrl.accountService.UpdateOne(input.Account{
 		AccountId: account.AccountId,
 		AccountPassword = req.NewAccountPassword,
 	})
@@ -151,7 +151,7 @@ func (ctr *AccountController) ApiPutPassword(c *gin.Context) {
 }
 
 // PUT /api/accounts/me
-func (ctr *AccountController) ApiPutOne(c *gin.Context) {
+func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 	accountId := common.GetAccountId(c)
 
 	var req request.PutAccount
@@ -160,7 +160,7 @@ func (ctr *AccountController) ApiPutOne(c *gin.Context) {
 		return
 	}
 
-	account, err := ctr.accountService.UpdateOne(input.Account{
+	account, err := ctrl.accountService.UpdateOne(input.Account{
 		AccountId: accountId,
 		AccountName: req.AccountName,
 	})
@@ -178,9 +178,9 @@ func (ctr *AccountController) ApiPutOne(c *gin.Context) {
 }
 
 // DELETE /api/accounts/me
-func (ctr *AccountController) ApiDeleteOne(c *gin.Context) {
+func (ctrl *AccountController) ApiDeleteOne(c *gin.Context) {
 	accountId := common.GetAccountId(c)
-	if err := ctr.accountService.DeleteOne(input.Account{AccountId: accountId}); err != nil {
+	if err := ctrl.accountService.DeleteOne(input.Account{AccountId: accountId}); err != nil {
 		c.Error(err)
 		return
 	}
