@@ -15,11 +15,11 @@ services:
     command: sh -c "go run cmd/server/main.go"
 
   db:
-    image: postgres:16.1
+    image: postgres:17.4
     environment:
       POSTGRES_DB: goscaf
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      #- ./scripts:/docker-entrypoint-initdb.d
+      - ./migrations:/docker-entrypoint-initdb.d
       - ./data:/var/lib/postgresql/data
