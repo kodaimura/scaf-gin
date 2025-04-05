@@ -36,7 +36,11 @@ var (
 )
 
 var (
+	JwtExpiresSeconds string
 	JWTSecret string
+)
+
+var (
 	LogLevel  string
 )
 
@@ -50,25 +54,35 @@ func init() {
 		log.Panic("Failed to load environment variables:", err)
 	}
 
-	AppName = os.Getenv("APP_NAME")
-	AppHost = os.Getenv("APP_HOST")
-	AppPort = os.Getenv("APP_PORT")
+	AppName = getEnv("APP_NAME")
+	AppHost = getEnv("APP_HOST", "localhost")
+	AppPort = getEnv("APP_PORT", "3000")
 
-	DBEngine = os.Getenv("DB_ENGINE")
-	DBName = os.Getenv("DB_NAME")
-	DBHost = os.Getenv("DB_HOST")
-	DBPort = os.Getenv("DB_PORT")
-	DBUser = os.Getenv("DB_USER")
-	DBPass = os.Getenv("DB_PASSWORD")
+	DBEngine = getEnv("DB_ENGINE")
+	DBName = getEnv("DB_NAME")
+	DBHost = getEnv("DB_HOST")
+	DBPort = getEnv("DB_PORT")
+	DBUser = getEnv("DB_USER")
+	DBPass = getEnv("DB_PASSWORD")
 
-	SMTPHost = os.Getenv("SMTP_HOST")
-	SMTPPort = os.Getenv("SMTP_PORT")
-	SMTPUser = os.Getenv("SMTP_USER")
-	SMTPPass = os.Getenv("SMTP_PASSWORD")
+	SMTPHost = getEnv("SMTP_HOST")
+	SMTPPort = getEnv("SMTP_PORT")
+	SMTPUser = getEnv("SMTP_USER")
+	SMTPPass = getEnv("SMTP_PASSWORD")
 
-	AuthUser = os.Getenv("BASIC_AUTH_USER")
-	AuthPass = os.Getenv("BASIC_AUTH_PASSWORD")
+	AuthUser = getEnv("BASIC_AUTH_USER")
+	AuthPass = getEnv("BASIC_AUTH_PASSWORD")
 
-	JWTSecret = os.Getenv("JWT_SECRET")
-	LogLevel  = os.Getenv("LOG_LEVEL")
+	JwtExpiresSeconds = getEnv("JWT_EXPIRES_SECONDS", "3600")
+	JWTSecret = getEnv("JWT_SECRET", "secret")
+
+	LogLevel  = getEnv("LOG_LEVEL", "INFO")
+}
+
+func getEnv(key, defaultValue ...string) string {
+	value := os.Getenv(key)
+	if value == "" && len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return value
 }

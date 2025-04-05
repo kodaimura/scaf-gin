@@ -5,47 +5,69 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 
+	"goscaf/config"
 	"goscaf/pkg/logger"
 )
 
 
-//func BasicAuth() gin.HandlerFunc {
-//	return func(c *gin.Context) {
-//		cf := config.GetConfig()
-//
-//		user, pass, ok := c.Request.BasicAuth()
-//		if !ok || user != cf.BasicAuthUser || pass != cf.BasicAuthPass {
-//			c.Header("WWW-Authenticate", "Basic realm=Authorization Required")
-//			c.AbortWithStatus(http.StatusUnauthorized)
-//			return
-//		}
-//		c.Next()
-//	}
-//}
-//
-//
-//func JwtAuth() gin.HandlerFunc {
-//	return func(c *gin.Context) {
-//		if err := jwt.Auth(c); err != nil {
-//			c.Redirect(http.StatusSeeOther, "/login")
-//			c.Abort()
-//			return
-//		}
-//		c.Next()
-//	}
-//}
-//
-//
-//func ApiJwtAuth() gin.HandlerFunc {
-//	return func(c *gin.Context) {
-//		if err := jwt.Auth(c); err != nil {
-//			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-//			c.Abort()
-//			return
-//		}
-//		c.Next()
-//	}
-//}
+func BasicAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, pass, ok := c.Request.BasicAuth()
+		if !ok || user != config.BasicAuthUser || pass != config.BasicAuthPass {
+			c.Header("WWW-Authenticate", "Basic realm=Authorization Required")
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		c.Next()
+	}
+}
+
+
+
+func getAccessToken (c *gin.Context) string {
+	token, err := c.Cookie(COOKIE_KEY_ACCESS_TOKEN)
+	if err == nil {
+		return token
+	}
+
+	bearer := c.Request.Header.Get("Authorization")
+	if bearer != "" && !strings.HasPrefix(bearer, "Bearer ") {
+		return strings.TrimSpace(bearer[7:])
+	}
+
+	return ""
+}
+
+func JwtAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := getAccessToken(c)
+		pl, err := jwt.DecodeToken(token)
+		if err != nil {
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+			return
+		}
+
+		c.Set(CONTEXT_KEY_JWT_PAYLOAD, pl)
+		c.Next()
+	}
+}
+
+
+func ApiJwtAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {	
+		token := getAccessToken(c)
+		pl, err := jwt.DecodeToken(token)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
+		}
+		
+		c.Set(CONTEXT_KEY_JWT_PAYLOAD, pl)
+		c.Next()
+	}
+}
 
 
 func ApiErrorHandler() gin.HandlerFunc {

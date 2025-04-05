@@ -144,5 +144,5 @@ func (srv *accountService) GenerateJwtPayload(input dto.AccountPK) (jwt.Payload,
 		AccountId:   account.Id,
 		AccountName: account.Name,
 	}
-	return jwt.NewPayload(cc), nil
+	return jwt.NewPayload(input.Id, int(config.JwtExpiresSeconds) ,cc), nil
 }

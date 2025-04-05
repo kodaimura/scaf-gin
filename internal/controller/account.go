@@ -33,7 +33,7 @@ func (ctr *AccountController) LoginPage(c *gin.Context) {
 
 // GET /logout
 func (ctr *AccountController) Logout(c *gin.Context) {
-	c.SetCookie(COOKIE_KEY_JWT, "", 0, "/", config.AppHost, false, true)
+	c.SetCookie(COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, false, true)
 	c.Redirect(303, "/login")
 }
 
@@ -82,16 +82,16 @@ func (ctr *AccountController) Login(c *gin.Context) {
 		return
 	}
 
-	jwtStr, err := jwt.EncodeJwt(pl)
+	encoded, err := jwt.EncodeToken(pl)
 	if err != nil {
 		c.Error(err)
 	}
 	var res response.Login
-	res.AccessToken = jwtStr
-	res.ExpiresIn = 3600 //TODO
+	res.AccessToken = encoded
+	res.ExpiresIn = int(config.JwtExpiresSeconds)
 	res.Account = account
 
-	c.SetCookie(COOKIE_KEY_JWT, jwtStr, int(JWT_EXPIRES), "/", config.AppHost, false, true)
+	c.SetCookie(COOKIE_KEY_ACCESS_TOKEN, encoded, res.ExpiresIn, "/", config.AppHost, false, true)
 	c.JSON(200, res)
 }
 
