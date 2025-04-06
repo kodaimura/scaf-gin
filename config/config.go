@@ -29,6 +29,7 @@ var (
 	SMTPPort string
 	SMTPUser string
 	SMTPPass string
+	MailFrom string
 )
 
 var (
@@ -71,6 +72,7 @@ func init() {
 	SMTPPort = getEnv("SMTP_PORT")
 	SMTPUser = getEnv("SMTP_USER")
 	SMTPPass = getEnv("SMTP_PASSWORD")
+	MailFrom = getEnv("MAIL_FROM")
 
 	BasicAuthUser = getEnv("BASIC_AUTH_USER")
 	BasicAuthPass = getEnv("BASIC_AUTH_PASSWORD")
