@@ -6,7 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goscaf/config"
-	"goscaf/pkg/logger"
+	"goscaf/internal/infrastructure/logger"
+	"goscaf/internal/infrastructure/mailer"
+	"goscaf/internal/core"
 	"goscaf/internal/router"
 )
 
@@ -16,8 +18,9 @@ func main() {
 		panic(err)
 	}
     gin.DefaultWriter = io.MultiWriter(os.Stdout, f)
-	logger.SetOutput(f)
-	logger.SetLevel(config.LogLevel)
+	
+	core.SetLogger(logger.NewMultiLogger(f))
+	core.SetMailer(mailer.NewMockMailer())
 
 	r := gin.Default()
 	router.SetStatic(r)

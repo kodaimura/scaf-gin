@@ -8,7 +8,7 @@ import (
 	"goscaf/config"
 	"goscaf/pkg/jwt"
 	"goscaf/pkg/errs"
-	"goscaf/pkg/logger"
+	"goscaf/internal/core"
 	"goscaf/internal/common"
 )
 
@@ -100,7 +100,7 @@ func ApiErrorHandler() gin.HandlerFunc {
 					"error": e.Error(),
 				})
 			default:
-				logger.Error(e.Error())
+				core.Logger.Error(e.Error())
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": e.Error(),
 				})
