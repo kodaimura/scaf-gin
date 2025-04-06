@@ -17,13 +17,13 @@ type SmtpMailer struct {
 	password string
 }
 
-func NewSmtpMailer() mailer.MailerI {
+func NewSmtpMailer() core.MailerI {
 	return &SmtpMailer{
 		from:     config.MailFrom,
-		host:     config.MailHost,
-		port:     config.MailPort,
-		username: config.MailUser,
-		password: config.MailPass,
+		host:     config.SMTPHost,
+		port:     config.SMTPPort,
+		username: config.SMTPUser,
+		password: config.SMTPPass,
 	}
 }
 
