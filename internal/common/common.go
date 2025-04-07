@@ -3,28 +3,23 @@ package common
 import (
 	"github.com/gin-gonic/gin"
 	
-	"goscaf/pkg/jwt"
+	"goscaf/internal/core"
 )
 
-func GetPayload(c *gin.Context) jwt.Payload {
+func GetPayload(c *gin.Context) core.AuthPayload {
 	pl := c.Keys[CONTEXT_KEY_JWT_PAYLOAD]
 	if pl == nil {
-		return jwt.Payload{}
+		return core.AuthPayload{}
 	}
-	return pl.(jwt.Payload)
-}
-
-func GetCustomClaims(c *gin.Context) map[string]interface{} {
-	pl := GetPayload(c)
-	return pl.CustomClaims
+	return pl.(core.AuthPayload)
 }
 
 func GetAccountId(c *gin.Context) int {
-	value, _ := GetCustomClaims(c)["account_id"]
-	return value.(int)
+	payload := GetPayload(c)
+	return payload.AccountId
 }
 
 func GetAccountName(c *gin.Context) string {
-	value, _ := GetCustomClaims(c)["account_name"]
-	return value.(string)
+	payload := GetPayload(c)
+	return payload.AccountName
 }

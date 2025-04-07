@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goscaf/config"
-	"goscaf/pkg/jwt"
 	"goscaf/pkg/errs"
 	"goscaf/internal/core"
 	"goscaf/internal/common"
@@ -25,8 +24,6 @@ func BasicAuth() gin.HandlerFunc {
 	}
 }
 
-
-
 func getAccessToken (c *gin.Context) string {
 	token, err := c.Cookie(common.COOKIE_KEY_ACCESS_TOKEN)
 	if err == nil {
@@ -41,10 +38,10 @@ func getAccessToken (c *gin.Context) string {
 	return ""
 }
 
-func JwtAuth() gin.HandlerFunc {
+func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := getAccessToken(c)
-		pl, err := jwt.DecodeToken(token, config.JwtSecretKey)
+		pl, err := core.Auth.ValidateCredential(token)
 		if err != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
@@ -57,10 +54,10 @@ func JwtAuth() gin.HandlerFunc {
 }
 
 
-func ApiJwtAuth() gin.HandlerFunc {
+func ApiAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {	
 		token := getAccessToken(c)
-		pl, err := jwt.DecodeToken(token, config.JwtSecretKey)
+		pl, err := core.Auth.ValidateCredential(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()

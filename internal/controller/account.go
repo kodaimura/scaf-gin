@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goscaf/config"
-	"goscaf/pkg/jwt"
 	"goscaf/pkg/errs"
+	"goscaf/internal/core"
 	"goscaf/internal/common"
 	"goscaf/internal/service"
 	"goscaf/internal/dto/input"
@@ -81,19 +81,17 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	claims := map[string]interface{}{
-		"account_id":  account.AccountId,
-		"account_name": account.AccountName,
-	}
-	pl := jwt.NewPayload(account.AccountId, config.JwtExpiresSeconds, claims)
-	encoded, err := jwt.EncodeToken(pl, config.JwtSecretKey)
+	token, err := core.Auth.GenerateCredential(core.AuthPayload{
+		AccountId: account.AccountId,
+		AccountName: account.AccountName,
+	})
 	if err != nil {
 		c.Error(err)
 	}
 
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, encoded, config.JwtExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, token, config.JwtExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, response.Login{
-		AccessToken: encoded,
+		AccessToken: token,
 		ExpiresIn: config.JwtExpiresSeconds,
 		Account: response.Account{
 			AccountId: account.AccountId,

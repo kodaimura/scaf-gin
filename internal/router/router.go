@@ -40,7 +40,7 @@ func SetWeb(r *gin.RouterGroup) {
 	r.GET("/login", accountController.LoginPage)
 	r.GET("/logout", accountController.Logout)
 
-	auth := r.Group("", middleware.JwtAuth())
+	auth := r.Group("", middleware.Auth())
 	{
 		auth.GET("/", indexController.IndexPage)
 	}
@@ -52,7 +52,7 @@ func SetApi(r *gin.RouterGroup) {
 	r.POST("/login", accountController.ApiLogin)
 	r.GET("/logout", accountController.ApiLogout)
 
-	auth := r.Group("", middleware.ApiJwtAuth())
+	auth := r.Group("", middleware.ApiAuth())
 	{
 		auth.GET("/accounts/me", accountController.ApiGetOne)
 		auth.PUT("/accounts/me", accountController.ApiPutOne)
