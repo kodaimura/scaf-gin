@@ -22,7 +22,7 @@ func NewJwtAuth() *JwtAuth {
     return &JwtAuth{}
 }
 
-func (j *JwtAuth) GenerateCredential(payload core.AuthPayload) (string, error) {
+func (j *JwtAuth) GenerateToken(payload core.AuthPayload) (string, error) {
 	jwtPayload := JwtPayload{
 		AuthPayload: payload,
 		RegisteredClaims: jwtpackage.RegisteredClaims{
@@ -37,18 +37,18 @@ func (j *JwtAuth) GenerateCredential(payload core.AuthPayload) (string, error) {
 	return token.SignedString([]byte(config.JwtSecretKey))
 }
 
-func (j *JwtAuth) ValidateCredential(credential string) (core.AuthPayload, error) {
-	token, err := jwtpackage.Parse(credential, func(token *jwtpackage.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwtpackage.SigningMethodHMAC); !ok {
+func (j *JwtAuth) ValidateToken(token string) (core.AuthPayload, error) {
+	parsedToken, err := jwtpackage.Parse(token, func(parsedToken *jwtpackage.Token) (interface{}, error) {
+		if _, ok := parsedToken.Method.(*jwtpackage.SigningMethodHMAC); !ok {
 			return nil, errors.New("Unexpected signing method")
 		}
 		return []byte(config.JwtSecretKey), nil
 	})
-	if err != nil || !token.Valid {
+	if err != nil || !parsedToken.Valid {
 		return core.AuthPayload{}, err
 	}
 
-	return tokenToAuthPayload(token)
+	return tokenToAuthPayload(parsedToken)
 }
 
 
@@ -65,6 +65,6 @@ func tokenToAuthPayload (token *jwtpackage.Token) (core.AuthPayload, error) {
 	return jwtPayload.AuthPayload, nil
 }
 
-func (j *JwtAuth) RevokeCredential(credential string) error {
+func (j *JwtAuth) RevokeToken(token string) error {
 	return nil
 }

@@ -81,7 +81,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	token, err := core.Auth.GenerateCredential(core.AuthPayload{
+	token, err := core.Auth.GenerateToken(core.AuthPayload{
 		AccountId: account.AccountId,
 		AccountName: account.AccountName,
 	})

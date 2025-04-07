@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"strings"
 	"net/http"
 	"github.com/gin-gonic/gin"
 
@@ -24,24 +23,10 @@ func BasicAuth() gin.HandlerFunc {
 	}
 }
 
-func getAccessToken (c *gin.Context) string {
-	token, err := c.Cookie(common.COOKIE_KEY_ACCESS_TOKEN)
-	if err == nil {
-		return token
-	}
-
-	bearer := c.Request.Header.Get("Authorization")
-	if bearer != "" && !strings.HasPrefix(bearer, "Bearer ") {
-		return strings.TrimSpace(bearer[7:])
-	}
-
-	return ""
-}
-
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := getAccessToken(c)
-		pl, err := core.Auth.ValidateCredential(token)
+		token := common.GetAccessToken(c)
+		pl, err := core.Auth.ValidateToken(token)
 		if err != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
@@ -56,8 +41,8 @@ func Auth() gin.HandlerFunc {
 
 func ApiAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {	
-		token := getAccessToken(c)
-		pl, err := core.Auth.ValidateCredential(token)
+		token := common.GetAccessToken(c)
+		pl, err := core.Auth.ValidateToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()

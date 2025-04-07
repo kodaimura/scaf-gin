@@ -1,9 +1,9 @@
 package core
 
 type AuthI interface {
-    GenerateCredential(payload AuthPayload) (string, error)
-    ValidateCredential(credential string) (AuthPayload, error)
-    RevokeCredential(credential string) error
+    GenerateToken(payload AuthPayload) (string, error)
+    ValidateToken(token string) (AuthPayload, error)
+    RevokeToken(token string) error
 }
 
 type AuthPayload struct {
@@ -19,12 +19,12 @@ func SetAuth(l AuthI) {
 
 type noopAuth struct {}
 
-func (n *noopAuth) GenerateCredential(payload AuthPayload) (string, error) {
+func (n *noopAuth) GenerateToken(payload AuthPayload) (string, error) {
 	return "", nil
 }
-func (n *noopAuth) ValidateCredential(credential string) (AuthPayload, error) {
+func (n *noopAuth) ValidateToken(token string) (AuthPayload, error) {
 	return AuthPayload{}, nil
 }
-func (n *noopAuth) RevokeCredential(credential string) error {
+func (n *noopAuth) RevokeToken(token string) error {
 	return nil
 }
