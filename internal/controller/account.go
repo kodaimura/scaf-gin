@@ -89,10 +89,10 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		c.Error(err)
 	}
 
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, token, config.JwtExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, token, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, response.Login{
 		AccessToken: token,
-		ExpiresIn: config.JwtExpiresSeconds,
+		ExpiresIn: config.AuthExpiresSeconds,
 		Account: response.Account{
 			AccountId: account.AccountId,
 			AccountName: account.AccountName,

@@ -27,7 +27,7 @@ func (j *JwtAuth) GenerateCredential(payload core.AuthPayload) (string, error) {
 		AuthPayload: payload,
 		RegisteredClaims: jwtpackage.RegisteredClaims{
 			Subject:   strconv.Itoa(payload.AccountId),
-			ExpiresAt: jwtpackage.NewNumericDate(time.Now().Add(time.Second * time.Duration(config.JwtExpiresSeconds))),
+			ExpiresAt: jwtpackage.NewNumericDate(time.Now().Add(time.Second * time.Duration(config.AuthExpiresSeconds))),
 			NotBefore: jwtpackage.NewNumericDate(time.Now()),
 			IssuedAt: jwtpackage.NewNumericDate(time.Now()),
 		},
