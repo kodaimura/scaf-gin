@@ -35,6 +35,7 @@ func (ctrl *AccountController) LoginPage(c *gin.Context) {
 
 // GET /logout
 func (ctrl *AccountController) Logout(c *gin.Context) {
+	core.Auth.RevokeToken(common.GetAccessToken(c))
 	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
 	c.Redirect(303, "/login")
 }

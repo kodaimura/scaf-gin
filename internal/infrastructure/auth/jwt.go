@@ -18,7 +18,7 @@ type JwtPayload struct {
 	core.AuthPayload
 }
 
-func NewJwtAuth() *JwtAuth {
+func NewJwtAuth() core.AuthI {
     return &JwtAuth{}
 }
 
