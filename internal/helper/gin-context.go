@@ -1,4 +1,4 @@
-package common
+package helper
 
 import (
 	"strings"
@@ -22,7 +22,7 @@ func GetAccessToken (c *gin.Context) string {
 }
 
 func GetPayload(c *gin.Context) core.AuthPayload {
-	pl := c.Keys[CONTEXT_KEY_JWT_PAYLOAD]
+	pl := c.Keys[CONTEXT_KEY_PAYLOAD]
 	if pl == nil {
 		return core.AuthPayload{}
 	}
@@ -30,11 +30,9 @@ func GetPayload(c *gin.Context) core.AuthPayload {
 }
 
 func GetAccountId(c *gin.Context) int {
-	payload := GetPayload(c)
-	return payload.AccountId
+	return GetPayload(c).AccountId
 }
 
 func GetAccountName(c *gin.Context) string {
-	payload := GetPayload(c)
-	return payload.AccountName
+	return GetPayload(c).AccountName
 }

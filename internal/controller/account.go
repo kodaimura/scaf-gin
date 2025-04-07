@@ -6,7 +6,7 @@ import (
 	"goscaf/config"
 	"goscaf/pkg/errs"
 	"goscaf/internal/core"
-	"goscaf/internal/common"
+	"goscaf/internal/helper"
 	"goscaf/internal/service"
 	"goscaf/internal/dto/input"
 	"goscaf/internal/dto/request"
@@ -35,8 +35,8 @@ func (ctrl *AccountController) LoginPage(c *gin.Context) {
 
 // GET /logout
 func (ctrl *AccountController) Logout(c *gin.Context) {
-	core.Auth.RevokeToken(common.GetAccessToken(c))
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
+	core.Auth.RevokeToken(helper.GetAccessToken(c))
+	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
 	c.Redirect(303, "/login")
 }
 
@@ -90,7 +90,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		c.Error(err)
 	}
 
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, token, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, token, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, response.Login{
 		AccessToken: token,
 		ExpiresIn: config.AuthExpiresSeconds,
@@ -105,13 +105,13 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 
 // GET /api/logout
 func (ctrl *AccountController) ApiLogout(c *gin.Context) {
-	c.SetCookie(common.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
+	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, gin.H{})
 }
 
 // GET /api/accounts/me
 func (ctrl *AccountController) ApiGetOne(c *gin.Context) {
-	accountId := common.GetAccountId(c)
+	accountId := helper.GetAccountId(c)
 	account, err := ctrl.accountService.GetOne(input.Account{AccountId: accountId})
 	if err != nil {
 		c.Error(err)
@@ -128,7 +128,7 @@ func (ctrl *AccountController) ApiGetOne(c *gin.Context) {
 
 // PUT /api/accounts/me/password
 func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
-	accountName := common.GetAccountName(c)
+	accountName := helper.GetAccountName(c)
 
 	var req request.PutAccountPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -159,7 +159,7 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 
 // PUT /api/accounts/me
 func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
-	accountId := common.GetAccountId(c)
+	accountId := helper.GetAccountId(c)
 
 	var req request.PutAccount
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -186,7 +186,7 @@ func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 
 // DELETE /api/accounts/me
 func (ctrl *AccountController) ApiDeleteOne(c *gin.Context) {
-	accountId := common.GetAccountId(c)
+	accountId := helper.GetAccountId(c)
 	if err := ctrl.accountService.DeleteOne(input.Account{AccountId: accountId}); err != nil {
 		c.Error(err)
 		return

@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	
-	"goscaf/internal/common"
+	"goscaf/internal/helper"
 )
 
 
@@ -18,6 +18,6 @@ func NewIndexController() *IndexController {
 //GET /
 func (ctrl *IndexController) IndexPage(c *gin.Context) {
 	c.HTML(200, "index.html", gin.H{
-		"account_name": common.GetAccountName(c),
+		"account_name": helper.GetAccountName(c),
 	})
 }

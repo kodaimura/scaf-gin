@@ -7,7 +7,7 @@ import (
 	"goscaf/config"
 	"goscaf/pkg/errs"
 	"goscaf/internal/core"
-	"goscaf/internal/common"
+	"goscaf/internal/helper"
 )
 
 
@@ -25,7 +25,7 @@ func BasicAuth() gin.HandlerFunc {
 
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := common.GetAccessToken(c)
+		token := helper.GetAccessToken(c)
 		pl, err := core.Auth.ValidateToken(token)
 		if err != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
@@ -33,7 +33,7 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		c.Set(common.CONTEXT_KEY_JWT_PAYLOAD, pl)
+		c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
 		c.Next()
 	}
 }
@@ -41,7 +41,7 @@ func Auth() gin.HandlerFunc {
 
 func ApiAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {	
-		token := common.GetAccessToken(c)
+		token := helper.GetAccessToken(c)
 		pl, err := core.Auth.ValidateToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -49,7 +49,7 @@ func ApiAuth() gin.HandlerFunc {
 			return
 		}
 		
-		c.Set(common.CONTEXT_KEY_JWT_PAYLOAD, pl)
+		c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
 		c.Next()
 	}
 }
