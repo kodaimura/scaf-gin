@@ -9,6 +9,9 @@ import (
 )
 
 type SessionAuth struct {
+	// sessions stores session data in memory.
+	// You should implement a persistent session store, 
+	// such as Redis or a database, for production environments.
 	sessions map[string]core.AuthPayload
 }
 
