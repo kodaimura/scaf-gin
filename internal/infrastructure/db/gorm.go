@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"log"
 
 	"gorm.io/gorm"
@@ -13,49 +12,44 @@ import (
 	"goscaf/config"
 )
 
+// NewGormDB initializes a GORM database connection based on configuration.
+// Supports postgres, mysql, and sqlite3.
 func NewGormDB() *gorm.DB {
-	dbEngine := config.DBEngine
-	dbName := config.DBName
-	dbHost := config.DBHost
-	dbPort := config.DBPort
-	dbUser := config.DBUser
-	dbPass := config.DBPass
+	var (
+		db  *gorm.DB
+		err error
+	)
 
-	var db *gorm.DB
-	var err error
-
-	config := &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{SingularTable: true},
+	gormConfig := &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true, // Prevent pluralized table names
+		},
 	}
 
-	switch dbEngine {
+	switch config.DBEngine {
 	case "postgres":
-		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort)
-		fmt.Println(dsn)
-		db, err = gorm.Open(postgres.Open(dsn), config)
+		db, err = gorm.Open(postgres.Open(buildPostgresDSN()), gormConfig)
 	case "mysql":
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
-		db, err = gorm.Open(mysql.Open(dsn), config)
+		db, err = gorm.Open(mysql.Open(buildMySQLDSN()), gormConfig)
 	case "sqlite3":
-		dsn := fmt.Sprintf("%s.db", dbName)
-		db, err = gorm.Open(sqlite.Open(dsn), config)
+		db, err = gorm.Open(sqlite.Open(buildSQLiteDSN()), gormConfig)
 	default:
-		log.Panic("Error: must specify a valid DB_DRIVER: 'postgres', 'mysql', or 'sqlite3'.")
+		log.Panic("Invalid DB_ENGINE. Please choose 'postgres', 'mysql', or 'sqlite3'.")
 	}
 
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("Failed to connect to database: %v", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("Failed to get generic DB object: %v", err)
 	}
+
 	if err := sqlDB.Ping(); err != nil {
-		log.Panic(err)
+		log.Panicf("Database ping failed: %v", err)
 	}
 
-	log.Println("Successfully connected to GORM database")
-
+	log.Println("✅ Successfully connected to the database via GORM.")
 	return db
 }

@@ -8,6 +8,7 @@ import (
 	"goscaf/internal/core"
 )
 
+// MockMailer is a mock implementation of the MailerI interface for testing purposes.
 type MockMailer struct {
 	from     string
 }
@@ -18,6 +19,7 @@ func NewMockMailer() core.MailerI {
 	}
 }
 
+// SendText simulates sending a plain text email by printing the message to the console.
 func (m *MockMailer) SendText(to []string, subject, body string) error {
 	msg := m.composeMessage(to, subject, "text/plain", body)
 	fmt.Println("MockMailer (Text):")
@@ -25,6 +27,7 @@ func (m *MockMailer) SendText(to []string, subject, body string) error {
 	return nil
 }
 
+// SendHTML simulates sending an HTML email by printing the message to the console.
 func (m *MockMailer) SendHTML(to []string, subject, body string) error {
 	msg := m.composeMessage(to, subject, "text/html", body)
 	fmt.Println("MockMailer (HTML):")

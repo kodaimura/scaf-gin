@@ -1,51 +1,43 @@
 package db
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
 	"goscaf/config"
 )
 
+// NewSqlxDB initializes a SQLx database connection based on configuration.
+// Supports 'postgres', 'mysql', and 'sqlite3'.
 func NewSqlxDB() *sqlx.DB {
-	dbEngine := config.DBEngine
-	dbName := config.DBName
-	dbHost := config.DBHost
-	dbPort := config.DBPort
-	dbUser := config.DBUser
-	dbPass := config.DBPass
+	var (
+		db  *sqlx.DB
+		err error
+	)
 
-	var db *sqlx.DB
-	var err error
-
-	switch dbEngine {
+	switch config.DBEngine {
 	case "postgres":
-		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort)
-		db, err = sqlx.Connect("postgres", dsn)
+		db, err = sqlx.Connect("postgres", buildPostgresDSN())
 	case "mysql":
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
-		db, err = sqlx.Connect("mysql", dsn)
+		db, err = sqlx.Connect("mysql", buildMySQLDSN())
 	case "sqlite3":
-		dsn := fmt.Sprintf("%s.db", dbName)
-		db, err = sqlx.Connect("sqlite3", dsn)
+		db, err = sqlx.Connect("sqlite3", buildSQLiteDSN())
 	default:
-		log.Panic("Error: must specify a valid DB_DRIVER: 'postgres', 'mysql', or 'sqlite3'.")
+		log.Panic("❌ Invalid DB_ENGINE. Choose 'postgres', 'mysql', or 'sqlite3'.")
 	}
 
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("❌ Failed to connect using sqlx: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Panic(err)
+		log.Panicf("❌ Database ping failed: %v", err)
 	}
 
-	log.Println("Successfully connected to SQLx database")
-
+	log.Printf("✅ Successfully connected to %s via sqlx\n", config.DBEngine)
 	return db
 }

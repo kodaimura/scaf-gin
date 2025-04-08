@@ -26,6 +26,7 @@ var accountService = service.NewAccountService(accountRepository)
 var indexController = controller.NewIndexController()
 var accountController = controller.NewAccountController(accountService)
 
+
 func SetStatic(r *gin.Engine) {	
 	r.LoadHTMLGlob("web/template/*.html")
 	r.Static("/css", "web/static/css")

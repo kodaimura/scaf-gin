@@ -3,63 +3,43 @@ package logger
 import (
 	"log"
 
-	"goscaf/config"
 	"goscaf/internal/core"
 )
 
-const (
-	DEBUG = iota
-	INFO
-	WARN
-	ERROR
-)
-
-func LogLevel() int {
-	switch config.LogLevel {
-	case "DEBUG", "debug":
-		return DEBUG
-	case "INFO", "info":
-		return INFO
-	case "WARN", "warn":
-		return WARN
-	case "ERROR", "error":
-		return ERROR
-	default:
-		return INFO
-	}
-}
-
+// ConsoleLogger logs messages to the standard output.
 type ConsoleLogger struct {
-	logLevel int
+	level logLevel
 }
 
 func NewConsoleLogger() core.LoggerI {
-	log.SetFlags(0)
+	log.SetFlags(0) // Disable default timestamps and flags in the log output
 	return &ConsoleLogger{
-		logLevel: LogLevel(),
+		level: getLogLevel(),
 	}
 }
 
+// Debug logs a debug-level message.
 func (l *ConsoleLogger) Debug(format string, v ...interface{}) {
-	if l.logLevel <= DEBUG {
-		log.Printf("[DEBUG] "+format, v...)
-	}
+	l.logf(DEBUG, "DEBUG", format, v...)
 }
 
+// Info logs an info-level message.
 func (l *ConsoleLogger) Info(format string, v ...interface{}) {
-	if l.logLevel <= INFO {
-		log.Printf("[INFO] "+format, v...)
-	}
+	l.logf(INFO, "INFO", format, v...)
 }
 
+// Warn logs a warning-level message.
 func (l *ConsoleLogger) Warn(format string, v ...interface{}) {
-	if l.logLevel <= WARN {
-		log.Printf("[WARN] "+format, v...)
-	}
+	l.logf(WARN, "WARN", format, v...)
 }
 
+// Error logs an error-level message.
 func (l *ConsoleLogger) Error(format string, v ...interface{}) {
-	if l.logLevel <= ERROR {
-		log.Printf("[ERROR] "+format , v...)
+	l.logf(ERROR, "ERROR", format, v...)
+}
+
+func (l *ConsoleLogger) logf(level logLevel, tag, format string, v ...interface{}) {
+	if l.level <= level {
+		log.Printf("["+tag+"] "+format, v...)
 	}
 }

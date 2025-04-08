@@ -9,6 +9,7 @@ import (
 	"goscaf/internal/core"
 )
 
+// SmtpMailer implements the MailerI interface using SMTP for sending emails.
 type SmtpMailer struct {
 	from     string
 	host     string
@@ -27,11 +28,13 @@ func NewSmtpMailer() core.MailerI {
 	}
 }
 
+// SendText sends a plain text email to the specified recipients.
 func (s *SmtpMailer) SendText(to []string, subject, body string) error {
 	msg := s.composeMessage(to, subject, "text/plain", body)
 	return smtp.SendMail(s.address(), s.auth(), s.from, to, msg)
 }
 
+// SendHTML sends an HTML email to the specified recipients.
 func (s *SmtpMailer) SendHTML(to []string, subject, body string) error {
 	msg := s.composeMessage(to, subject, "text/html", body)
 	return smtp.SendMail(s.address(), s.auth(), s.from, to, msg)
