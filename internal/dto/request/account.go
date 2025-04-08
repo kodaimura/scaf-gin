@@ -1,8 +1,8 @@
 package request
 
 type Signup struct {
-	AccountName     string `json:"account_name"`
-	AccountPassword string `json:"account_password"`
+	AccountName     string `json:"account_name" binding:"required"`
+	AccountPassword string `json:"account_password" binding:"required"`
 }
 
 type Login struct {
@@ -11,10 +11,10 @@ type Login struct {
 }
 
 type PutAccount struct {
-	AccountName string `json:"account_name"`
+	AccountName string `json:"account_name" binding:"required"`
 }
 
 type PutAccountPassword struct {
-	OldAccountPassword string `json:"old_account_password"`
-	NewAccountPassword string `json:"new_account_password"`
+	OldAccountPassword string `json:"old_account_password" binding:"required"`
+	NewAccountPassword string `json:"new_account_password" binding:"required"`
 }
