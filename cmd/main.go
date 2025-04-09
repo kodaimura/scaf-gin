@@ -9,19 +9,21 @@ import (
 	"goscaf/internal/infrastructure/logger"
 	"goscaf/internal/infrastructure/mailer"
 	"goscaf/internal/infrastructure/auth"
+	"goscaf/internal/infrastructure/file"
 	"goscaf/internal/core"
 	"goscaf/internal/router"
 )
 
 func main() {
-    f, err := os.OpenFile("log/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-    gin.DefaultWriter = io.MultiWriter(os.Stdout, f)
+	f1 := file.GetAccessLogFile()
+	f2 := file.GetAppLogFile()
+	defer f1.Close()
+	defer f2.Close()
 
-	core.SetLogger(logger.NewMultiLogger(f))
-	core.SetMailer(mailer.NewMockMailer())
+    gin.DefaultWriter = io.MultiWriter(os.Stdout, f1)
+
+	core.SetLogger(logger.NewMultiLogger(f2))
+	core.SetMailer(mailer.NewSmtpMailer())
 	core.SetAuth(auth.NewJwtAuth())
 
 	r := gin.Default()
