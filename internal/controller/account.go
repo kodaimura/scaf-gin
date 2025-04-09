@@ -88,6 +88,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	})
 	if err != nil {
 		c.Error(err)
+		return
 	}
 
 	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, token, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
@@ -105,6 +106,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 
 // GET /api/logout
 func (ctrl *AccountController) ApiLogout(c *gin.Context) {
+	core.Auth.RevokeToken(helper.GetAccessToken(c))
 	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, gin.H{})
 }
