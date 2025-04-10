@@ -13,8 +13,8 @@ type AuthPayload struct {
 
 var Auth AuthI = &noopAuth{}
 
-func SetAuth(l AuthI) {
-	Auth = l
+func SetAuth(a AuthI) {
+	Auth = a
 }
 
 type noopAuth struct {}

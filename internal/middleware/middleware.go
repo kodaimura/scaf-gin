@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"github.com/gin-gonic/gin"
 
 	"goscaf/config"
-	"goscaf/pkg/errs"
 	"goscaf/internal/core"
 	"goscaf/internal/helper"
 )
@@ -66,31 +66,35 @@ func ApiErrorHandler() gin.HandlerFunc {
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last().Err
 
-			switch e := err.(type) {
-			case errs.BadRequestError:
+			switch {
+			case errors.Is(err, core.ErrBadRequest):
 				c.JSON(http.StatusBadRequest, gin.H{
-					"error": e.Error(),
+					"error": err.Error(),
 				})
-			case errs.UnauthorizedError:
+			case errors.Is(err, core.ErrUnauthorized):
 				c.JSON(http.StatusUnauthorized, gin.H{
-					"error": e.Error(),
+					"error": err.Error(),
 				})
-			case errs.ForbiddenError:
+			case errors.Is(err, core.ErrForbidden):
 				c.JSON(http.StatusForbidden, gin.H{
-					"error": e.Error(),
+					"error": err.Error(),
 				})
-			case errs.NotFoundError:
+			case errors.Is(err, core.ErrNotFound):
 				c.JSON(http.StatusNotFound, gin.H{
-					"error": e.Error(),
+					"error": err.Error(),
 				})
-			case errs.ConflictError:
+			case errors.Is(err, core.ErrConflict):
 				c.JSON(http.StatusConflict, gin.H{
-					"error": e.Error(),
+					"error": err.Error(),
+				})
+			case errors.Is(err, core.ErrUnexpected):
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
 				})
 			default:
-				core.Logger.Error(e.Error())
+				core.Logger.Error(err.Error())
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": e.Error(),
+					"error": err.Error(),
 				})
 			}
 		}

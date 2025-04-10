@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goscaf/config"
-	"goscaf/pkg/errs"
 	"goscaf/internal/core"
 	"goscaf/internal/helper"
 	"goscaf/internal/service"
@@ -44,7 +43,7 @@ func (ctrl *AccountController) Logout(c *gin.Context) {
 func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	var req request.Signup
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(errs.NewBadRequestError(err.Error()))
+		c.Error(core.ErrBadRequest)
 		return
 	}
 
@@ -69,7 +68,7 @@ func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	var req request.Login
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(errs.NewBadRequestError(err.Error()))
+		c.Error(core.ErrBadRequest)
 		return
 	}
 
@@ -134,7 +133,7 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 
 	var req request.PutAccountPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(errs.NewBadRequestError(err.Error()))
+		c.Error(core.ErrBadRequest)
 		return
 	}
 
@@ -165,7 +164,7 @@ func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 
 	var req request.PutAccount
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(errs.NewBadRequestError(err.Error()))
+		c.Error(core.ErrBadRequest)
 		return
 	}
 

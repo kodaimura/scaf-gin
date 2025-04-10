@@ -2,10 +2,9 @@ package service
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"golang.org/x/crypto/bcrypt"
 
-	"goscaf/pkg/errs"
+	"goscaf/internal/core"
 	"goscaf/internal/model"
 	"goscaf/internal/repository"
 	"goscaf/internal/dto/input"
@@ -31,19 +30,13 @@ func NewAccountService(accountRepository repository.AccountRepository) AccountSe
 
 func (srv *accountService) GetOne(in input.Account) (model.Account, error) {
 	account, err := srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return model.Account{}, errs.NewNotFoundError()
-		}
-		return model.Account{}, errs.NewUnexpectedError(err.Error())
-	}
-	return account, nil
+	return account, handleError(err)
 }
 
 func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
 	account, err := srv.GetOne(in)
 	if err != nil {
-		return account, err
+		return model.Account{}, handleError(err)
 	}
 
 	if in.AccountName != "" {
@@ -52,50 +45,42 @@ func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
 	if in.AccountPassword != "" {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
 		if err != nil {
-			return model.Account{}, errs.NewUnexpectedError(err.Error())
+			return model.Account{}, handleError(err)
 		}
 		account.AccountPassword = string(hashed)
 	}
 	account, err = srv.accountRepository.Update(&account)
-	if  err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return model.Account{}, errs.NewConflictError()
-		}
-		return model.Account{}, errs.NewUnexpectedError(err.Error())
-	}
-	return account, nil
+	return account, handleError(err)
 }
 
 func (srv *accountService) DeleteOne(in input.Account) error {
-	if err := srv.accountRepository.Delete(&model.Account{AccountId: in.AccountId}); err != nil {
-		return errs.NewUnexpectedError(err.Error())
-	}
-	return nil
+	err := srv.accountRepository.Delete(&model.Account{AccountId: in.AccountId})
+	return handleError(err)
 }
 
 func (srv *accountService) Login(in input.Login) (model.Account, error) {
 	account, err := srv.accountRepository.GetOne(&model.Account{AccountName: in.AccountName})
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return model.Account{}, errs.NewUnauthorizedError()
+		if errors.Is(err, core.ErrNotFound) {
+			return model.Account{}, core.ErrUnauthorized
 		}
-		return model.Account{}, errs.NewUnexpectedError(err.Error())
+		return model.Account{}, handleError(err)
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(account.AccountPassword), []byte(in.AccountPassword)); err != nil {
-		return model.Account{}, errs.NewUnauthorizedError()
+		return model.Account{}, core.ErrUnauthorized
 	}
 	return account, nil
 }
 
 func (srv *accountService) Signup(in input.Signup) (model.Account, error) {
 	if _, err := srv.accountRepository.GetOne(&model.Account{AccountName: in.AccountName}); err == nil {
-		return model.Account{}, errs.NewConflictError()
+		return model.Account{}, core.ErrConflict
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return model.Account{}, errs.NewUnexpectedError(err.Error())
+		return model.Account{}, handleError(err)
 	}
 
 	account := model.Account{
@@ -105,10 +90,7 @@ func (srv *accountService) Signup(in input.Signup) (model.Account, error) {
 
 	account, err = srv.accountRepository.Insert(&account)
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return model.Account{}, errs.NewConflictError()
-		}
-		return model.Account{}, errs.NewUnexpectedError(err.Error())
+		return model.Account{}, handleError(err)
 	}
 
 	return account, nil
