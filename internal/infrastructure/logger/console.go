@@ -2,6 +2,7 @@ package logger
 
 import (
 	"log"
+	"strings"
 
 	"goscaf/internal/core"
 )
@@ -41,5 +42,33 @@ func (l *ConsoleLogger) Error(format string, v ...interface{}) {
 func (l *ConsoleLogger) logf(level logLevel, tag, format string, v ...interface{}) {
 	if l.level <= level {
 		log.Printf("["+tag+"] "+format, v...)
+	}
+}
+
+
+// ===============================
+// Common for the logger package.
+// ===============================
+type logLevel int
+
+const (
+	DEBUG logLevel = iota
+	INFO
+	WARN
+	ERROR
+)
+
+func getLogLevel() logLevel {
+	switch strings.ToLower(config.LogLevel) {
+	case "debug":
+		return DEBUG
+	case "info":
+		return INFO
+	case "warn":
+		return WARN
+	case "error":
+		return ERROR
+	default:
+		return INFO
 	}
 }
