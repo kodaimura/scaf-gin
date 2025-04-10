@@ -29,7 +29,6 @@ func NewGormDB() *gorm.DB {
 
 	switch config.DBEngine {
 	case "postgres":
-		dsn := internal/infrastructure/db/base.go
 		db, err = gorm.Open(postgres.Open(buildPostgresDSN()), gormConfig)
 	case "mysql":
 		db, err = gorm.Open(mysql.Open(buildMySQLDSN()), gormConfig)

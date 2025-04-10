@@ -4,6 +4,7 @@ import (
 	"log"
 	"strings"
 
+	"goscaf/config"
 	"goscaf/internal/core"
 )
 

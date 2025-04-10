@@ -19,12 +19,6 @@ func SetAuth(l AuthI) {
 
 type noopAuth struct {}
 
-func (n *noopAuth) GenerateToken(payload AuthPayload) (string, error) {
-	return "", nil
-}
-func (n *noopAuth) ValidateToken(token string) (AuthPayload, error) {
-	return AuthPayload{}, nil
-}
-func (n *noopAuth) RevokeToken(token string) error {
-	return nil
-}
+func (n *noopAuth) GenerateToken(payload AuthPayload) (string, error) { return "", nil }
+func (n *noopAuth) ValidateToken(token string) (AuthPayload, error) { return AuthPayload{}, nil }
+func (n *noopAuth) RevokeToken(token string) error { return nil }
