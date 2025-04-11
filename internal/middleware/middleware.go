@@ -68,33 +68,46 @@ func ApiErrorHandler() gin.HandlerFunc {
 
 			switch {
 			case errors.Is(err, core.ErrBadRequest):
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error": err.Error(),
-				})
+				if appErr, ok := err.(*core.AppError); ok {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"message": appErr.Error(),
+						"details": appErr.Details(),
+					})
+				} else {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"message": err.Error(),
+					})
+				}
+				break
 			case errors.Is(err, core.ErrUnauthorized):
 				c.JSON(http.StatusUnauthorized, gin.H{
-					"error": err.Error(),
+					"message": err.Error(),
 				})
+				break
 			case errors.Is(err, core.ErrForbidden):
 				c.JSON(http.StatusForbidden, gin.H{
-					"error": err.Error(),
+					"message": err.Error(),
 				})
+				break
 			case errors.Is(err, core.ErrNotFound):
 				c.JSON(http.StatusNotFound, gin.H{
-					"error": err.Error(),
+					"message": err.Error(),
 				})
+				break
 			case errors.Is(err, core.ErrConflict):
 				c.JSON(http.StatusConflict, gin.H{
-					"error": err.Error(),
+					"message": err.Error(),
 				})
+				break
 			case errors.Is(err, core.ErrUnexpected):
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
+					"message": err.Error(),
 				})
+				break
 			default:
 				core.Logger.Error(err.Error())
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
+					"message": err.Error(),
 				})
 			}
 		}

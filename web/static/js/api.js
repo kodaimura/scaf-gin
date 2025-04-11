@@ -36,7 +36,7 @@ class Api {
     
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new HttpError(response.status, errorData.error);
+                throw new HttpError(response.status, errorData.message);
             }
     
             let data;

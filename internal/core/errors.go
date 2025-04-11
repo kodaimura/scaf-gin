@@ -14,8 +14,9 @@ var (
 )
 
 type AppError struct {
-	Message string
-	ErrorCode    string
+	Message   string
+	ErrorCode string
+	ErrorDetails []map[string]interface{}
 }
 
 func (e *AppError) Error() string {
@@ -24,6 +25,10 @@ func (e *AppError) Error() string {
 
 func (e *AppError) Code() string {
 	return e.ErrorCode
+}
+
+func (e *AppError) Details() []map[string]interface{} {
+	return e.ErrorDetails
 }
 
 func (e *AppError) Is(target error) bool {
@@ -35,8 +40,17 @@ func (e *AppError) Is(target error) bool {
 
 func NewAppError(message, code string) *AppError {
 	return &AppError{
-		Message:   message,
-		ErrorCode: code,
+		Message:      message,
+		ErrorCode:    code,
+		ErrorDetails: []map[string]interface{}{},
+	}
+}
+
+func NewValidationError(details []map[string]interface{}) *AppError {
+	return &AppError{
+		Message:      "Bad request",
+		ErrorCode:    "BAD_REQUEST",
+		ErrorDetails: details,
 	}
 }
 

@@ -42,8 +42,8 @@ func (ctrl *AccountController) Logout(c *gin.Context) {
 // POST /api/signup
 func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	var req request.Signup
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(core.ErrBadRequest)
+	if err := helper.BindJSON(c, &req); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -67,8 +67,8 @@ func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 // POST /api/login
 func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	var req request.Login
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(core.ErrBadRequest)
+	if err := helper.BindJSON(c, &req); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -132,8 +132,8 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 	accountName := helper.GetAccountName(c)
 
 	var req request.PutAccountPassword
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(core.ErrBadRequest)
+	if err := helper.BindJSON(c, &req); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -163,8 +163,8 @@ func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 	accountId := helper.GetAccountId(c)
 
 	var req request.PutAccount
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(core.ErrBadRequest)
+	if err := helper.BindJSON(c, &req); err != nil {
+		c.Error(err)
 		return
 	}
 
