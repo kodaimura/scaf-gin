@@ -17,7 +17,7 @@ var sqlx = db.NewSqlxDB()
 var accountRepository = repository.NewGormAccountRepository(gorm)
 
 /* DI (Query) */
-//var xxxQuery = query.NewXxxQuery(gorm)
+//var xxxQuery = query.NewXxxQuery(sqlx)
 
 /* DI (Service) */
 var accountService = service.NewAccountService(accountRepository)
