@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	
-	"goscaf/internal/helper"
+	"scaf-gin/internal/helper"
 )
 
 

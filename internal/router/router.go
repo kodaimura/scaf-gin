@@ -3,11 +3,11 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"goscaf/internal/middleware"
-	"goscaf/internal/infrastructure/db"
-	"goscaf/internal/controller"
-	"goscaf/internal/service"
-	repository "goscaf/internal/repository/impl"
+	"scaf-gin/internal/middleware"
+	"scaf-gin/internal/infrastructure/db"
+	"scaf-gin/internal/controller"
+	"scaf-gin/internal/service"
+	repository "scaf-gin/internal/repository/impl"
 )
 
 var gorm = db.NewGormDB()

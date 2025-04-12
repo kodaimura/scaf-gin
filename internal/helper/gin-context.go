@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"goscaf/internal/core"
+	"scaf-gin/internal/core"
 )
 
 // GetAccessToken retrieves the access token from cookie or Authorization header.

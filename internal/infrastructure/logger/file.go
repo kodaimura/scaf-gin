@@ -4,7 +4,7 @@ import (
 	"os"
 	"log"
 
-	"goscaf/internal/core"
+	"scaf-gin/internal/core"
 )
 
 // FileLogger writes log messages to a file with different log levels.

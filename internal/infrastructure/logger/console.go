@@ -4,8 +4,8 @@ import (
 	"log"
 	"strings"
 
-	"goscaf/config"
-	"goscaf/internal/core"
+	"scaf-gin/config"
+	"scaf-gin/internal/core"
 )
 
 // ConsoleLogger logs messages to the standard output.

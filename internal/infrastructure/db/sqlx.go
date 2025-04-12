@@ -8,7 +8,7 @@ import (
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
-	"goscaf/config"
+	"scaf-gin/config"
 )
 
 // NewSqlxDB initializes a SQLx database connection based on configuration.

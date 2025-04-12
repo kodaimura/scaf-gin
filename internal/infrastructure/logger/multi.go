@@ -5,7 +5,7 @@ import (
 	"os"
 	"log"
 
-	"goscaf/internal/core"
+	"scaf-gin/internal/core"
 )
 
 

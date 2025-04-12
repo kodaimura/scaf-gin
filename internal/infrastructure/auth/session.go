@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"goscaf/internal/core"
+	"scaf-gin/internal/core"
 )
 
 // SessionAuth implements AuthI using in-memory sessions.

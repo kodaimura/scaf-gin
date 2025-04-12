@@ -3,13 +3,13 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
-	"goscaf/config"
-	"goscaf/internal/core"
-	"goscaf/internal/helper"
-	"goscaf/internal/service"
-	"goscaf/internal/dto/input"
-	"goscaf/internal/dto/request"
-	"goscaf/internal/dto/response"
+	"scaf-gin/config"
+	"scaf-gin/internal/core"
+	"scaf-gin/internal/helper"
+	"scaf-gin/internal/service"
+	"scaf-gin/internal/dto/input"
+	"scaf-gin/internal/dto/request"
+	"scaf-gin/internal/dto/response"
 )
 
 type AccountController struct {

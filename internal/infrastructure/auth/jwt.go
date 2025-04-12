@@ -8,8 +8,8 @@ import (
 
 	jwtpackage "github.com/golang-jwt/jwt/v5"
 
-	"goscaf/config"
-	"goscaf/internal/core"
+	"scaf-gin/config"
+	"scaf-gin/internal/core"
 )
 
 // JwtAuth implements the AuthI interface using JWT for authentication.

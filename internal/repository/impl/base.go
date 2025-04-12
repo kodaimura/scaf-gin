@@ -4,7 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 
-	"goscaf/internal/core"
+	"scaf-gin/internal/core"
 )
 
 func handleGormError(err error) error {

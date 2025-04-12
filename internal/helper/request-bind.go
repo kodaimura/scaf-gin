@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
-	"goscaf/internal/core"
+	"scaf-gin/internal/core"
 )
 
 // BindJSON binds the JSON body to the provided request struct and handles validation errors.

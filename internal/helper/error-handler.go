@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"goscaf/internal/core"
+	"scaf-gin/internal/core"
 )
 
 // HandleError handles the given error, checks if it is a custom application error,

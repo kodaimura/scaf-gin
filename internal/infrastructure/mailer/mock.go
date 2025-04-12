@@ -5,8 +5,8 @@ import (
 	"strings"
 	"mime"
 	
-	"goscaf/config"
-	"goscaf/internal/core"
+	"scaf-gin/config"
+	"scaf-gin/internal/core"
 )
 
 // MockMailer is a mock implementation of the MailerI interface for testing purposes.

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 
-	"goscaf/internal/core"
-	"goscaf/internal/helper"
-	"goscaf/internal/model"
-	"goscaf/internal/repository"
-	"goscaf/internal/dto/input"
+	"scaf-gin/internal/core"
+	"scaf-gin/internal/helper"
+	"scaf-gin/internal/model"
+	"scaf-gin/internal/repository"
+	"scaf-gin/internal/dto/input"
 )
 
 type AccountService interface {

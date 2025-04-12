@@ -6,8 +6,8 @@ import (
 	"strings"
 	"mime"
 	
-	"goscaf/config"
-	"goscaf/internal/core"
+	"scaf-gin/config"
+	"scaf-gin/internal/core"
 )
 
 // SmtpMailer implements the MailerI interface using SMTP for sending emails.

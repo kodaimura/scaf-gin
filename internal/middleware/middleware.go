@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 
-	"goscaf/config"
-	"goscaf/internal/core"
-	"goscaf/internal/helper"
+	"scaf-gin/config"
+	"scaf-gin/internal/core"
+	"scaf-gin/internal/helper"
 )
 
 // BasicAuth is a middleware that checks for Basic Authentication credentials.

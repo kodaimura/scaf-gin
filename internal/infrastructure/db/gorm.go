@@ -10,7 +10,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 
-	"goscaf/config"
+	"scaf-gin/config"
 )
 
 // NewGormDB initializes a GORM database connection based on configuration.

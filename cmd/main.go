@@ -5,13 +5,13 @@ import (
 	"os"
 	"github.com/gin-gonic/gin"
 
-	"goscaf/config"
-	"goscaf/internal/infrastructure/logger"
-	"goscaf/internal/infrastructure/mailer"
-	"goscaf/internal/infrastructure/auth"
-	"goscaf/internal/infrastructure/file"
-	"goscaf/internal/core"
-	"goscaf/internal/router"
+	"scaf-gin/config"
+	"scaf-gin/internal/infrastructure/logger"
+	"scaf-gin/internal/infrastructure/mailer"
+	"scaf-gin/internal/infrastructure/auth"
+	"scaf-gin/internal/infrastructure/file"
+	"scaf-gin/internal/core"
+	"scaf-gin/internal/router"
 )
 
 func main() {

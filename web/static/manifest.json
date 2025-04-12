@@ -14,7 +14,7 @@
             "type": "image/png"
         }
     ],
-    "name": "goscaf",
-    "short_name": "goscaf",
+    "name": "scaf-gin",
+    "short_name": "scaf-gin",
     "start_url": "/"
 }

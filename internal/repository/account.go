@@ -2,7 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
-	"goscaf/internal/model"
+	"scaf-gin/internal/model"
 )
 
 type AccountRepository interface {
