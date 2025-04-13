@@ -7,9 +7,9 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/usr/src/app
+      - .:/app
       - ./linux/logrotate.d/app:/etc/logrotate.d/app
-    working_dir: /usr/src/app
+    working_dir: /app
     tty: true
     environment:
       ENV: dev

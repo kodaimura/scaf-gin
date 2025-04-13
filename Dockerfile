@@ -1,6 +1,6 @@
 FROM golang:1.24
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y logrotate \
