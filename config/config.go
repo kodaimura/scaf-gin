@@ -44,7 +44,8 @@ var (
 
 var (
 	SecureCookie bool
-	LogLevel  string
+	LogLevel string
+	FrontendOrigin string
 )
 
 func init() {
@@ -87,7 +88,8 @@ func init() {
 	if err != nil {
 		log.Fatalf("unable to convert SECURE_COOKIE from environment to boolean: %v", err)
 	}
-	LogLevel  = getEnv("LOG_LEVEL", "INFO")
+	LogLevel = getEnv("LOG_LEVEL", "INFO")
+	FrontendOrigin = getEnv("FRONTEND_ORIGIN", "http://localhost:3000")
 }
 
 func getEnv(key string, defaultValue ...string) string {

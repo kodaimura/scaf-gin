@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 
 	"scaf-gin/config"
 	"scaf-gin/internal/infrastructure/logger"
@@ -27,6 +28,13 @@ func main() {
 	core.SetAuth(auth.NewJwtAuth())
 
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{config.FrontendOrigin},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
+
 	router.SetStatic(r)
 	router.SetWeb(r.Group("/"))
 	router.SetApi(r.Group("/api"))
