@@ -18,7 +18,7 @@ const signup = async () => {
     };
 
     try {
-        await api.post('signup', body);
+        await api.post('accounts/signup', body);
         window.location.replace('/login');
     } catch (e) {
         document.getElementById("error").innerHTML = (e.status === 409)

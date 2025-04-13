@@ -49,9 +49,9 @@ func SetWeb(r *gin.RouterGroup) {
 
 func SetApi(r *gin.RouterGroup) {
 	r.Use(middleware.ApiErrorHandler())
-	r.POST("/signup", accountController.ApiSignup)
-	r.POST("/login", accountController.ApiLogin)
-	r.GET("/logout", accountController.ApiLogout)
+	r.POST("/accounts/signup", accountController.ApiSignup)
+	r.POST("/accounts/login", accountController.ApiLogin)
+	r.GET("/accounts/logout", accountController.ApiLogout)
 
 	auth := r.Group("", middleware.ApiAuth())
 	{

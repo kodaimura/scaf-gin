@@ -39,7 +39,7 @@ func (ctrl *AccountController) Logout(c *gin.Context) {
 	c.Redirect(303, "/login")
 }
 
-// POST /api/signup
+// POST /api/accounts/signup
 func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	var req request.Signup
 	if err := helper.BindJSON(c, &req); err != nil {
@@ -64,7 +64,7 @@ func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	})
 }
 
-// POST /api/login
+// POST /api/accounts/login
 func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	var req request.Login
 	if err := helper.BindJSON(c, &req); err != nil {
@@ -103,7 +103,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	})
 }
 
-// GET /api/logout
+// GET /api/accounts/logout
 func (ctrl *AccountController) ApiLogout(c *gin.Context) {
 	core.Auth.RevokeToken(helper.GetAccessToken(c))
 	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
