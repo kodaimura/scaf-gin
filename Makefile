@@ -41,6 +41,6 @@ help:
 	@echo "  down      Stop and remove containers, networks, and volumes"
 	@echo "  stop      Stop containers"
 	@echo "  in        Access app container via bash"
-	@echo "  log       Show logs for the app container"
-	@echo "  ps        Show status for the app container"
+	@echo "  log       Show logs for containers"
+	@echo "  ps        Show status for containers"
 	@echo "  install   Run 'go mod tidy' in the app container and remove orphaned containers"
