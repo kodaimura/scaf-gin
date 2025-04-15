@@ -2,25 +2,25 @@ services:
   app:
     build:
       context: .
+    volumes:
+      - .:/app
+      - ./linux/logrotate.d/app:/etc/logrotate.d/app
     ports:
       - "3000:3000"
     depends_on:
       - db
-    volumes:
-      - .:/app
-      - ./linux/logrotate.d/app:/etc/logrotate.d/app
-    working_dir: /app
-    tty: true
     environment:
       ENV: dev
+    working_dir: /app    
     command: sh -c "go run cmd/main.go"
+    tty: true
 
   db:
     image: postgres:17.4
-    environment:
-      POSTGRES_DB: project_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     volumes:
-      - ./migrations:/docker-entrypoint-initdb.d
-      - ./data:/var/lib/postgresql/data
+      - ./api/migrations:/docker-entrypoint-initdb.d
+      - ./docker/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=testpr
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

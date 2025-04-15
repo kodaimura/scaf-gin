@@ -2,12 +2,12 @@ services:
   app:
     build:
       context: .
-    ports:
-      - "3000:3000"
     volumes:
       - .:/app
       - ./linux/logrotate.d/app:/etc/logrotate.d/app
+    ports:
+      - "3000:3000"
     working_dir: /app
-    tty: true
-    command: sh -c "go run cmd/main.go"
+    command: sh -c "go build cmd/main.go && ./main"
     restart: always
+    tty: true
