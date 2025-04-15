@@ -3,7 +3,7 @@ ENV ?= dev
 DOCKER_COMPOSE_FILE = $(if $(filter prod,$(ENV)),-f docker-compose.prod.yml,)
 DOCKER_COMPOSE_CMD = $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
 
-.PHONY: up build down stop in log ps install help
+.PHONY: up build down stop in log ps help
 
 up:
 	$(DOCKER_COMPOSE_CMD) up -d
@@ -26,12 +26,6 @@ log:
 ps:
 	$(DOCKER_COMPOSE_CMD) ps
 
-install:
-	$(DOCKER_COMPOSE_CMD) down --remove-orphans
-	$(DOCKER_COMPOSE_CMD) run app go mod tidy
-	$(DOCKER_COMPOSE_CMD) down --remove-orphans
-
-
 help:
 	@echo "Usage: make [target] [ENV=dev|prod]"
 	@echo ""
@@ -43,4 +37,3 @@ help:
 	@echo "  in        Access app container via bash"
 	@echo "  log       Show logs for containers"
 	@echo "  ps        Show status for containers"
-	@echo "  install   Run 'go mod tidy' in the app container and remove orphaned containers"
