@@ -60,7 +60,7 @@ func init() {
 
 	AppName = getEnv("APP_NAME")
 	AppHost = getEnv("APP_HOST", "localhost")
-	AppPort = getEnv("APP_PORT", "3000")
+	AppPort = getEnv("APP_PORT", "8000")
 
 	DBEngine = getEnv("DB_ENGINE")
 	DBName = getEnv("DB_NAME")
