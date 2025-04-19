@@ -18,7 +18,7 @@ services:
   db:
     image: postgres:17.4
     volumes:
-      - ./api/migrations:/docker-entrypoint-initdb.d
+      - ./migrations:/docker-entrypoint-initdb.d
       - ./data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=project_db
