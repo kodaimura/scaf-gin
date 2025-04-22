@@ -37,7 +37,9 @@ const validate = (form) => {
         error = "ユーザ名を入力して下さい。";
     } else if (account_password === "") {
         error = "パスワードを入力して下さい。";
-    } else if (account_password !== account_password_confirm) {
+    } else if (account_password.length < 8) {
+		error = "パスワードは8文字以上で入力してください。";
+	} else if (account_password !== account_password_confirm) {
 		error = "パスワードが一致していません。";
 	}
 

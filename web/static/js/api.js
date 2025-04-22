@@ -3,10 +3,12 @@ const BASE_URL = '/api';
 
 class HttpError extends Error {
     status;
+    details;
 
-    constructor(status, message) {
+    constructor(status, message, details) {
         super(message);
         this.status = status;
+        this.details = details;
     }
 }
 
@@ -36,7 +38,7 @@ class Api {
     
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new HttpError(response.status, errorData.message);
+                throw new HttpError(response.status, errorData.message, errorData.details);
             }
     
             let data;

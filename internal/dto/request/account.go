@@ -2,7 +2,7 @@ package request
 
 type Signup struct {
 	AccountName     string `json:"account_name" binding:"required"`
-	AccountPassword string `json:"account_password" binding:"required"`
+	AccountPassword string `json:"account_password" binding:"required,min=8"`
 }
 
 type Login struct {
