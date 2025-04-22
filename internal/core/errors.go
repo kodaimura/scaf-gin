@@ -16,7 +16,7 @@ var (
 type AppError struct {
 	Message      string
 	ErrorCode    string
-	ErrorDetails []map[string]interface{}
+	ErrorDetails []map[string]any
 }
 
 func (e *AppError) Error() string {
@@ -27,7 +27,7 @@ func (e *AppError) Code() string {
 	return e.ErrorCode
 }
 
-func (e *AppError) Details() []map[string]interface{} {
+func (e *AppError) Details() []map[string]any {
 	return e.ErrorDetails
 }
 
@@ -42,11 +42,11 @@ func NewAppError(message, code string) *AppError {
 	return &AppError{
 		Message:      message,
 		ErrorCode:    code,
-		ErrorDetails: []map[string]interface{}{},
+		ErrorDetails: []map[string]any{},
 	}
 }
 
-func NewValidationError(details []map[string]interface{}) *AppError {
+func NewValidationError(details []map[string]any) *AppError {
 	return &AppError{
 		Message:      "Bad request",
 		ErrorCode:    "BAD_REQUEST",

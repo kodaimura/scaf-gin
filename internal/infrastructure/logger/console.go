@@ -21,26 +21,26 @@ func NewConsoleLogger() core.LoggerI {
 }
 
 // Debug logs a debug-level message.
-func (l *ConsoleLogger) Debug(format string, v ...interface{}) {
+func (l *ConsoleLogger) Debug(format string, v ...any) {
 	l.logf(DEBUG, "DEBUG", format, v...)
 }
 
 // Info logs an info-level message.
-func (l *ConsoleLogger) Info(format string, v ...interface{}) {
+func (l *ConsoleLogger) Info(format string, v ...any) {
 	l.logf(INFO, "INFO", format, v...)
 }
 
 // Warn logs a warning-level message.
-func (l *ConsoleLogger) Warn(format string, v ...interface{}) {
+func (l *ConsoleLogger) Warn(format string, v ...any) {
 	l.logf(WARN, "WARN", format, v...)
 }
 
 // Error logs an error-level message.
-func (l *ConsoleLogger) Error(format string, v ...interface{}) {
+func (l *ConsoleLogger) Error(format string, v ...any) {
 	l.logf(ERROR, "ERROR", format, v...)
 }
 
-func (l *ConsoleLogger) logf(level logLevel, tag, format string, v ...interface{}) {
+func (l *ConsoleLogger) logf(level logLevel, tag, format string, v ...any) {
 	if l.level <= level {
 		log.Printf("["+tag+"] "+format, v...)
 	}

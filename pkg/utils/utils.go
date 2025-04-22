@@ -44,39 +44,39 @@ func RandomString(length int, options ...string) string {
 	return string(b)
 }
 
-func GetFieldValue(obj interface{}, fieldName string) (interface{}, error) {
+func GetFieldValue(obj any, fieldName string) (any, error) {
 	val := reflect.ValueOf(obj).Elem()
 	fieldVal := val.FieldByName(fieldName)
 
 	if !fieldVal.IsValid() {
-		return nil, fmt.Errorf("No such field: %s", fieldName)
+		return nil, fmt.Errorf("no such field: %s", fieldName)
 	}
 
 	return fieldVal.Interface(), nil
 }
 
-func SetFieldValue(obj interface{}, fieldName string, newValue interface{}) error {
+func SetFieldValue(obj any, fieldName string, newValue any) error {
 	val := reflect.ValueOf(obj).Elem()
 	fieldVal := val.FieldByName(fieldName)
 
 	if !fieldVal.IsValid() {
-		return fmt.Errorf("No such field: %s", fieldName)
+		return fmt.Errorf("no such field: %s", fieldName)
 	}
 
 	if !fieldVal.CanSet() {
-		return fmt.Errorf("Cannot set field: %s", fieldName)
+		return fmt.Errorf("cannot set field: %s", fieldName)
 	}
 
 	newVal := reflect.ValueOf(newValue)
 	if fieldVal.Type() != newVal.Type() {
-		return fmt.Errorf("Provided value type didn't match obj field type")
+		return fmt.Errorf("provided value type didn't match obj field type")
 	}
 
 	fieldVal.Set(newVal)
 	return nil
 }
 
-func MapFields(dst, src interface{}) error {
+func MapFields(dst, src any) error {
 	srcVal := reflect.ValueOf(src)
 	dstVal := reflect.ValueOf(dst).Elem()
 
@@ -116,7 +116,7 @@ func MapFields(dst, src interface{}) error {
 	return nil
 }
 
-func IsZero(value interface{}) bool {
+func IsZero(value any) bool {
 	if value == nil {
 		return true
 	}

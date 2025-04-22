@@ -21,26 +21,26 @@ func NewFileLogger(file *os.File) core.LoggerI {
 }
 
 // Debug logs a debug-level message to the file.
-func (l *FileLogger) Debug(format string, v ...interface{}) {
+func (l *FileLogger) Debug(format string, v ...any) {
 	l.logf(DEBUG, "DEBUG", format, v...)
 }
 
 // Info logs an info-level message to the file.
-func (l *FileLogger) Info(format string, v ...interface{}) {
+func (l *FileLogger) Info(format string, v ...any) {
 	l.logf(INFO, "INFO", format, v...)
 }
 
 // Warn logs a warning-level message to the file.
-func (l *FileLogger) Warn(format string, v ...interface{}) {
+func (l *FileLogger) Warn(format string, v ...any) {
 	l.logf(WARN, "WARN", format, v...)
 }
 
 // Error logs an error-level message to the file.
-func (l *FileLogger) Error(format string, v ...interface{}) {
+func (l *FileLogger) Error(format string, v ...any) {
 	l.logf(ERROR, "ERROR", format, v...)
 }
 
-func (l *FileLogger) logf(level logLevel, tag, format string, v ...interface{}) {
+func (l *FileLogger) logf(level logLevel, tag, format string, v ...any) {
 	if l.level <= level {
 		log.Printf("["+tag+"] "+format, v...)
 	}

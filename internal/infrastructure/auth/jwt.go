@@ -45,7 +45,7 @@ func (j *JwtAuth) GenerateToken(payload core.AuthPayload) (string, error) {
 // ValidateToken verifies the given JWT and extracts the AuthPayload.
 // Returns an error if the token is invalid or cannot be parsed.
 func (j *JwtAuth) ValidateToken(token string) (core.AuthPayload, error) {
-	parsedToken, err := jwtpackage.Parse(token, func(t *jwtpackage.Token) (interface{}, error) {
+	parsedToken, err := jwtpackage.Parse(token, func(t *jwtpackage.Token) (any, error) {
 		if _, ok := t.Method.(*jwtpackage.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}

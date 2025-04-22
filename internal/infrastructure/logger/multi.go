@@ -22,26 +22,26 @@ func NewMultiLogger(file *os.File) core.LoggerI {
 }
 
 // Debug logs a debug-level message to both stdout and the file.
-func (l *MultiLogger) Debug(format string, v ...interface{}) {
+func (l *MultiLogger) Debug(format string, v ...any) {
 	l.logf(DEBUG, "DEBUG", format, v...)
 }
 
 // Info logs an info-level message to both stdout and the file.
-func (l *MultiLogger) Info(format string, v ...interface{}) {
+func (l *MultiLogger) Info(format string, v ...any) {
 	l.logf(INFO, "INFO", format, v...)
 }
 
 // Warn logs a warning-level message to both stdout and the file.
-func (l *MultiLogger) Warn(format string, v ...interface{}) {
+func (l *MultiLogger) Warn(format string, v ...any) {
 	l.logf(WARN, "WARN", format, v...)
 }
 
 // Error logs an error-level message to both stdout and the file.
-func (l *MultiLogger) Error(format string, v ...interface{}) {
+func (l *MultiLogger) Error(format string, v ...any) {
 	l.logf(ERROR, "ERROR", format, v...)
 }
 
-func (l *MultiLogger) logf(level logLevel, tag, format string, v ...interface{}) {
+func (l *MultiLogger) logf(level logLevel, tag, format string, v ...any) {
 	if l.level <= level {
 		log.Printf("["+tag+"] "+format, v...)
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 // BindJSON binds the JSON body to the provided request struct and handles validation errors.
-func BindJSON(c *gin.Context, req interface{}) error {
+func BindJSON(c *gin.Context, req any) error {
 	if err := c.ShouldBindJSON(req); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			errs := extractValidationErrors(req, validationErrors)
@@ -22,7 +22,7 @@ func BindJSON(c *gin.Context, req interface{}) error {
 }
 
 // BindQuery binds the query parameters to the provided request struct and handles validation errors.
-func BindQuery(c *gin.Context, req interface{}) error {
+func BindQuery(c *gin.Context, req any) error {
 	if err := c.ShouldBindQuery(req); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			errs := extractValidationErrors(req, validationErrors)
@@ -34,7 +34,7 @@ func BindQuery(c *gin.Context, req interface{}) error {
 }
 
 // BindUri binds the URI parameters to the provided request struct and handles validation errors.
-func BindUri(c *gin.Context, req interface{}) error {
+func BindUri(c *gin.Context, req any) error {
 	if err := c.ShouldBindUri(req); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			errs := extractValidationErrors(req, validationErrors)
@@ -45,8 +45,8 @@ func BindUri(c *gin.Context, req interface{}) error {
 	return nil
 }
 
-func extractValidationErrors(req interface{}, verr validator.ValidationErrors) []map[string]interface{} {
-	var errs []map[string]interface{}
+func extractValidationErrors(req any, verr validator.ValidationErrors) []map[string]any {
+	var errs []map[string]any
 	t := reflect.TypeOf(req)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -63,7 +63,7 @@ func extractValidationErrors(req interface{}, verr validator.ValidationErrors) [
 			message = "Required field"
 		}
 
-		errs = append(errs, map[string]interface{}{
+		errs = append(errs, map[string]any{
 			"field":   jsonTag,
 			"message": message,
 			"tag":     fe.Tag(),
