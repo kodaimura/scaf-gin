@@ -3,7 +3,7 @@ ENV ?= dev
 DOCKER_COMPOSE_FILE = $(if $(filter prod,$(ENV)),-f docker-compose.prod.yml,)
 DOCKER_COMPOSE_CMD = $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
 
-.PHONY: up build down stop in log ps help
+.PHONY: up build down stop in log ps reup help
 
 up:
 	$(DOCKER_COMPOSE_CMD) up -d
@@ -26,6 +26,9 @@ log:
 ps:
 	$(DOCKER_COMPOSE_CMD) ps
 
+reup: down up
+	@echo "Containers have been re-up'd."
+
 help:
 	@echo "Usage: make [target] [ENV=dev|prod]"
 	@echo ""
@@ -37,3 +40,4 @@ help:
 	@echo "  in        Access app container via bash"
 	@echo "  log       Show logs for containers"
 	@echo "  ps        Show status for containers"
+	@echo "  reup      Re-up containers"
