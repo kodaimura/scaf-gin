@@ -46,7 +46,6 @@ func (l *ConsoleLogger) logf(level logLevel, tag, format string, v ...interface{
 	}
 }
 
-
 // ===============================
 // Common for the logger package.
 // ===============================

@@ -2,12 +2,11 @@ package logger
 
 import (
 	"io"
-	"os"
 	"log"
+	"os"
 
 	"scaf-gin/internal/core"
 )
-
 
 // MultiLogger writes log messages to both standard output (stdout) and a specified file.
 type MultiLogger struct {
@@ -15,7 +14,7 @@ type MultiLogger struct {
 }
 
 func NewMultiLogger(file *os.File) core.LoggerI {
-	log.SetFlags(0) // Disable default timestamps and flags in the log output
+	log.SetFlags(0)                                // Disable default timestamps and flags in the log output
 	log.SetOutput(io.MultiWriter(os.Stdout, file)) // Write log output to both stdout and the provided file
 	return &MultiLogger{
 		level: getLogLevel(),

@@ -1,9 +1,9 @@
 package config
 
 import (
-	"os"
-	"log"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -38,13 +38,13 @@ var (
 )
 
 var (
-	JwtSecretKey string
+	JwtSecretKey       string
 	AuthExpiresSeconds int
 )
 
 var (
-	SecureCookie bool
-	LogLevel string
+	SecureCookie   bool
+	LogLevel       string
 	FrontendOrigin string
 )
 

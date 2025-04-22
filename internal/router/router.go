@@ -3,11 +3,11 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"scaf-gin/internal/middleware"
-	"scaf-gin/internal/infrastructure/db"
 	"scaf-gin/internal/controller"
-	"scaf-gin/internal/service"
+	"scaf-gin/internal/infrastructure/db"
+	"scaf-gin/internal/middleware"
 	repository "scaf-gin/internal/repository/impl"
+	"scaf-gin/internal/service"
 )
 
 var gorm = db.NewGormDB()
@@ -26,8 +26,7 @@ var accountService = service.NewAccountService(accountRepository)
 var indexController = controller.NewIndexController()
 var accountController = controller.NewAccountController(accountService)
 
-
-func SetStatic(r *gin.Engine) {	
+func SetStatic(r *gin.Engine) {
 	r.LoadHTMLGlob("web/template/*.html")
 	r.Static("/css", "web/static/css")
 	r.Static("/js", "web/static/js")

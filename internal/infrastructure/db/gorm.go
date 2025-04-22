@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
 	"scaf-gin/config"
 )
@@ -54,7 +54,6 @@ func NewGormDB() *gorm.DB {
 	log.Println("✅ Successfully connected to the database via GORM.")
 	return db
 }
-
 
 // ===============================
 // Common for the db package.

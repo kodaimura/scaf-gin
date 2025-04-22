@@ -1,8 +1,8 @@
 package logger
 
 import (
-	"os"
 	"log"
+	"os"
 
 	"scaf-gin/internal/core"
 )
@@ -13,7 +13,7 @@ type FileLogger struct {
 }
 
 func NewFileLogger(file *os.File) core.LoggerI {
-	log.SetFlags(0) // Disable default timestamps and flags in the log output
+	log.SetFlags(0)     // Disable default timestamps and flags in the log output
 	log.SetOutput(file) // Set the output destination to the provided file
 	return &FileLogger{
 		level: getLogLevel(),

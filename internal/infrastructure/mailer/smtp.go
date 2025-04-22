@@ -2,10 +2,10 @@ package mailer
 
 import (
 	"fmt"
+	"mime"
 	"net/smtp"
 	"strings"
-	"mime"
-	
+
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
 )

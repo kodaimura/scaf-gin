@@ -58,7 +58,6 @@ func (j *JwtAuth) ValidateToken(token string) (core.AuthPayload, error) {
 	return tokenToAuthPayload(parsedToken)
 }
 
-
 func tokenToAuthPayload(token *jwtpackage.Token) (core.AuthPayload, error) {
 	var jp jwtPayload
 

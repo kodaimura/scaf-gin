@@ -3,15 +3,16 @@ package main
 import (
 	"io"
 	"os"
-	"github.com/gin-gonic/gin"
+
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 
 	"scaf-gin/config"
-	"scaf-gin/internal/infrastructure/logger"
-	"scaf-gin/internal/infrastructure/mailer"
+	"scaf-gin/internal/core"
 	"scaf-gin/internal/infrastructure/auth"
 	"scaf-gin/internal/infrastructure/file"
-	"scaf-gin/internal/core"
+	"scaf-gin/internal/infrastructure/logger"
+	"scaf-gin/internal/infrastructure/mailer"
 	"scaf-gin/internal/router"
 )
 
@@ -21,7 +22,7 @@ func main() {
 	defer f1.Close()
 	defer f2.Close()
 
-    gin.DefaultWriter = io.MultiWriter(os.Stdout, f1)
+	gin.DefaultWriter = io.MultiWriter(os.Stdout, f1)
 
 	core.SetLogger(logger.NewMultiLogger(f2))
 	core.SetMailer(mailer.NewSmtpMailer())

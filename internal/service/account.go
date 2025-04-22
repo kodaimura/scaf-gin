@@ -2,13 +2,14 @@ package service
 
 import (
 	"errors"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"scaf-gin/internal/core"
+	"scaf-gin/internal/dto/input"
 	"scaf-gin/internal/helper"
 	"scaf-gin/internal/model"
 	"scaf-gin/internal/repository"
-	"scaf-gin/internal/dto/input"
 )
 
 type AccountService interface {

@@ -5,17 +5,17 @@ import (
 )
 
 var (
-	ErrBadRequest    = NewAppError("Bad request", "BAD_REQUEST")
-	ErrForbidden     = NewAppError("Forbidden", "FORBIDDEN")
-	ErrUnauthorized  = NewAppError("Unauthorized access", "UNAUTHORIZED")
-	ErrNotFound      = NewAppError("Resource not found", "NOT_FOUND")
-	ErrConflict      = NewAppError("Conflict occurred", "CONFLICT")
-	ErrUnexpected    = NewAppError("Unexpected error occurred", "UNEXPECTED")
+	ErrBadRequest   = NewAppError("Bad request", "BAD_REQUEST")
+	ErrForbidden    = NewAppError("Forbidden", "FORBIDDEN")
+	ErrUnauthorized = NewAppError("Unauthorized access", "UNAUTHORIZED")
+	ErrNotFound     = NewAppError("Resource not found", "NOT_FOUND")
+	ErrConflict     = NewAppError("Conflict occurred", "CONFLICT")
+	ErrUnexpected   = NewAppError("Unexpected error occurred", "UNEXPECTED")
 )
 
 type AppError struct {
-	Message   string
-	ErrorCode string
+	Message      string
+	ErrorCode    string
 	ErrorDetails []map[string]interface{}
 }
 

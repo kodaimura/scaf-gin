@@ -1,13 +1,13 @@
 package core
 
 type AuthI interface {
-    GenerateToken(payload AuthPayload) (string, error)
-    ValidateToken(token string) (AuthPayload, error)
-    RevokeToken(token string) error
+	GenerateToken(payload AuthPayload) (string, error)
+	ValidateToken(token string) (AuthPayload, error)
+	RevokeToken(token string) error
 }
 
 type AuthPayload struct {
-    AccountId int
+	AccountId   int
 	AccountName string
 }
 
@@ -17,8 +17,8 @@ func SetAuth(a AuthI) {
 	Auth = a
 }
 
-type noopAuth struct {}
+type noopAuth struct{}
 
 func (n *noopAuth) GenerateToken(payload AuthPayload) (string, error) { return "", nil }
-func (n *noopAuth) ValidateToken(token string) (AuthPayload, error) { return AuthPayload{}, nil }
-func (n *noopAuth) RevokeToken(token string) error { return nil }
+func (n *noopAuth) ValidateToken(token string) (AuthPayload, error)   { return AuthPayload{}, nil }
+func (n *noopAuth) RevokeToken(token string) error                    { return nil }

@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"scaf-gin/internal/model"
+
+	"gorm.io/gorm"
 )
 
 type AccountRepository interface {

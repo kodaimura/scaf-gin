@@ -11,12 +11,11 @@ type AccountPK struct {
 }
 
 type Signup struct {
-	AccountName string
+	AccountName     string
 	AccountPassword string
 }
 
 type Login struct {
-	AccountName string
+	AccountName     string
 	AccountPassword string
 }
-

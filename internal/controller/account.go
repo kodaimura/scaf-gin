@@ -5,11 +5,11 @@ import (
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
-	"scaf-gin/internal/helper"
-	"scaf-gin/internal/service"
 	"scaf-gin/internal/dto/input"
 	"scaf-gin/internal/dto/request"
 	"scaf-gin/internal/dto/response"
+	"scaf-gin/internal/helper"
+	"scaf-gin/internal/service"
 )
 
 type AccountController struct {
@@ -48,7 +48,7 @@ func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	}
 
 	account, err := ctrl.accountService.Signup(input.Signup{
-		AccountName: req.AccountName,
+		AccountName:     req.AccountName,
 		AccountPassword: req.AccountPassword,
 	})
 	if err != nil {
@@ -57,10 +57,10 @@ func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	}
 
 	c.JSON(200, response.Account{
-		AccountId: account.AccountId,
+		AccountId:   account.AccountId,
 		AccountName: account.AccountName,
-		CreatedAt: account.CreatedAt,
-		UpdatedAt: account.UpdatedAt,
+		CreatedAt:   account.CreatedAt,
+		UpdatedAt:   account.UpdatedAt,
 	})
 }
 
@@ -73,7 +73,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	}
 
 	account, err := ctrl.accountService.Login(input.Login{
-		AccountName: req.AccountName,
+		AccountName:     req.AccountName,
 		AccountPassword: req.AccountPassword,
 	})
 	if err != nil {
@@ -82,7 +82,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	}
 
 	token, err := core.Auth.GenerateToken(core.AuthPayload{
-		AccountId: account.AccountId,
+		AccountId:   account.AccountId,
 		AccountName: account.AccountName,
 	})
 	if err != nil {
@@ -93,12 +93,12 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, token, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, response.Login{
 		AccessToken: token,
-		ExpiresIn: config.AuthExpiresSeconds,
+		ExpiresIn:   config.AuthExpiresSeconds,
 		Account: response.Account{
-			AccountId: account.AccountId,
+			AccountId:   account.AccountId,
 			AccountName: account.AccountName,
-			CreatedAt: account.CreatedAt,
-			UpdatedAt: account.UpdatedAt,
+			CreatedAt:   account.CreatedAt,
+			UpdatedAt:   account.UpdatedAt,
 		},
 	})
 }
@@ -120,10 +120,10 @@ func (ctrl *AccountController) ApiGetOne(c *gin.Context) {
 	}
 
 	c.JSON(200, response.Account{
-		AccountId: account.AccountId,
+		AccountId:   account.AccountId,
 		AccountName: account.AccountName,
-		CreatedAt: account.CreatedAt,
-		UpdatedAt: account.UpdatedAt,
+		CreatedAt:   account.CreatedAt,
+		UpdatedAt:   account.UpdatedAt,
 	})
 }
 
@@ -138,7 +138,7 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 	}
 
 	account, err := ctrl.accountService.Login(input.Login{
-		AccountName: accountName, 
+		AccountName:     accountName,
 		AccountPassword: req.OldAccountPassword,
 	})
 	if err != nil {
@@ -147,7 +147,7 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 	}
 
 	_, err = ctrl.accountService.UpdateOne(input.Account{
-		AccountId: account.AccountId,
+		AccountId:       account.AccountId,
 		AccountPassword: req.NewAccountPassword,
 	})
 	if err != nil {
@@ -169,7 +169,7 @@ func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 	}
 
 	account, err := ctrl.accountService.UpdateOne(input.Account{
-		AccountId: accountId,
+		AccountId:   accountId,
 		AccountName: req.AccountName,
 	})
 	if err != nil {
@@ -178,10 +178,10 @@ func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 	}
 
 	c.JSON(200, response.Account{
-		AccountId: account.AccountId,
+		AccountId:   account.AccountId,
 		AccountName: account.AccountName,
-		CreatedAt: account.CreatedAt,
-		UpdatedAt: account.UpdatedAt,
+		CreatedAt:   account.CreatedAt,
+		UpdatedAt:   account.UpdatedAt,
 	})
 }
 

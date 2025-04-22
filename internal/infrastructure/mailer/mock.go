@@ -2,16 +2,16 @@ package mailer
 
 import (
 	"fmt"
-	"strings"
 	"mime"
-	
+	"strings"
+
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
 )
 
 // MockMailer is a mock implementation of the MailerI interface for testing purposes.
 type MockMailer struct {
-	from     string
+	from string
 }
 
 func NewMockMailer() core.MailerI {

@@ -3,8 +3,9 @@ package helper
 import (
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"scaf-gin/internal/core"
+
+	"github.com/gin-gonic/gin"
 )
 
 // GetAccessToken retrieves the access token from cookie or Authorization header.
