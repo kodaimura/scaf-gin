@@ -7,7 +7,7 @@
   "[go]": {
     "editor.insertSpaces": false,
     "editor.tabSize": 4,
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": false
   },
   "[html]": {
     "editor.insertSpaces": true,
@@ -18,10 +18,6 @@
     "editor.tabSize": 2
   },
   "[javascript]": {
-    "editor.insertSpaces": true,
-    "editor.tabSize": 2
-  },
-  "[json]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2
   },
@@ -36,6 +32,16 @@
   "[javascriptreact]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2
+  },
+  "[python]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true
+  },
+  "[rust]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true
   },
   "[php]": {
     "editor.insertSpaces": true,
@@ -54,6 +60,14 @@
     "editor.tabSize": 2
   },
   "[racket]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "[shellscript]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "[json]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2
   },
