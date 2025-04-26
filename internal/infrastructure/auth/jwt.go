@@ -26,7 +26,7 @@ type jwtPayload struct {
 
 // CreateAccessToken creates a signed JWT containing the given AuthPayload.
 func (j *JwtAuth) CreateAccessToken(payload core.AuthPayload) (string, error) {
-	return j.generateToken(
+	return j.createToken(
 		payload,
 		config.AccessTokenSecret,
 		time.Second*time.Duration(config.AccessTokenExpiresSeconds))
@@ -34,7 +34,7 @@ func (j *JwtAuth) CreateAccessToken(payload core.AuthPayload) (string, error) {
 
 // CreateRefreshToken creates a signed JWT containing the given AuthPayload.
 func (j *JwtAuth) CreateRefreshToken(payload core.AuthPayload) (string, error) {
-	return j.generateToken(
+	return j.createToken(
 		payload,
 		config.RefreshTokenSecret,
 		time.Second*time.Duration(config.RefreshTokenExpiresSeconds),
@@ -42,7 +42,7 @@ func (j *JwtAuth) CreateRefreshToken(payload core.AuthPayload) (string, error) {
 }
 
 // Common function to generate a JWT token (access or refresh)
-func (j *JwtAuth) generateToken(payload core.AuthPayload, secretKey string, expiresIn time.Duration) (string, error) {
+func (j *JwtAuth) createToken(payload core.AuthPayload, secretKey string, expiresIn time.Duration) (string, error) {
 	now := time.Now()
 
 	jp := jwtPayload{
@@ -61,16 +61,16 @@ func (j *JwtAuth) generateToken(payload core.AuthPayload, secretKey string, expi
 
 // VerifyAccessToken verifies the given JWT and extracts the AuthPayload.
 func (j *JwtAuth) VerifyAccessToken(token string) (core.AuthPayload, error) {
-	return j.validateToken(token, config.AccessTokenSecret)
+	return j.verifyToken(token, config.AccessTokenSecret)
 }
 
 // VerifyRefreshToken verifies the given refresh token and extracts the AuthPayload.
 func (j *JwtAuth) VerifyRefreshToken(token string) (core.AuthPayload, error) {
-	return j.validateToken(token, config.RefreshTokenSecret)
+	return j.verifyToken(token, config.RefreshTokenSecret)
 }
 
 // Common function to validate a JWT token (access or refresh)
-func (j *JwtAuth) validateToken(token string, secretKey string) (core.AuthPayload, error) {
+func (j *JwtAuth) verifyToken(token string, secretKey string) (core.AuthPayload, error) {
 	parsedToken, err := jwtpackage.Parse(token, func(t *jwtpackage.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwtpackage.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")

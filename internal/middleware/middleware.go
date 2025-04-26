@@ -76,14 +76,14 @@ func Auth() gin.HandlerFunc {
 func ApiAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
-		pl, err := core.Auth.VerifyAccessToken(token)
+		payload, err := core.Auth.VerifyAccessToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
 
-		c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
+		c.Set(helper.CONTEXT_KEY_PAYLOAD, payload)
 		c.Next()
 	}
 }
