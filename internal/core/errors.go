@@ -56,8 +56,5 @@ func NewValidationError(details []map[string]any) *AppError {
 
 func IsAppError(err error) bool {
 	var appErr *AppError
-	if errors.As(err, &appErr) {
-		return true
-	}
-	return false
+	return errors.As(err, &appErr)
 }

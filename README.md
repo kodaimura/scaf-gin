@@ -1,7 +1,7 @@
 # ScafGin
 
 [Gin](https://gin-gonic.com/) によるWebアプリ開発のテンプレートです。  
-ログイン / サインアップ機能、JWT認証など、すぐに使える土台を用意しています。  
+ログイン / サインアップ機能など、すぐに使える土台を用意しています。  
 
 ### 必要なツール
 - **Docker**
@@ -24,8 +24,9 @@ http://localhost:8000
 
 ```bash
 make up        # コンテナ起動
-make build     # コンテナの再ビルド
 make down      # コンテナ停止 & 破棄
+make reup      # コンテナ停止 & 破棄 & 起動
+make build     # コンテナの再ビルド
 make stop      # コンテナ停止のみ
 make in        # appコンテナ内にbashで入る
 make log       # ログ監視
