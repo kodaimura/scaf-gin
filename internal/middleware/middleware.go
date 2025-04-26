@@ -25,49 +25,51 @@ func BasicAuth() gin.HandlerFunc {
 	}
 }
 
-// Auth is a middleware that validates the JWT token for authenticated access.
-// If the token is invalid, it redirects to the login page.
+// Auth is a middleware that validates the JWT access token and refresh token. 
+// If both are invalid, the user is redirected to login, 
+// otherwise, a new access token is created and stored in a cookie.
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := helper.GetAccessToken(c)
-		pl, err := core.Auth.VerifyAccessToken(token)
-		if err == nil {
-			c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
-			c.Next()
-		}
-
-		refreshToken := helper.GetRefreshToken(c)
-
-		payload, err := core.Auth.VerifyRefreshToken(refreshToken)
+		// Try to verify the access token
+		payload, err := core.Auth.VerifyAccessToken(helper.GetAccessToken(c))
 		if err != nil {
-			c.Redirect(http.StatusSeeOther, "/login")
-			c.Abort()
-			return
+			// If access token is invalid, try verifying the refresh token
+			payload, err = core.Auth.VerifyRefreshToken(helper.GetRefreshToken(c))
+			if err != nil {
+				c.Redirect(http.StatusSeeOther, "/login")
+				c.Abort()
+				return
+			}
+
+			// If refresh token is valid, create a new access token
+			accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
+				AccountId:   payload.AccountId,
+				AccountName: payload.AccountName,
+			})
+			if err != nil {
+				c.Redirect(http.StatusSeeOther, "/login")
+				c.Abort()
+				return
+			}
+
+			// Verify the newly created access token
+			payload, err := core.Auth.VerifyAccessToken(accessToken)
+			if err != nil {
+				c.Redirect(http.StatusSeeOther, "/login")
+				c.Abort()
+				return
+			}
+
+			// Set the new access token in a cookie
+			helper.SetAccessTokenCookie(c, accessToken)
+			core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
 		}
-
-		accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
-			AccountId:   payload.AccountId,
-			AccountName: payload.AccountName,
-		})
-		if err != nil {
-			c.Redirect(http.StatusSeeOther, "/login")
-			c.Abort()
-			return
-		}
-
-		helper.SetAccessTokenCookie(c, accessToken)
-
-		core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
-
-		pl, err = core.Auth.VerifyAccessToken(accessToken)
-		if err != nil {
-			c.Redirect(http.StatusSeeOther, "/login")
-			c.Abort()
-		}
-		c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
+		
+		c.Set(helper.CONTEXT_KEY_PAYLOAD, payload)
 		c.Next()
 	}
 }
+
 
 // ApiAuth is a middleware that validates the JWT token for API access.
 // If the token is invalid, it returns an Unauthorized error in JSON format.
