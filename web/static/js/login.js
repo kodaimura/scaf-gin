@@ -16,7 +16,7 @@ const login = async () => {
   };
 
   try {
-    await api.post('accounts/login', body);
+    await api.post('accounts/login', body, false);
     window.location.replace('/');
   } catch (e) {
     document.getElementById("error").innerHTML = (e.status === 401)

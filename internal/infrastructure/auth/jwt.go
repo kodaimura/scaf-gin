@@ -24,8 +24,26 @@ type jwtPayload struct {
 	core.AuthPayload
 }
 
-// GenerateToken creates a signed JWT containing the given AuthPayload.
-func (j *JwtAuth) GenerateToken(payload core.AuthPayload) (string, error) {
+// GenerateAccessToken creates a signed JWT containing the given AuthPayload.
+func (j *JwtAuth) GenerateAccessToken(payload core.AuthPayload) (string, error) {
+	return j.generateToken(
+		payload, 
+		config.JwtSecretKey, 
+		time.Second*time.Duration(config.AuthExpiresSeconds,
+	))
+}
+
+// GenerateRefreshToken creates a signed JWT containing the given AuthPayload.
+func (j *JwtAuth) GenerateRefreshToken(payload core.AuthPayload) (string, error) {
+	return j.generateToken(
+		payload, 
+		config.JwtRefreshSecretKey, 
+		time.Second*time.Duration(config.RefreshExpiresSeconds),
+	)
+}
+
+// Common function to generate a JWT token (access or refresh)
+func (j *JwtAuth) generateToken(payload core.AuthPayload, secretKey string, expiresIn time.Duration) (string, error) {
 	now := time.Now()
 
 	jp := jwtPayload{
@@ -34,22 +52,31 @@ func (j *JwtAuth) GenerateToken(payload core.AuthPayload) (string, error) {
 			Subject:   strconv.Itoa(payload.AccountId),
 			IssuedAt:  jwtpackage.NewNumericDate(now),
 			NotBefore: jwtpackage.NewNumericDate(now),
-			ExpiresAt: jwtpackage.NewNumericDate(now.Add(time.Second * time.Duration(config.AuthExpiresSeconds))),
+			ExpiresAt: jwtpackage.NewNumericDate(now.Add(expiresIn)),
 		},
 	}
 
 	token := jwtpackage.NewWithClaims(jwtpackage.SigningMethodHS256, jp)
-	return token.SignedString([]byte(config.JwtSecretKey))
+	return token.SignedString([]byte(secretKey))
 }
 
-// ValidateToken verifies the given JWT and extracts the AuthPayload.
-// Returns an error if the token is invalid or cannot be parsed.
-func (j *JwtAuth) ValidateToken(token string) (core.AuthPayload, error) {
-	parsedToken, err := jwtpackage.Parse(token, func(t *jwtpackage.Token) (any, error) {
+// ValidateAccessToken verifies the given JWT and extracts the AuthPayload.
+func (j *JwtAuth) ValidateAccessToken(token string) (core.AuthPayload, error) {
+	return j.validateToken(token, config.JwtSecretKey)
+}
+
+// ValidateRefreshToken verifies the given refresh token and extracts the AuthPayload.
+func (j *JwtAuth) ValidateRefreshToken(token string) (core.AuthPayload, error) {
+	return j.validateToken(token, config.JwtRefreshSecretKey)
+}
+
+// Common function to validate a JWT token (access or refresh)
+func (j *JwtAuth) validateToken(token string, secretKey string) (core.AuthPayload, error) {
+	parsedToken, err := jwtpackage.Parse(token, func(t *jwtpackage.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwtpackage.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
-		return []byte(config.JwtSecretKey), nil
+		return []byte(secretKey), nil
 	})
 	if err != nil || !parsedToken.Valid {
 		return core.AuthPayload{}, err
@@ -78,8 +105,7 @@ func tokenToAuthPayload(token *jwtpackage.Token) (core.AuthPayload, error) {
 	return jp.AuthPayload, nil
 }
 
-// RevokeToken is a no-op in JWT-based authentication.
-// In a real-world app, this might involve blacklisting the token.
-func (j *JwtAuth) RevokeToken(token string) error {
+// RevokeRefreshToken is a no-op in JWT-based authentication.
+func (j *JwtAuth) RevokeRefreshToken(token string) error {
 	return nil
 }

@@ -24,6 +24,16 @@ func GetAccessToken(c *gin.Context) string {
 	return ""
 }
 
+// GetRefreshToken retrieves the access token from cookie.
+func GetRefreshToken(c *gin.Context) string {
+	token, err := c.Cookie(COOKIE_KEY_REFRESH_TOKEN)
+	if err == nil {
+		return token
+	}
+
+	return ""
+}
+
 // GetPayload retrieves the AuthPayload from the context.
 // Returns an empty AuthPayload if the context value is not present or invalid.
 func GetPayload(c *gin.Context) core.AuthPayload {

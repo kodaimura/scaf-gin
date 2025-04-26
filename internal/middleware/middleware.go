@@ -30,13 +30,40 @@ func BasicAuth() gin.HandlerFunc {
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
-		pl, err := core.Auth.ValidateToken(token)
+		pl, err := core.Auth.ValidateAccessToken(token)
+		if err == nil {
+			c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
+			c.Next()
+		}
+
+		refreshToken := helper.GetRefreshToken(c)
+
+		payload, err := core.Auth.ValidateRefreshToken(refreshToken)
 		if err != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
 			return
 		}
 
+		accessToken, err := core.Auth.GenerateAccessToken(core.AuthPayload{
+			AccountId:   payload.AccountId,
+			AccountName: payload.AccountName,
+		})
+		if err != nil {
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+			return
+		}
+
+		c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, accessToken, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+
+		core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
+
+		pl, err = core.Auth.ValidateAccessToken(accessToken)
+		if err != nil {
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+		}
 		c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
 		c.Next()
 	}
@@ -47,7 +74,7 @@ func Auth() gin.HandlerFunc {
 func ApiAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
-		pl, err := core.Auth.ValidateToken(token)
+		pl, err := core.Auth.ValidateAccessToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
@@ -79,32 +106,26 @@ func ApiErrorHandler() gin.HandlerFunc {
 						"message": err.Error(),
 					})
 				}
-				break
 			case errors.Is(err, core.ErrUnauthorized):
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"message": err.Error(),
 				})
-				break
 			case errors.Is(err, core.ErrForbidden):
 				c.JSON(http.StatusForbidden, gin.H{
 					"message": err.Error(),
 				})
-				break
 			case errors.Is(err, core.ErrNotFound):
 				c.JSON(http.StatusNotFound, gin.H{
 					"message": err.Error(),
 				})
-				break
 			case errors.Is(err, core.ErrConflict):
 				c.JSON(http.StatusConflict, gin.H{
 					"message": err.Error(),
 				})
-				break
 			case errors.Is(err, core.ErrUnexpected):
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"message": err.Error(),
 				})
-				break
 			default:
 				core.Logger.Error(err.Error())
 				c.JSON(http.StatusInternalServerError, gin.H{

@@ -34,8 +34,9 @@ func (ctrl *AccountController) LoginPage(c *gin.Context) {
 
 // GET /logout
 func (ctrl *AccountController) Logout(c *gin.Context) {
-	core.Auth.RevokeToken(helper.GetAccessToken(c))
-	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
+	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
+	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", -1, "/", config.AppHost, config.SecureCookie, true)
+	c.SetCookie(helper.COOKIE_KEY_REFRESH_TOKEN, "", -1, "/", config.AppHost, config.SecureCookie, true)
 	c.Redirect(303, "/login")
 }
 
@@ -81,7 +82,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	token, err := core.Auth.GenerateToken(core.AuthPayload{
+	accessToken, err := core.Auth.GenerateAccessToken(core.AuthPayload{
 		AccountId:   account.AccountId,
 		AccountName: account.AccountName,
 	})
@@ -90,9 +91,23 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, token, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+	refreshToken, err := core.Auth.GenerateRefreshToken(core.AuthPayload{
+		AccountId:   account.AccountId,
+		AccountName: account.AccountName,
+	})
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, accessToken, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+	c.SetCookie(helper.COOKIE_KEY_REFRESH_TOKEN, refreshToken, config.RefreshExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+
+	core.Logger.Info("account login: id=%d name=%s", account.AccountId, account.AccountName)
+
 	c.JSON(200, response.Login{
-		AccessToken: token,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 		ExpiresIn:   config.AuthExpiresSeconds,
 		Account: response.Account{
 			AccountId:   account.AccountId,
@@ -103,10 +118,40 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	})
 }
 
+// POST /api/accounts/refresh
+func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
+	refreshToken := helper.GetRefreshToken(c)
+
+	payload, err := core.Auth.ValidateRefreshToken(refreshToken)
+	if err != nil {
+		c.Error(core.NewAppError("invalid or expired refresh token", "UNAUTHORIZED"))
+		return
+	}
+
+	accessToken, err := core.Auth.GenerateAccessToken(core.AuthPayload{
+		AccountId:   payload.AccountId,
+		AccountName: payload.AccountName,
+	})
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, accessToken, config.AuthExpiresSeconds, "/", config.AppHost, config.SecureCookie, true)
+
+	core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
+
+	c.JSON(200, response.Refresh{
+		AccessToken: accessToken,
+		ExpiresIn:   config.AuthExpiresSeconds,
+	})
+}
+
 // GET /api/accounts/logout
 func (ctrl *AccountController) ApiLogout(c *gin.Context) {
-	core.Auth.RevokeToken(helper.GetAccessToken(c))
-	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", 0, "/", config.AppHost, config.SecureCookie, true)
+	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
+	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", -1, "/", config.AppHost, config.SecureCookie, true)
+	c.SetCookie(helper.COOKIE_KEY_REFRESH_TOKEN, "", -1, "/", config.AppHost, config.SecureCookie, true)
 	c.JSON(200, gin.H{})
 }
 

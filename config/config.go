@@ -39,7 +39,9 @@ var (
 
 var (
 	JwtSecretKey       string
+	JwtRefreshSecretKey string
 	AuthExpiresSeconds int
+	RefreshExpiresSeconds int
 )
 
 var (
@@ -82,6 +84,12 @@ func init() {
 	AuthExpiresSeconds, err = strconv.Atoi(getEnv("AUTH_EXPIRES_SECONDS", "3600"))
 	if err != nil {
 		log.Fatalf("unable to convert AUTH_EXPIRES_SECONDS from environment to integer: %v", err)
+	}
+
+	JwtRefreshSecretKey = getEnv("JWT_REFRESH_SECRET_KEY", "secret")
+	RefreshExpiresSeconds, err = strconv.Atoi(getEnv("REFRESH_EXPIRES_SECONDS", "86400"))
+	if err != nil {
+		log.Fatalf("unable to convert REFRESH_EXPIRES_SECONDS from environment to integer: %v", err)
 	}
 
 	SecureCookie, err = strconv.ParseBool(getEnv("SECURE_COOKIE", "false"))

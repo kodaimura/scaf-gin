@@ -15,7 +15,7 @@ class Api {
     this.#url = url;
   }
 
-  apiFetch = async (endpoint, method, body = null) => {
+  apiFetch = async (endpoint, method, body = null, retry = true) => {
     if (endpoint.startsWith('/')) {
       endpoint = endpoint.slice(1);
     }
@@ -36,17 +36,25 @@ class Api {
       const response = await fetch(`${this.#url}/${endpoint}`, options);
 
       if (!response.ok) {
+        if (response.status === 401 && retry) {
+          try {
+            await this.apiFetch('accounts/refresh', 'POST', {}, false);
+            return await this.apiFetch(endpoint, method, body, false);
+          } catch (e) {
+            window.location.replace('/login');
+            return;
+          }
+        }
+
         let errorData = { message: 'Unknown error', details: {} };
         try {
           errorData = await response.json();
-        } catch (e) {
-          // レスポンスがJSONでない場合（HTMLなど）、そのまま fallback メッセージ
-        }
+        } catch (_) { }
         throw new HttpError(response.status, errorData.message, errorData.details);
       }
 
       if (response.status === 204) {
-        return {}; // No Content
+        return {};
       }
 
       try {
@@ -64,31 +72,24 @@ class Api {
     }
   };
 
-  get = (endpoint) => this.apiFetch(endpoint, 'GET');
-  post = (endpoint, body) => this.apiFetch(endpoint, 'POST', body);
-  put = (endpoint, body) => this.apiFetch(endpoint, 'PUT', body);
-  delete = (endpoint, body) => this.apiFetch(endpoint, 'DELETE', body);
+  get = (endpoint, retry = true) => this.apiFetch(endpoint, 'GET', null, retry);
+  post = (endpoint, body, retry = true) => this.apiFetch(endpoint, 'POST', body, retry);
+  put = (endpoint, body, retry = true) => this.apiFetch(endpoint, 'PUT', body, retry);
+  delete = (endpoint, body, retry = true) => this.apiFetch(endpoint, 'DELETE', body, retry);
 
   handleHttpError = (error) => {
-    console.error('HTTP Error:', error);
+    const status = error.status;
+
+    if (status === 403) {
+      alert('権限がありません。');
+    } else if (status >= 500) {
+      alert('予期せぬエラーが発生しました。');
+    }
+
     throw error;
   };
 }
 
 const api = new Api(BASE_URL);
-
-api.handleHttpError = (error) => {
-  const status = error.status;
-
-  if (status === 401 && window.location.pathname !== '/login') {
-    window.location.replace('/login');
-  } else if (status === 403) {
-    alert("権限がありません。");
-  } else if (status >= 500) {
-    alert("予期せぬエラーが発生しました。");
-  }
-
-  throw error;
-};
 
 export { HttpError, Api, BASE_URL, api };
