@@ -28,8 +28,8 @@ type jwtPayload struct {
 func (j *JwtAuth) GenerateAccessToken(payload core.AuthPayload) (string, error) {
 	return j.generateToken(
 		payload, 
-		config.JwtSecretKey, 
-		time.Second*time.Duration(config.AuthExpiresSeconds,
+		config.AccessTokenSecret, 
+		time.Second*time.Duration(config.AccessTokenExpiresSeconds,
 	))
 }
 
@@ -37,8 +37,8 @@ func (j *JwtAuth) GenerateAccessToken(payload core.AuthPayload) (string, error) 
 func (j *JwtAuth) GenerateRefreshToken(payload core.AuthPayload) (string, error) {
 	return j.generateToken(
 		payload, 
-		config.JwtRefreshSecretKey, 
-		time.Second*time.Duration(config.RefreshExpiresSeconds),
+		config.RefreshTokenSecret, 
+		time.Second*time.Duration(config.RefreshTokenExpiresSeconds),
 	)
 }
 
@@ -62,12 +62,12 @@ func (j *JwtAuth) generateToken(payload core.AuthPayload, secretKey string, expi
 
 // ValidateAccessToken verifies the given JWT and extracts the AuthPayload.
 func (j *JwtAuth) ValidateAccessToken(token string) (core.AuthPayload, error) {
-	return j.validateToken(token, config.JwtSecretKey)
+	return j.validateToken(token, config.AccessTokenSecret)
 }
 
 // ValidateRefreshToken verifies the given refresh token and extracts the AuthPayload.
 func (j *JwtAuth) ValidateRefreshToken(token string) (core.AuthPayload, error) {
-	return j.validateToken(token, config.JwtRefreshSecretKey)
+	return j.validateToken(token, config.RefreshTokenSecret)
 }
 
 // Common function to validate a JWT token (access or refresh)

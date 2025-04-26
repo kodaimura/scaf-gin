@@ -8,13 +8,14 @@ type Account struct {
 }
 
 type Login struct {
-	AccessToken  string  `json:"access_token"`
-	RefreshToken string  `json:"refresh_token"`
-	ExpiresIn    int     `json:"expires_in"`
-	Account      Account `json:"account"`
+	AccessToken      string  `json:"access_token"`
+	RefreshToken     string  `json:"refresh_token"`
+	AccessExpiresIn  int     `json:"access_expires_in"`
+	RefreshExpiresIn int     `json:"refresh_expires_in"`
+	Account          Account `json:"account"`
 }
 
 type Refresh struct {
-	AccessToken  string  `json:"access_token"`
-	ExpiresIn    int     `json:"expires_in"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
 }

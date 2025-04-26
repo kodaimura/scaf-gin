@@ -38,14 +38,18 @@ var (
 )
 
 var (
-	JwtSecretKey       string
-	JwtRefreshSecretKey string
-	AuthExpiresSeconds int
-	RefreshExpiresSeconds int
+	AccessTokenSecret          string
+	RefreshTokenSecret         string
+	AccessTokenExpiresSeconds  int
+	RefreshTokenExpiresSeconds int
+
+	CookieAccessSecure    bool
+	CookieRefreshSecure   bool
+	CookieAccessHttpOnly  bool
+	CookieRefreshHttpOnly bool
 )
 
 var (
-	SecureCookie   bool
 	LogLevel       string
 	FrontendOrigin string
 )
@@ -80,21 +84,36 @@ func init() {
 	BasicAuthUser = getEnv("BASIC_AUTH_USER")
 	BasicAuthPass = getEnv("BASIC_AUTH_PASSWORD")
 
-	JwtSecretKey = getEnv("JWT_SECRET_KEY", "secret")
-	AuthExpiresSeconds, err = strconv.Atoi(getEnv("AUTH_EXPIRES_SECONDS", "3600"))
+	AccessTokenSecret = getEnv("ACCESS_TOKEN_SECRET", "secret")
+	AccessTokenExpiresSeconds, err = strconv.Atoi(getEnv("ACCESS_TOKEN_EXPIRES_SECONDS", "900"))
 	if err != nil {
-		log.Fatalf("unable to convert AUTH_EXPIRES_SECONDS from environment to integer: %v", err)
+		log.Fatalf("unable to convert ACCESS_TOKEN_EXPIRES_SECONDS from environment to integer: %v", err)
 	}
 
-	JwtRefreshSecretKey = getEnv("JWT_REFRESH_SECRET_KEY", "secret")
-	RefreshExpiresSeconds, err = strconv.Atoi(getEnv("REFRESH_EXPIRES_SECONDS", "86400"))
+	RefreshTokenSecret = getEnv("REFRESH_TOKEN_SECRET", "secret")
+	RefreshTokenExpiresSeconds, err = strconv.Atoi(getEnv("REFRESH_TOKEN_EXPIRES_SECONDS", "86400"))
 	if err != nil {
-		log.Fatalf("unable to convert REFRESH_EXPIRES_SECONDS from environment to integer: %v", err)
+		log.Fatalf("unable to convert REFRESH_TOKEN_EXPIRES_SECONDS from environment to integer: %v", err)
 	}
 
-	SecureCookie, err = strconv.ParseBool(getEnv("SECURE_COOKIE", "false"))
+	CookieAccessSecure, err = strconv.ParseBool(getEnv("COOKIE_ACCESS_SECURE", "true"))
 	if err != nil {
-		log.Fatalf("unable to convert SECURE_COOKIE from environment to boolean: %v", err)
+		log.Fatalf("unable to convert COOKIE_ACCESS_SECURE from environment to boolean: %v", err)
+	}
+
+	CookieRefreshSecure, err = strconv.ParseBool(getEnv("COOKIE_REFRESH_SECURE", "true"))
+	if err != nil {
+		log.Fatalf("unable to convert COOKIE_REFRESH_SECURE from environment to boolean: %v", err)
+	}
+
+	CookieAccessHttpOnly, err = strconv.ParseBool(getEnv("COOKIE_ACCESS_HTTPONLY", "true"))
+	if err != nil {
+		log.Fatalf("unable to convert COOKIE_ACCESS_HTTPONLY from environment to boolean: %v", err)
+	}
+
+	CookieRefreshHttpOnly, err = strconv.ParseBool(getEnv("COOKIE_REFRESH_HTTPONLY", "true"))
+	if err != nil {
+		log.Fatalf("unable to convert COOKIE_REFRESH_HTTPONLY from environment to boolean: %v", err)
 	}
 	LogLevel = getEnv("LOG_LEVEL", "INFO")
 	FrontendOrigin = getEnv("FRONTEND_ORIGIN", "http://localhost:3000")
