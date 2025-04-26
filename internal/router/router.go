@@ -11,7 +11,7 @@ import (
 )
 
 var gorm = db.NewGormDB()
-var sqlx = db.NewSqlxDB()
+//var sqlx = db.NewSqlxDB()
 
 /* DI (Repository) */
 var accountRepository = repository.NewGormAccountRepository(gorm)

@@ -4,7 +4,6 @@ import (
 	"errors"
 )
 
-// エラーコードの定数定義
 const (
 	ErrCodeBadRequest   = "BAD_REQUEST"
 	ErrCodeForbidden    = "FORBIDDEN"
@@ -29,18 +28,22 @@ type AppError struct {
 	ErrorDetails []map[string]any
 }
 
+// Implements the error interface
 func (e *AppError) Error() string {
 	return e.Message
 }
 
+// Get the error code of the AppError
 func (e *AppError) Code() string {
 	return e.ErrorCode
 }
 
+// Get additional error details
 func (e *AppError) Details() []map[string]any {
 	return e.ErrorDetails
 }
 
+// Check if two errors are the same based on their error code
 func (e *AppError) Is(target error) bool {
 	if appErr, ok := target.(*AppError); ok {
 		return e.Code() == appErr.Code()
@@ -48,6 +51,7 @@ func (e *AppError) Is(target error) bool {
 	return false
 }
 
+// Create a new AppError instance
 func NewAppError(message, code string) *AppError {
 	return &AppError{
 		Message:      message,
@@ -56,6 +60,7 @@ func NewAppError(message, code string) *AppError {
 	}
 }
 
+// Create a new validation error with additional details
 func NewValidationError(details []map[string]any) *AppError {
 	return &AppError{
 		Message:      "Bad request",
@@ -64,6 +69,7 @@ func NewValidationError(details []map[string]any) *AppError {
 	}
 }
 
+// Check if the error is an AppError type
 func IsAppError(err error) bool {
 	var appErr *AppError
 	return errors.As(err, &appErr)
