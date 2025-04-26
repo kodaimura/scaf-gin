@@ -35,8 +35,8 @@ func (ctrl *AccountController) LoginPage(c *gin.Context) {
 // GET /logout
 func (ctrl *AccountController) Logout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
-	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", -1, "/", config.AppHost, config.CookieAccessSecure, config.CookieAccessHttpOnly)
-	c.SetCookie(helper.COOKIE_KEY_REFRESH_TOKEN, "", -1, "/", config.AppHost, config.CookieRefreshSecure, config.CookieRefreshHttpOnly)
+	helper.RemoveAccessTokenCookie(c)
+	helper.RemoveRefreshTokenCookie(c)
 	c.Redirect(303, "/login")
 }
 
@@ -100,8 +100,8 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, accessToken, config.AccessTokenExpiresSeconds, "/", config.AppHost, config.CookieAccessSecure, config.CookieAccessHttpOnly)
-	c.SetCookie(helper.COOKIE_KEY_REFRESH_TOKEN, refreshToken, config.RefreshTokenExpiresSeconds, "/", config.AppHost, config.CookieRefreshSecure, config.CookieRefreshHttpOnly)
+	helper.SetAccessTokenCookie(c, accessToken)
+	helper.SetRefreshTokenCookie(c, refreshToken)
 
 	core.Logger.Info("account login: id=%d name=%s", account.AccountId, account.AccountName)
 
@@ -138,7 +138,7 @@ func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, accessToken, config.AccessTokenExpiresSeconds, "/", config.AppHost, config.CookieAccessSecure, config.CookieAccessHttpOnly)
+	helper.SetAccessTokenCookie(c, accessToken)
 
 	core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
 
@@ -151,8 +151,8 @@ func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
 // GET /api/accounts/logout
 func (ctrl *AccountController) ApiLogout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
-	c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, "", -1, "/", config.AppHost, config.CookieAccessSecure, config.CookieAccessHttpOnly)
-	c.SetCookie(helper.COOKIE_KEY_REFRESH_TOKEN, "", -1, "/", config.AppHost, config.CookieRefreshSecure, config.CookieRefreshHttpOnly)
+	helper.RemoveAccessTokenCookie(c)
+	helper.RemoveRefreshTokenCookie(c)
 	c.JSON(200, gin.H{})
 }
 

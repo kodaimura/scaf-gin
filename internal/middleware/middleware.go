@@ -55,7 +55,7 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		c.SetCookie(helper.COOKIE_KEY_ACCESS_TOKEN, accessToken, config.AccessTokenExpiresSeconds, "/", config.AppHost, config.CookieAccessSecure, config.CookieAccessHttpOnly)
+		helper.SetAccessTokenCookie(c, accessToken)
 
 		core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
 
