@@ -4,13 +4,23 @@ import (
 	"errors"
 )
 
+// エラーコードの定数定義
+const (
+	ErrCodeBadRequest   = "BAD_REQUEST"
+	ErrCodeForbidden    = "FORBIDDEN"
+	ErrCodeUnauthorized = "UNAUTHORIZED"
+	ErrCodeNotFound     = "NOT_FOUND"
+	ErrCodeConflict     = "CONFLICT"
+	ErrCodeUnexpected   = "UNEXPECTED"
+)
+
 var (
-	ErrBadRequest   = NewAppError("Bad request", "BAD_REQUEST")
-	ErrForbidden    = NewAppError("Forbidden", "FORBIDDEN")
-	ErrUnauthorized = NewAppError("Unauthorized access", "UNAUTHORIZED")
-	ErrNotFound     = NewAppError("Resource not found", "NOT_FOUND")
-	ErrConflict     = NewAppError("Conflict occurred", "CONFLICT")
-	ErrUnexpected   = NewAppError("Unexpected error occurred", "UNEXPECTED")
+	ErrBadRequest   = NewAppError("Bad request", ErrCodeBadRequest)
+	ErrForbidden    = NewAppError("Forbidden", ErrCodeForbidden)
+	ErrUnauthorized = NewAppError("Unauthorized access", ErrCodeUnauthorized)
+	ErrNotFound     = NewAppError("Resource not found", ErrCodeNotFound)
+	ErrConflict     = NewAppError("Conflict occurred", ErrCodeConflict)
+	ErrUnexpected   = NewAppError("Unexpected error occurred", ErrCodeUnexpected)
 )
 
 type AppError struct {
@@ -49,7 +59,7 @@ func NewAppError(message, code string) *AppError {
 func NewValidationError(details []map[string]any) *AppError {
 	return &AppError{
 		Message:      "Bad request",
-		ErrorCode:    "BAD_REQUEST",
+		ErrorCode:    ErrCodeBadRequest,
 		ErrorDetails: details,
 	}
 }

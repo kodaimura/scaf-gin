@@ -125,7 +125,7 @@ func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
 
 	payload, err := core.Auth.VerifyRefreshToken(refreshToken)
 	if err != nil {
-		c.Error(core.NewAppError("invalid or expired refresh token", "UNAUTHORIZED"))
+		c.Error(core.NewAppError("invalid or expired refresh token", core.ErrCodeUnauthorized))
 		return
 	}
 
