@@ -82,7 +82,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := core.Auth.GenerateAccessToken(core.AuthPayload{
+	accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
 		AccountId:   account.AccountId,
 		AccountName: account.AccountName,
 	})
@@ -91,7 +91,7 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	refreshToken, err := core.Auth.GenerateRefreshToken(core.AuthPayload{
+	refreshToken, err := core.Auth.CreateRefreshToken(core.AuthPayload{
 		AccountId:   account.AccountId,
 		AccountName: account.AccountName,
 	})
@@ -123,13 +123,13 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
 	refreshToken := helper.GetRefreshToken(c)
 
-	payload, err := core.Auth.ValidateRefreshToken(refreshToken)
+	payload, err := core.Auth.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		c.Error(core.NewAppError("invalid or expired refresh token", "UNAUTHORIZED"))
 		return
 	}
 
-	accessToken, err := core.Auth.GenerateAccessToken(core.AuthPayload{
+	accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
 		AccountId:   payload.AccountId,
 		AccountName: payload.AccountName,
 	})

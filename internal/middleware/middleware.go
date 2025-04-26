@@ -30,7 +30,7 @@ func BasicAuth() gin.HandlerFunc {
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
-		pl, err := core.Auth.ValidateAccessToken(token)
+		pl, err := core.Auth.VerifyAccessToken(token)
 		if err == nil {
 			c.Set(helper.CONTEXT_KEY_PAYLOAD, pl)
 			c.Next()
@@ -38,14 +38,14 @@ func Auth() gin.HandlerFunc {
 
 		refreshToken := helper.GetRefreshToken(c)
 
-		payload, err := core.Auth.ValidateRefreshToken(refreshToken)
+		payload, err := core.Auth.VerifyRefreshToken(refreshToken)
 		if err != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
 			return
 		}
 
-		accessToken, err := core.Auth.GenerateAccessToken(core.AuthPayload{
+		accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
 			AccountId:   payload.AccountId,
 			AccountName: payload.AccountName,
 		})
@@ -59,7 +59,7 @@ func Auth() gin.HandlerFunc {
 
 		core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
 
-		pl, err = core.Auth.ValidateAccessToken(accessToken)
+		pl, err = core.Auth.VerifyAccessToken(accessToken)
 		if err != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
@@ -74,7 +74,7 @@ func Auth() gin.HandlerFunc {
 func ApiAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
-		pl, err := core.Auth.ValidateAccessToken(token)
+		pl, err := core.Auth.VerifyAccessToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()

@@ -24,20 +24,19 @@ type jwtPayload struct {
 	core.AuthPayload
 }
 
-// GenerateAccessToken creates a signed JWT containing the given AuthPayload.
-func (j *JwtAuth) GenerateAccessToken(payload core.AuthPayload) (string, error) {
+// CreateAccessToken creates a signed JWT containing the given AuthPayload.
+func (j *JwtAuth) CreateAccessToken(payload core.AuthPayload) (string, error) {
 	return j.generateToken(
-		payload, 
-		config.AccessTokenSecret, 
-		time.Second*time.Duration(config.AccessTokenExpiresSeconds,
-	))
+		payload,
+		config.AccessTokenSecret,
+		time.Second*time.Duration(config.AccessTokenExpiresSeconds))
 }
 
-// GenerateRefreshToken creates a signed JWT containing the given AuthPayload.
-func (j *JwtAuth) GenerateRefreshToken(payload core.AuthPayload) (string, error) {
+// CreateRefreshToken creates a signed JWT containing the given AuthPayload.
+func (j *JwtAuth) CreateRefreshToken(payload core.AuthPayload) (string, error) {
 	return j.generateToken(
-		payload, 
-		config.RefreshTokenSecret, 
+		payload,
+		config.RefreshTokenSecret,
 		time.Second*time.Duration(config.RefreshTokenExpiresSeconds),
 	)
 }
@@ -60,13 +59,13 @@ func (j *JwtAuth) generateToken(payload core.AuthPayload, secretKey string, expi
 	return token.SignedString([]byte(secretKey))
 }
 
-// ValidateAccessToken verifies the given JWT and extracts the AuthPayload.
-func (j *JwtAuth) ValidateAccessToken(token string) (core.AuthPayload, error) {
+// VerifyAccessToken verifies the given JWT and extracts the AuthPayload.
+func (j *JwtAuth) VerifyAccessToken(token string) (core.AuthPayload, error) {
 	return j.validateToken(token, config.AccessTokenSecret)
 }
 
-// ValidateRefreshToken verifies the given refresh token and extracts the AuthPayload.
-func (j *JwtAuth) ValidateRefreshToken(token string) (core.AuthPayload, error) {
+// VerifyRefreshToken verifies the given refresh token and extracts the AuthPayload.
+func (j *JwtAuth) VerifyRefreshToken(token string) (core.AuthPayload, error) {
 	return j.validateToken(token, config.RefreshTokenSecret)
 }
 
