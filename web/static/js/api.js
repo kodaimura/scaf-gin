@@ -25,7 +25,6 @@ class Api {
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
     };
 
     if (body) {

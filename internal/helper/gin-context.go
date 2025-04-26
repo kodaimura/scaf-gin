@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"net/http"
 	"strings"
 
 	"scaf-gin/config"
@@ -37,6 +38,7 @@ func GetRefreshToken(c *gin.Context) string {
 
 // SetAccessTokenCookie sets the access token cookie in the response
 func SetAccessTokenCookie(c *gin.Context, accessToken string) {
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		COOKIE_KEY_ACCESS_TOKEN, 
 		accessToken, 
@@ -49,6 +51,7 @@ func SetAccessTokenCookie(c *gin.Context, accessToken string) {
 
 // SetRefreshTokenCookie sets the refresh token cookie in the response
 func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		COOKIE_KEY_REFRESH_TOKEN, 
 		refreshToken, 
@@ -61,6 +64,7 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
 
 // RemoveAccessTokenCookie removes the access token cookie
 func RemoveAccessTokenCookie(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		COOKIE_KEY_ACCESS_TOKEN, 
 		"", 
@@ -73,6 +77,7 @@ func RemoveAccessTokenCookie(c *gin.Context) {
 
 // RemoveRefreshTokenCookie removes the refresh token cookie
 func RemoveRefreshTokenCookie(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		COOKIE_KEY_REFRESH_TOKEN, 
 		"", 
