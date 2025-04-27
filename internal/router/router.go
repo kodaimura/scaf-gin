@@ -33,14 +33,16 @@ func SetStatic(r *gin.Engine) {
 	r.Static("/img", "web/static/img")
 	r.StaticFile("/favicon.ico", "web/static/favicon.ico")
 	r.StaticFile("/manifest.json", "web/static/manifest.json")
+	r.NoRoute(func(c *gin.Context) { c.HTML(404, "404.html", nil) })
 }
 
 func SetWeb(r *gin.RouterGroup) {
+	r.Use(middleware.WebErrorHandler())
 	r.GET("/signup", accountController.SignupPage)
 	r.GET("/login", accountController.LoginPage)
 	r.GET("/logout", accountController.Logout)
 
-	auth := r.Group("", middleware.Auth())
+	auth := r.Group("", middleware.WebAuth())
 	{
 		auth.GET("/", indexController.IndexPage)
 	}

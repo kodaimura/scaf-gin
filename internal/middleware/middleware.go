@@ -25,10 +25,10 @@ func BasicAuth() gin.HandlerFunc {
 	}
 }
 
-// Auth is a middleware that validates the JWT access token and refresh token. 
-// If both are invalid, the user is redirected to login, 
+// WebAuth is a middleware that validates the JWT access token and refresh token.
+// If both are invalid, the user is redirected to login,
 // otherwise, a new access token is created and stored in a cookie.
-func Auth() gin.HandlerFunc {
+func WebAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Try to verify the access token
 		payload, err := core.Auth.VerifyAccessToken(helper.GetAccessToken(c))
@@ -64,12 +64,38 @@ func Auth() gin.HandlerFunc {
 			helper.SetAccessTokenCookie(c, accessToken)
 			core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
 		}
-		
+
 		c.Set(helper.CONTEXT_KEY_PAYLOAD, payload)
 		c.Next()
 	}
 }
 
+// WebErrorHandler is a middleware that handles errors for web pages.
+// It renders appropriate error pages based on the error type.
+func WebErrorHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		if len(c.Errors) == 0 {
+			return
+		}
+
+		err := c.Errors.Last().Err
+
+		switch {
+		case errors.Is(err, core.ErrUnauthorized), errors.Is(err, core.ErrForbidden):
+			c.Redirect(http.StatusFound, "/login")
+		case errors.Is(err, core.ErrNotFound):
+			c.HTML(http.StatusNotFound, "404.html", nil)
+		case errors.Is(err, core.ErrBadRequest), errors.Is(err, core.ErrConflict), errors.Is(err, core.ErrUnexpected):
+			core.Logger.Error(err.Error())
+			c.HTML(http.StatusInternalServerError, "500.html", nil)
+		default:
+			core.Logger.Error(err.Error())
+			c.HTML(http.StatusInternalServerError, "500.html", nil)
+		}
+	}
+}
 
 // ApiAuth is a middleware that validates the JWT token for API access.
 // If the token is invalid, it returns an Unauthorized error in JSON format.
@@ -93,49 +119,52 @@ func ApiAuth() gin.HandlerFunc {
 func ApiErrorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
-		if len(c.Errors) > 0 {
-			err := c.Errors.Last().Err
 
-			switch {
-			case errors.Is(err, core.ErrBadRequest):
-				if appErr, ok := err.(*core.AppError); ok {
-					c.JSON(http.StatusBadRequest, gin.H{
-						"message": appErr.Error(),
-						"details": appErr.Details(),
-					})
-				} else {
-					c.JSON(http.StatusBadRequest, gin.H{
-						"message": err.Error(),
-						"details": []map[string]any{},
-					})
-				}
-			case errors.Is(err, core.ErrUnauthorized):
-				c.JSON(http.StatusUnauthorized, gin.H{
-					"message": err.Error(),
-				})
-			case errors.Is(err, core.ErrForbidden):
-				c.JSON(http.StatusForbidden, gin.H{
-					"message": err.Error(),
-				})
-			case errors.Is(err, core.ErrNotFound):
-				c.JSON(http.StatusNotFound, gin.H{
-					"message": err.Error(),
-				})
-			case errors.Is(err, core.ErrConflict):
-				c.JSON(http.StatusConflict, gin.H{
-					"message": err.Error(),
-				})
-			case errors.Is(err, core.ErrUnexpected):
-				core.Logger.Error(err.Error())
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": err.Error(),
-				})
-			default:
-				core.Logger.Error(err.Error())
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": err.Error(),
-				})
-			}
+		if len(c.Errors) == 0 {
+			return
 		}
+
+		err := c.Errors.Last().Err
+
+		var status int
+		var resp gin.H
+
+		switch {
+		case errors.Is(err, core.ErrBadRequest):
+			status = http.StatusBadRequest
+			if appErr, ok := err.(*core.AppError); ok {
+				resp = gin.H{
+					"message": appErr.Error(),
+					"details": appErr.Details(),
+				}
+			} else {
+				resp = gin.H{
+					"message": err.Error(),
+					"details": []map[string]any{},
+				}
+			}
+		case errors.Is(err, core.ErrUnauthorized):
+			status = http.StatusUnauthorized
+			resp = gin.H{"message": err.Error()}
+		case errors.Is(err, core.ErrForbidden):
+			status = http.StatusForbidden
+			resp = gin.H{"message": err.Error()}
+		case errors.Is(err, core.ErrNotFound):
+			status = http.StatusNotFound
+			resp = gin.H{"message": err.Error()}
+		case errors.Is(err, core.ErrConflict):
+			status = http.StatusConflict
+			resp = gin.H{"message": err.Error()}
+		case errors.Is(err, core.ErrUnexpected):
+			core.Logger.Error(err.Error())
+			status = http.StatusInternalServerError
+			resp = gin.H{"message": err.Error()}
+		default:
+			core.Logger.Error(err.Error())
+			status = http.StatusInternalServerError
+			resp = gin.H{"message": err.Error()}
+		}
+
+		c.JSON(status, resp)
 	}
 }

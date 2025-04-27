@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  {{template "head" .}}
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="/css/error.css">
+</head>
+
+<body>
+  {{template "header" .}}
+
+  <main>
+    <h2>404 Not Found</h2>
+    <p>
+      ご指定のページは存在しないか、削除された可能性があります。<br>以下の方法で解決することができます。
+    </p>
+    <ul>
+      <li>URLが正しいか再確認してください</li>
+      <li><a href="logout">ログアウト</a>して再度アクセス</li>
+    </ul>
+    <a href="/" class="button">ホームに戻る</a>
+  </main>
+
+  {{template "footer" .}}
+</body>
+
+</html>
