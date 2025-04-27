@@ -36,7 +36,7 @@ func WebAuth() gin.HandlerFunc {
 			// If access token is invalid, try verifying the refresh token
 			payload, err = core.Auth.VerifyRefreshToken(helper.GetRefreshToken(c))
 			if err != nil {
-				c.Redirect(http.StatusSeeOther, "/login")
+				c.Error(core.ErrUnauthorized)
 				c.Abort()
 				return
 			}
@@ -47,7 +47,7 @@ func WebAuth() gin.HandlerFunc {
 				AccountName: payload.AccountName,
 			})
 			if err != nil {
-				c.Redirect(http.StatusSeeOther, "/login")
+				c.Error(core.ErrUnauthorized)
 				c.Abort()
 				return
 			}
@@ -55,7 +55,7 @@ func WebAuth() gin.HandlerFunc {
 			// Verify the newly created access token
 			payload, err := core.Auth.VerifyAccessToken(accessToken)
 			if err != nil {
-				c.Redirect(http.StatusSeeOther, "/login")
+				c.Error(core.ErrUnauthorized)
 				c.Abort()
 				return
 			}
