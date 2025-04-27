@@ -7,7 +7,6 @@ import (
 
 	"scaf-gin/internal/core"
 	"scaf-gin/internal/dto/input"
-	"scaf-gin/internal/helper"
 	"scaf-gin/internal/model"
 	"scaf-gin/internal/repository"
 )
@@ -32,13 +31,13 @@ func NewAccountService(accountRepository repository.AccountRepository) AccountSe
 
 func (srv *accountService) GetOne(in input.Account) (model.Account, error) {
 	account, err := srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
-	return account, helper.HandleError(err)
+	return account, err
 }
 
 func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
 	account, err := srv.GetOne(in)
 	if err != nil {
-		return model.Account{}, helper.HandleError(err)
+		return model.Account{}, err
 	}
 
 	if in.AccountName != "" {
@@ -47,17 +46,17 @@ func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
 	if in.AccountPassword != "" {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
 		if err != nil {
-			return model.Account{}, helper.HandleError(err)
+			return model.Account{}, err
 		}
 		account.AccountPassword = string(hashed)
 	}
 	account, err = srv.accountRepository.Update(&account)
-	return account, helper.HandleError(err)
+	return account, err
 }
 
 func (srv *accountService) DeleteOne(in input.Account) error {
 	err := srv.accountRepository.Delete(&model.Account{AccountId: in.AccountId})
-	return helper.HandleError(err)
+	return err
 }
 
 func (srv *accountService) Login(in input.Login) (model.Account, error) {
@@ -66,7 +65,7 @@ func (srv *accountService) Login(in input.Login) (model.Account, error) {
 		if errors.Is(err, core.ErrNotFound) {
 			return model.Account{}, core.ErrUnauthorized
 		}
-		return model.Account{}, helper.HandleError(err)
+		return model.Account{}, err
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(account.AccountPassword), []byte(in.AccountPassword)); err != nil {
@@ -82,7 +81,7 @@ func (srv *accountService) Signup(in input.Signup) (model.Account, error) {
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return model.Account{}, helper.HandleError(err)
+		return model.Account{}, err
 	}
 
 	account := model.Account{
@@ -92,7 +91,7 @@ func (srv *accountService) Signup(in input.Signup) (model.Account, error) {
 
 	account, err = srv.accountRepository.Insert(&account)
 	if err != nil {
-		return model.Account{}, helper.HandleError(err)
+		return model.Account{}, err
 	}
 
 	return account, nil

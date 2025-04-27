@@ -78,7 +78,7 @@ func ApiAuth() gin.HandlerFunc {
 		token := helper.GetAccessToken(c)
 		payload, err := core.Auth.VerifyAccessToken(token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Error(core.ErrUnauthorized)
 			c.Abort()
 			return
 		}
@@ -106,6 +106,7 @@ func ApiErrorHandler() gin.HandlerFunc {
 				} else {
 					c.JSON(http.StatusBadRequest, gin.H{
 						"message": err.Error(),
+						"details": []map[string]any{},
 					})
 				}
 			case errors.Is(err, core.ErrUnauthorized):
@@ -125,6 +126,7 @@ func ApiErrorHandler() gin.HandlerFunc {
 					"message": err.Error(),
 				})
 			case errors.Is(err, core.ErrUnexpected):
+				core.Logger.Error(err.Error())
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"message": err.Error(),
 				})
