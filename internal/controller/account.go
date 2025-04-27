@@ -35,8 +35,8 @@ func (ctrl *AccountController) LoginPage(c *gin.Context) {
 // GET /logout
 func (ctrl *AccountController) Logout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
-	helper.RemoveAccessTokenCookie(c)
-	helper.RemoveRefreshTokenCookie(c)
+	helper.SetAccessTokenCookie(c, "")
+	helper.SetRefreshTokenCookie(c, "")
 	c.Redirect(303, "/login")
 }
 
@@ -151,8 +151,8 @@ func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
 // GET /api/accounts/logout
 func (ctrl *AccountController) ApiLogout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
-	helper.RemoveAccessTokenCookie(c)
-	helper.RemoveRefreshTokenCookie(c)
+	helper.SetAccessTokenCookie(c, "")
+	helper.SetRefreshTokenCookie(c, "")
 	c.JSON(200, gin.H{})
 }
 

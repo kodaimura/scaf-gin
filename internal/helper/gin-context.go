@@ -38,11 +38,15 @@ func GetRefreshToken(c *gin.Context) string {
 
 // SetAccessTokenCookie sets the access token cookie in the response
 func SetAccessTokenCookie(c *gin.Context, accessToken string) {
+	maxAge := config.AccessTokenExpiresSeconds
+	if accessToken == "" {
+		maxAge = -1
+	}
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		COOKIE_KEY_ACCESS_TOKEN, 
 		accessToken, 
-		config.AccessTokenExpiresSeconds, 
+		maxAge, 
 		"/", config.AppHost, 
 		config.CookieAccessSecure, 
 		config.CookieAccessHttpOnly,
@@ -51,37 +55,15 @@ func SetAccessTokenCookie(c *gin.Context, accessToken string) {
 
 // SetRefreshTokenCookie sets the refresh token cookie in the response
 func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
+	maxAge := config.RefreshTokenExpiresSeconds
+	if refreshToken == "" {
+		maxAge = -1
+	}
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		COOKIE_KEY_REFRESH_TOKEN, 
 		refreshToken, 
-		config.RefreshTokenExpiresSeconds, 
-		"/", config.AppHost, 
-		config.CookieRefreshSecure, 
-		config.CookieRefreshHttpOnly,
-	)
-}
-
-// RemoveAccessTokenCookie removes the access token cookie
-func RemoveAccessTokenCookie(c *gin.Context) {
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(
-		COOKIE_KEY_ACCESS_TOKEN, 
-		"", 
-		-1, 
-		"/", config.AppHost, 
-		config.CookieAccessSecure, 
-		config.CookieAccessHttpOnly,
-	)
-}
-
-// RemoveRefreshTokenCookie removes the refresh token cookie
-func RemoveRefreshTokenCookie(c *gin.Context) {
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(
-		COOKIE_KEY_REFRESH_TOKEN, 
-		"", 
-		-1, 
+		maxAge,
 		"/", config.AppHost, 
 		config.CookieRefreshSecure, 
 		config.CookieRefreshHttpOnly,
