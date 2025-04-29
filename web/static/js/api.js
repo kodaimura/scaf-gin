@@ -1,5 +1,3 @@
-const BASE_URL = '/api';
-
 class HttpError extends Error {
   constructor(status, message, details) {
     super(message);
@@ -9,86 +7,103 @@ class HttpError extends Error {
 }
 
 class Api {
-  #url;
-
   constructor(url) {
-    this.#url = url;
+    this.url = url;
   }
 
-  apiFetch = async (endpoint, method, body = null, retry = true) => {
-    if (endpoint.startsWith('/')) {
-      endpoint = endpoint.slice(1);
-    }
-
+  async createFetchOptions(method, body) {
     const options = {
       method,
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     };
 
     if (body) {
       options.body = JSON.stringify(body);
     }
+    return options;
+  }
 
-    try {
-      const response = await fetch(`${this.#url}/${endpoint}`, options);
+  async apiFetch(endpoint, method, body, retry = true) {
+    if (endpoint.startsWith('/')) {
+      endpoint = endpoint.slice(1);
+    }
 
-      if (!response.ok) {
-        if (response.status === 401 && retry) {
-          try {
-            await this.apiFetch('accounts/refresh', 'POST', {}, false);
-            return await this.apiFetch(endpoint, method, body, false);
-          } catch (e) {
-            window.location.replace('/login');
-            return;
-          }
+    const options = await this.createFetchOptions(method, body);
+    const response = await fetch(`${this.url}/${endpoint}`, options);
+
+    if (!response.ok) {
+      if (response.status === 401 && retry && window.location.pathname !== '/login') {
+        const refreshed = await this.tryRefreshToken();
+        if (refreshed) {
+          return this.apiFetch(endpoint, method, body, false);
         }
-
-        let errorData = { message: 'Unknown error', details: {} };
-        try {
-          errorData = await response.json();
-        } catch (_) { }
-        throw new HttpError(response.status, errorData.message, errorData.details);
       }
 
-      if (response.status === 204) {
-        return {};
-      }
-
+      let errorData = { error: 'Unknown error', details: {} };
       try {
-        return await response.json();
-      } catch (e) {
-        throw new HttpError(response.status, 'Error parsing JSON', { cause: e });
+        errorData = await response.json();
+      } catch {
+        // ignore parse error
       }
-    } catch (error) {
-      if (error instanceof HttpError) {
-        this.handleHttpError(error);
-      } else {
-        console.error('Unexpected error:', error);
-        throw error;
-      }
+
+      const error = new HttpError(response.status, errorData.error, errorData.details);
+      this.handleHttpError(error);
+      throw error;
     }
-  };
 
-  get = (endpoint, retry = true) => this.apiFetch(endpoint, 'GET', null, retry);
-  post = (endpoint, body, retry = true) => this.apiFetch(endpoint, 'POST', body, retry);
-  put = (endpoint, body, retry = true) => this.apiFetch(endpoint, 'PUT', body, retry);
-  delete = (endpoint, body, retry = true) => this.apiFetch(endpoint, 'DELETE', body, retry);
+    if (response.status === 204) {
+      return {};
+    }
 
-  handleHttpError = (error) => {
+    return await response.json();
+  }
+
+  async tryRefreshToken() {
+    try {
+      const response = await fetch(`${this.url}/accounts/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async get(endpoint) {
+    return this.apiFetch(endpoint, 'GET');
+  }
+
+  async post(endpoint, body) {
+    return this.apiFetch(endpoint, 'POST', body);
+  }
+
+  async put(endpoint, body) {
+    return this.apiFetch(endpoint, 'PUT', body);
+  }
+
+  async delete(endpoint, body) {
+    return this.apiFetch(endpoint, 'DELETE', body);
+  }
+
+  handleHttpError(error) {
+    console.error(error);
     const status = error.status;
-
     if (status === 403) {
-      alert('権限がありません。');
-    } else if (status >= 500) {
-      alert('予期せぬエラーが発生しました。');
+      alert('アクセスが拒否されました');
+    } else if (status === 401 && window.location.pathname !== '/login') {
+      window.location.replace('/login');
     }
-
-    throw error;
-  };
+  }
 }
 
-const api = new Api(BASE_URL);
+const api = new Api('/api');
 
-export { HttpError, Api, BASE_URL, api };
+export { Api, api, HttpError };
