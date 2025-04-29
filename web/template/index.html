@@ -4,16 +4,27 @@
 <head>
   {{template "head" .}}
   <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="/css/index.css">
 </head>
 
 <body>
-  {{template "header" .}}
+  <header>
+    <div class="header-container">
+      <div class="header-logo">
+      </div>
+      <div class="header-button">
+        <a id="logout">ログアウト</a>
+      </div>
+    </div>
+  </header>
 
   <main class="container">
-    <h2>{{.account_name}} さん</h2>
+    <div>ようこそ {{.account_name}} さん</div>
   </main>
 
   {{template "footer" .}}
+
+  <script type="module" src="/js/index.js"></script>
 </body>
 
 </html>

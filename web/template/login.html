@@ -3,27 +3,33 @@
 
 <head>
   {{template "head" .}}
+  <link rel="stylesheet" href="/css/login.css">
 </head>
 
 <body>
-  {{template "header" .}}
+  <header>
+    <div class="header-container">
+      <div class="header-logo">
+      </div>
+      <div class="header-button">
+        <a href="signup">サインアップ</a>
+      </div>
+    </div>
+  </header>
 
-  <main class="container">
-    <a href="signup">サインアップ</a>
-    <div class="row justify-content-center">
-      <h2 class="text-center">ログイン</h2>
-      <div class="col-md-6">
-        <div class="text-danger" id="error"></div>
-        <form onsubmit="return false" id="login-form">
-          <div class="input-group mb-3">
-            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-            <input type="text" name="account_name" class="form-control" placeholder="ユーザ名">
+  <main>
+    <div class="login-container">
+      <h2 class="login-title">ログイン</h2>
+      <div>
+        <div class="error-message" id="error"></div>
+        <form onsubmit="return false" id="login-form" class="login-form">
+          <div class="form-group">
+            <input type="text" name="account_name" placeholder="ユーザ名" class="form-input">
           </div>
-          <div class="input-group mb-3">
-            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-            <input type="password" name="account_password" class="form-control" placeholder="パスワード">
+          <div class="form-group">
+            <input type="password" name="account_password" placeholder="パスワード" class="form-input">
           </div>
-          <button class="btn btn-primary w-100" id="login">ログイン</button>
+          <button id="login" class="login-button">ログイン</button>
         </form>
       </div>
     </div>
