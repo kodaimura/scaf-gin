@@ -148,7 +148,7 @@ func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
 	})
 }
 
-// GET /api/accounts/logout
+// POST /api/accounts/logout
 func (ctrl *AccountController) ApiLogout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
 	helper.SetAccessTokenCookie(c, "")

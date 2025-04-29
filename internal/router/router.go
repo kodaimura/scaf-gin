@@ -53,7 +53,7 @@ func SetApi(r *gin.RouterGroup) {
 	r.POST("/accounts/signup", accountController.ApiSignup)
 	r.POST("/accounts/login", accountController.ApiLogin)
 	r.POST("/accounts/refresh", accountController.ApiRefresh)
-	r.GET("/accounts/logout", accountController.ApiLogout)
+	r.POST("/accounts/logout", accountController.ApiLogout)
 
 	auth := r.Group("", middleware.ApiAuth())
 	{
