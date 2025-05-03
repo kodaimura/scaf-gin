@@ -48,7 +48,7 @@ func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 		return
 	}
 
-	account, err := ctrl.accountService.Signup(input.Signup{
+	account, err := ctrl.accountService.CreateOne(input.Account{
 		AccountName:     req.AccountName,
 		AccountPassword: req.AccountPassword,
 	})
@@ -192,7 +192,7 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 		return
 	}
 
-	_, err = ctrl.accountService.UpdateOne(input.Account{
+	_, err = ctrl.accountService.UpdatePassword(input.UpdatePassword{
 		AccountId:       account.AccountId,
 		AccountPassword: req.NewAccountPassword,
 	})

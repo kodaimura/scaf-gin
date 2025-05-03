@@ -12,11 +12,14 @@ import (
 )
 
 type AccountService interface {
+	Get(in input.Account) ([]model.Account, error)
 	GetOne(in input.Account) (model.Account, error)
-	DeleteOne(in input.Account) error
+	CreateOne(in input.Account) (model.Account, error)
 	UpdateOne(in input.Account) (model.Account, error)
+	DeleteOne(in input.Account) error
+
 	Login(in input.Login) (model.Account, error)
-	Signup(in input.Signup) (model.Account, error)
+	UpdatePassword(in input.UpdatePassword) (model.Account, error)
 }
 
 type accountService struct {
@@ -29,9 +32,24 @@ func NewAccountService(accountRepository repository.AccountRepository) AccountSe
 	}
 }
 
+func (srv *accountService) Get(in input.Account) ([]model.Account, error) {
+	return srv.accountRepository.Get(&model.Account{})
+}
+
 func (srv *accountService) GetOne(in input.Account) (model.Account, error) {
-	account, err := srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
-	return account, err
+	return srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
+}
+
+func (srv *accountService) CreateOne(in input.Account) (model.Account, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return model.Account{}, err
+	}
+
+	return srv.accountRepository.Insert(&model.Account{
+		AccountName:     in.AccountName,
+		AccountPassword: string(hashed),
+	})
 }
 
 func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
@@ -39,24 +57,12 @@ func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
 	if err != nil {
 		return model.Account{}, err
 	}
-
-	if in.AccountName != "" {
-		account.AccountName = in.AccountName
-	}
-	if in.AccountPassword != "" {
-		hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
-		if err != nil {
-			return model.Account{}, err
-		}
-		account.AccountPassword = string(hashed)
-	}
-	account, err = srv.accountRepository.Update(&account)
-	return account, err
+	account.AccountName = in.AccountName
+	return srv.accountRepository.Update(&account)
 }
 
 func (srv *accountService) DeleteOne(in input.Account) error {
-	err := srv.accountRepository.Delete(&model.Account{AccountId: in.AccountId})
-	return err
+	return srv.accountRepository.Delete(&model.Account{AccountId: in.AccountId})
 }
 
 func (srv *accountService) Login(in input.Login) (model.Account, error) {
@@ -74,25 +80,15 @@ func (srv *accountService) Login(in input.Login) (model.Account, error) {
 	return account, nil
 }
 
-func (srv *accountService) Signup(in input.Signup) (model.Account, error) {
-	if _, err := srv.accountRepository.GetOne(&model.Account{AccountName: in.AccountName}); err == nil {
-		return model.Account{}, core.ErrConflict
+func (srv *accountService) UpdatePassword(in input.UpdatePassword) (model.Account, error) {
+	account, err := srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
+	if err != nil {
+		return model.Account{}, err
 	}
-
 	hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return model.Account{}, err
 	}
-
-	account := model.Account{
-		AccountName:     in.AccountName,
-		AccountPassword: string(hashed),
-	}
-
-	account, err = srv.accountRepository.Insert(&account)
-	if err != nil {
-		return model.Account{}, err
-	}
-
-	return account, nil
+	account.AccountPassword = string(hashed)
+	return srv.accountRepository.Update(&account)
 }

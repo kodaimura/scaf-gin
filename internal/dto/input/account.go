@@ -10,12 +10,12 @@ type AccountPK struct {
 	AccountId int
 }
 
-type Signup struct {
+type Login struct {
 	AccountName     string
 	AccountPassword string
 }
 
-type Login struct {
-	AccountName     string
+type UpdatePassword struct {
+	AccountId       int
 	AccountPassword string
 }
