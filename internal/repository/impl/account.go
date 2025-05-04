@@ -26,6 +26,12 @@ func (rep *gormAccountRepository) GetOne(a *model.Account) (model.Account, error
 	return account, handleGormError(err)
 }
 
+func (rep *gormAccountRepository) GetAll(a *model.Account) ([]model.Account, error) {
+	var accounts []model.Account
+	err := rep.db.Unscoped().Find(&accounts, a).Error
+	return accounts, handleGormError(err)
+}
+
 func (rep *gormAccountRepository) Insert(a *model.Account) (model.Account, error) {
 	err := rep.db.Create(a).Error
 	return *a, handleGormError(err)

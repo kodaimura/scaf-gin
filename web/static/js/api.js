@@ -93,6 +93,10 @@ class Api {
     return this.apiFetch(endpoint, 'DELETE', body);
   }
 
+  async patch(endpoint, body) {
+    return this.apiFetch(endpoint, 'PATCH', body);
+  }
+
   handleHttpError(error) {
     console.error(error);
     const status = error.status;

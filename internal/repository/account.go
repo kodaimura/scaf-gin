@@ -9,6 +9,7 @@ import (
 type AccountRepository interface {
 	Get(a *model.Account) ([]model.Account, error)
 	GetOne(a *model.Account) (model.Account, error)
+	GetAll(a *model.Account) ([]model.Account, error)
 
 	Insert(a *model.Account) (model.Account, error)
 	Update(a *model.Account) (model.Account, error)
