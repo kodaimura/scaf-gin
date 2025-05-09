@@ -37,18 +37,18 @@ func (srv *accountService) Get(in input.Account) ([]model.Account, error) {
 }
 
 func (srv *accountService) GetOne(in input.Account) (model.Account, error) {
-	return srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
+	return srv.accountRepository.GetOne(&model.Account{Id: in.Id})
 }
 
 func (srv *accountService) CreateOne(in input.Account) (model.Account, error) {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return model.Account{}, err
 	}
 
 	return srv.accountRepository.Insert(&model.Account{
-		AccountName:     in.AccountName,
-		AccountPassword: string(hashed),
+		Name:     in.Name,
+		Password: string(hashed),
 	})
 }
 
@@ -57,16 +57,16 @@ func (srv *accountService) UpdateOne(in input.Account) (model.Account, error) {
 	if err != nil {
 		return model.Account{}, err
 	}
-	account.AccountName = in.AccountName
+	account.Name = in.Name
 	return srv.accountRepository.Update(&account)
 }
 
 func (srv *accountService) DeleteOne(in input.Account) error {
-	return srv.accountRepository.Delete(&model.Account{AccountId: in.AccountId})
+	return srv.accountRepository.Delete(&model.Account{Id: in.Id})
 }
 
 func (srv *accountService) Login(in input.Login) (model.Account, error) {
-	account, err := srv.accountRepository.GetOne(&model.Account{AccountName: in.AccountName})
+	account, err := srv.accountRepository.GetOne(&model.Account{Name: in.Name})
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return model.Account{}, core.ErrUnauthorized
@@ -74,21 +74,21 @@ func (srv *accountService) Login(in input.Login) (model.Account, error) {
 		return model.Account{}, err
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(account.AccountPassword), []byte(in.AccountPassword)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(in.Password)); err != nil {
 		return model.Account{}, core.ErrUnauthorized
 	}
 	return account, nil
 }
 
 func (srv *accountService) UpdatePassword(in input.UpdatePassword) (model.Account, error) {
-	account, err := srv.accountRepository.GetOne(&model.Account{AccountId: in.AccountId})
+	account, err := srv.accountRepository.GetOne(&model.Account{Id: in.Id})
 	if err != nil {
 		return model.Account{}, err
 	}
-	hashed, err := bcrypt.GenerateFromPassword([]byte(in.AccountPassword), bcrypt.DefaultCost)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return model.Account{}, err
 	}
-	account.AccountPassword = string(hashed)
+	account.Password = string(hashed)
 	return srv.accountRepository.Update(&account)
 }

@@ -15,6 +15,6 @@ func NewIndexController() *IndexController {
 // GET /
 func (ctrl *IndexController) IndexPage(c *gin.Context) {
 	c.HTML(200, "index.html", gin.H{
-		"account_name": helper.GetAccountName(c),
+		"name": helper.GetAccountName(c),
 	})
 }

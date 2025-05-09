@@ -10,18 +10,18 @@ import (
 // ============================
 
 type Account struct {
-	AccountId   int       `json:"account_id"`
-	AccountName string    `json:"account_name"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	Id        int       `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func FromModelAccount(m model.Account) Account {
 	return Account{
-		AccountId:   m.AccountId,
-		AccountName: m.AccountName,
-		CreatedAt:   m.CreatedAt,
-		UpdatedAt:   m.UpdatedAt,
+		Id:        m.Id,
+		Name:      m.Name,
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
 	}
 }
 

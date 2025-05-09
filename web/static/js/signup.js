@@ -9,12 +9,12 @@ const signup = async () => {
   const form = document.getElementById("signup-form");
   if (!validate(form)) return;
 
-  const account_name = form.elements['account_name'].value;
-  const account_password = form.elements['account_password'].value;
+  const name = form.elements['name'].value;
+  const password = form.elements['password'].value;
 
   const body = {
-    account_name: account_name,
-    account_password: account_password
+    name: name,
+    password: password
   };
 
   try {
@@ -28,18 +28,18 @@ const signup = async () => {
 }
 
 const validate = (form) => {
-  const account_name = form.elements['account_name'].value;
-  const account_password = form.elements['account_password'].value;
-  const account_password_confirm = form.elements['account_password_confirm'].value;
+  const name = form.elements['name'].value;
+  const password = form.elements['password'].value;
+  const password_confirm = form.elements['password_confirm'].value;
 
   let error = "";
-  if (account_name === "") {
+  if (name === "") {
     error = "ユーザ名を入力して下さい。";
-  } else if (account_password === "") {
+  } else if (password === "") {
     error = "パスワードを入力して下さい。";
-  } else if (account_password.length < 8) {
+  } else if (password.length < 8) {
     error = "パスワードは8文字以上で入力してください。";
-  } else if (account_password !== account_password_confirm) {
+  } else if (password !== password_confirm) {
     error = "パスワードが一致していません。";
   }
 

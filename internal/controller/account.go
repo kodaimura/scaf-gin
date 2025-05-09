@@ -49,8 +49,8 @@ func (ctrl *AccountController) ApiSignup(c *gin.Context) {
 	}
 
 	account, err := ctrl.accountService.CreateOne(input.Account{
-		AccountName:     req.AccountName,
-		AccountPassword: req.AccountPassword,
+		Name:     req.Name,
+		Password: req.Password,
 	})
 	if err != nil {
 		c.Error(err)
@@ -69,8 +69,8 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	}
 
 	account, err := ctrl.accountService.Login(input.Login{
-		AccountName:     req.AccountName,
-		AccountPassword: req.AccountPassword,
+		Name:     req.Name,
+		Password: req.Password,
 	})
 	if err != nil {
 		c.Error(err)
@@ -78,8 +78,8 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	}
 
 	accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
-		AccountId:   account.AccountId,
-		AccountName: account.AccountName,
+		AccountId:   account.Id,
+		AccountName: account.Name,
 	})
 	if err != nil {
 		c.Error(err)
@@ -87,8 +87,8 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	}
 
 	refreshToken, err := core.Auth.CreateRefreshToken(core.AuthPayload{
-		AccountId:   account.AccountId,
-		AccountName: account.AccountName,
+		AccountId:   account.Id,
+		AccountName: account.Name,
 	})
 	if err != nil {
 		c.Error(err)
@@ -98,14 +98,14 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 	helper.SetAccessTokenCookie(c, accessToken)
 	helper.SetRefreshTokenCookie(c, refreshToken)
 
-	core.Logger.Info("account login: id=%d name=%s", account.AccountId, account.AccountName)
+	core.Logger.Info("account login: id=%d name=%s", account.Id, account.Name)
 
 	c.JSON(200, response.Login{
 		AccessToken:      accessToken,
 		RefreshToken:     refreshToken,
 		AccessExpiresIn:  config.AccessTokenExpiresSeconds,
 		RefreshExpiresIn: config.RefreshTokenExpiresSeconds,
-		Account: response.FromModelAccount(account),
+		Account:          response.FromModelAccount(account),
 	})
 }
 
@@ -149,7 +149,7 @@ func (ctrl *AccountController) ApiLogout(c *gin.Context) {
 // GET /api/accounts/me
 func (ctrl *AccountController) ApiGetOne(c *gin.Context) {
 	accountId := helper.GetAccountId(c)
-	account, err := ctrl.accountService.GetOne(input.Account{AccountId: accountId})
+	account, err := ctrl.accountService.GetOne(input.Account{Id: accountId})
 	if err != nil {
 		c.Error(err)
 		return
@@ -169,8 +169,8 @@ func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 	}
 
 	account, err := ctrl.accountService.UpdateOne(input.Account{
-		AccountId:   accountId,
-		AccountName: req.AccountName,
+		Id:   accountId,
+		Name: req.Name,
 	})
 	if err != nil {
 		c.Error(err)
@@ -184,15 +184,15 @@ func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
 func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 	accountName := helper.GetAccountName(c)
 
-	var req request.PutAccountPassword
+	var req request.PutPassword
 	if err := helper.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
 
 	account, err := ctrl.accountService.Login(input.Login{
-		AccountName:     accountName,
-		AccountPassword: req.OldAccountPassword,
+		Name:     accountName,
+		Password: req.OldPassword,
 	})
 	if err != nil {
 		c.Error(err)
@@ -200,8 +200,8 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 	}
 
 	_, err = ctrl.accountService.UpdatePassword(input.UpdatePassword{
-		AccountId:       account.AccountId,
-		AccountPassword: req.NewAccountPassword,
+		Id:       account.Id,
+		Password: req.NewPassword,
 	})
 	if err != nil {
 		c.Error(err)
@@ -214,7 +214,7 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 // DELETE /api/accounts/me
 func (ctrl *AccountController) ApiDeleteOne(c *gin.Context) {
 	accountId := helper.GetAccountId(c)
-	if err := ctrl.accountService.DeleteOne(input.Account{AccountId: accountId}); err != nil {
+	if err := ctrl.accountService.DeleteOne(input.Account{Id: accountId}); err != nil {
 		c.Error(err)
 		return
 	}

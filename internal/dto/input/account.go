@@ -1,21 +1,21 @@
 package input
 
 type Account struct {
-	AccountId       int
-	AccountName     string
-	AccountPassword string
+	Id       int
+	Name     string
+	Password string
 }
 
 type AccountPK struct {
-	AccountId int
+	Id int
 }
 
 type Login struct {
-	AccountName     string
-	AccountPassword string
+	Name     string
+	Password string
 }
 
 type UpdatePassword struct {
-	AccountId       int
-	AccountPassword string
+	Id       int
+	Password string
 }
