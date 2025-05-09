@@ -7,15 +7,15 @@ import (
 )
 
 type AccountRepository interface {
-	Get(a *model.Account) ([]model.Account, error)
-	GetOne(a *model.Account) (model.Account, error)
-	GetAll(a *model.Account) ([]model.Account, error)
+	Get(m *model.Account) ([]model.Account, error)
+	GetOne(m *model.Account) (model.Account, error)
+	GetAll(m *model.Account) ([]model.Account, error)
 
-	Insert(a *model.Account) (model.Account, error)
-	Update(a *model.Account) (model.Account, error)
-	Delete(a *model.Account) error
+	Insert(m *model.Account) (model.Account, error)
+	Update(m *model.Account) (model.Account, error)
+	Delete(m *model.Account) error
 
-	InsertTx(a *model.Account, tx *gorm.DB) (model.Account, error)
-	UpdateTx(a *model.Account, tx *gorm.DB) (model.Account, error)
-	DeleteTx(a *model.Account, tx *gorm.DB) error
+	InsertTx(m *model.Account, tx *gorm.DB) (model.Account, error)
+	UpdateTx(m *model.Account, tx *gorm.DB) (model.Account, error)
+	DeleteTx(m *model.Account, tx *gorm.DB) error
 }
