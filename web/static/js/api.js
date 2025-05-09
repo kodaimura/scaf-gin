@@ -42,14 +42,14 @@ class Api {
         }
       }
 
-      let errorData = { error: 'Unknown error', details: {} };
+      let errorData = { message: 'Unknown error', details: {} };
       try {
         errorData = await response.json();
       } catch {
         // ignore parse error
       }
 
-      const error = new HttpError(response.status, errorData.error, errorData.details);
+      const error = new HttpError(response.status, errorData.message, errorData.details);
       this.handleHttpError(error);
       throw error;
     }
