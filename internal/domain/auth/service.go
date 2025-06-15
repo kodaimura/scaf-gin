@@ -13,7 +13,7 @@ import (
 type Service interface {
 	Signup(in SignupDto, db *gorm.DB) (account.Account, error)
 	Login(in LoginDto, db *gorm.DB) (account.Account, error)
-	UpdatePassword(in UpdatePasswordDto, db *gorm.DB) (account.Account, error)
+	UpdatePassword(in UpdatePasswordDto, db *gorm.DB) error
 }
 
 type service struct {
@@ -27,7 +27,7 @@ func NewService(accountRepository account.Repository) Service {
 }
 
 func (srv *service) Signup(in SignupDto, db *gorm.DB) (account.Account, error) {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
+	hashed, err := hashPassword(in.Password)
 	if err != nil {
 		return account.Account{}, err
 	}
@@ -39,7 +39,7 @@ func (srv *service) Signup(in SignupDto, db *gorm.DB) (account.Account, error) {
 }
 
 func (srv *service) Login(in LoginDto, db *gorm.DB) (account.Account, error) {
-	a, err := srv.accountRepository.GetOne(&account.Account{Name: in.Name}, db)
+	acct, err := srv.accountRepository.GetOne(&account.Account{Name: in.Name}, db)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return account.Account{}, core.ErrUnauthorized
@@ -47,25 +47,38 @@ func (srv *service) Login(in LoginDto, db *gorm.DB) (account.Account, error) {
 		return account.Account{}, err
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(in.Password)); err != nil {
+	if err = verifyPassword(acct.Password, in.Password); err != nil {
 		return account.Account{}, core.ErrUnauthorized
 	}
-	return a, nil
+	return acct, nil
 }
 
-func (srv *service) UpdatePassword(in UpdatePasswordDto, db *gorm.DB) (account.Account, error) {
-	a, err := srv.accountRepository.GetOne(&account.Account{Id: in.Id}, db)
+func (srv *service) UpdatePassword(in UpdatePasswordDto, db *gorm.DB) error {
+	acct, err := srv.accountRepository.GetOne(&account.Account{Id: in.Id}, db)
 	if err != nil {
-		return account.Account{}, err
+		return err
 	}
-	if err = bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(in.OldPassword)); err != nil {
-		return account.Account{}, core.ErrBadRequest
+	if err = verifyPassword(acct.Password, in.OldPassword); err != nil {
+		return core.ErrBadRequest
 	}
 
-	hashed, err := bcrypt.GenerateFromPassword([]byte(in.NewPassword), bcrypt.DefaultCost)
+	hashed, err := hashPassword(in.NewPassword)
 	if err != nil {
-		return account.Account{}, err
+		return err
 	}
-	a.Password = string(hashed)
-	return srv.accountRepository.Update(&a, db)
+	acct.Password = string(hashed)
+	_, err = srv.accountRepository.Update(&acct, db)
+	return err
+}
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func verifyPassword(hashedPassword, plainPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword)); err != nil {
+		return err
+	}
+	return nil
 }

@@ -77,15 +77,15 @@ func (ctrl *controller) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	account, err := ctrl.service.Login(LoginDto(req), ctrl.db)
+	acct, err := ctrl.service.Login(LoginDto(req), ctrl.db)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
 	accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
-		AccountId:   account.Id,
-		AccountName: account.Name,
+		AccountId:   acct.Id,
+		AccountName: acct.Name,
 	})
 	if err != nil {
 		c.Error(err)
@@ -93,8 +93,8 @@ func (ctrl *controller) ApiLogin(c *gin.Context) {
 	}
 
 	refreshToken, err := core.Auth.CreateRefreshToken(core.AuthPayload{
-		AccountId:   account.Id,
-		AccountName: account.Name,
+		AccountId:   acct.Id,
+		AccountName: acct.Name,
 	})
 	if err != nil {
 		c.Error(err)
@@ -104,10 +104,10 @@ func (ctrl *controller) ApiLogin(c *gin.Context) {
 	helper.SetAccessTokenCookie(c, accessToken)
 	helper.SetRefreshTokenCookie(c, refreshToken)
 
-	core.Logger.Info("account login: id=%d name=%s", account.Id, account.Name)
+	core.Logger.Info("account login: id=%d name=%s", acct.Id, acct.Name)
 
 	c.JSON(200, LoginResponse{
-		AccountId:        account.Id,
+		AccountId:        acct.Id,
 		AccessToken:      accessToken,
 		RefreshToken:     refreshToken,
 		AccessExpiresIn:  config.AccessTokenExpiresSeconds,
@@ -162,8 +162,8 @@ func (ctrl *controller) ApiPutMePassword(c *gin.Context) {
 		return
 	}
 
-	_, err := ctrl.service.UpdatePassword(UpdatePasswordDto{
-		Id:       accountId,
+	err := ctrl.service.UpdatePassword(UpdatePasswordDto{
+		Id:          accountId,
 		OldPassword: req.OldPassword,
 		NewPassword: req.NewPassword,
 	}, ctrl.db)

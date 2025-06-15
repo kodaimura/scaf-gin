@@ -14,7 +14,7 @@ type Controller interface {
 }
 
 type controller struct {
-	db *gorm.DB
+	db      *gorm.DB
 	service Service
 }
 

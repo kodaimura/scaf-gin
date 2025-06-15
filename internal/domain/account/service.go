@@ -30,12 +30,12 @@ func (srv *service) GetOne(in GetOneDto, db *gorm.DB) (Account, error) {
 }
 
 func (srv *service) UpdateOne(in UpdateOneDto, db *gorm.DB) (Account, error) {
-	account, err := srv.GetOne(GetOneDto{Id: in.Id}, db)
+	acct, err := srv.GetOne(GetOneDto{Id: in.Id}, db)
 	if err != nil {
 		return Account{}, err
 	}
-	account.Name = in.Name
-	return srv.repository.Update(&account, db)
+	acct.Name = in.Name
+	return srv.repository.Update(&acct, db)
 }
 
 func (srv *service) DeleteOne(in DeleteOneDto, db *gorm.DB) error {

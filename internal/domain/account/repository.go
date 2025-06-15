@@ -10,13 +10,12 @@ type Repository interface {
 	Get(m *Account, db *gorm.DB) ([]Account, error)
 	GetOne(m *Account, db *gorm.DB) (Account, error)
 	GetAll(m *Account, db *gorm.DB) ([]Account, error)
-
 	Insert(m *Account, db *gorm.DB) (Account, error)
 	Update(m *Account, db *gorm.DB) (Account, error)
 	Delete(m *Account, db *gorm.DB) error
 }
 
-type repository struct {}
+type repository struct{}
 
 func NewRepository() Repository {
 	return &repository{}
