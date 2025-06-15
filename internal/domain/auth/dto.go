@@ -11,6 +11,7 @@ type LoginDto struct {
 }
 
 type UpdatePasswordDto struct {
-	Id       int
-	Password string
+	Id          int
+	OldPassword string
+	NewPassword string
 }

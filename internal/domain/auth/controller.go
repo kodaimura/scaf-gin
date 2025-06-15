@@ -154,7 +154,7 @@ func (ctrl *controller) ApiLogout(c *gin.Context) {
 
 // PUT /api/accounts/me/password
 func (ctrl *controller) ApiPutMePassword(c *gin.Context) {
-	accountName := helper.GetAccountName(c)
+	accountId := helper.GetAccountId(c)
 
 	var req PutMePasswordRequest
 	if err := helper.BindJSON(c, &req); err != nil {
@@ -162,18 +162,10 @@ func (ctrl *controller) ApiPutMePassword(c *gin.Context) {
 		return
 	}
 
-	account, err := ctrl.service.Login(LoginDto{
-		Name:     accountName,
-		Password: req.OldPassword,
-	}, ctrl.db)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	_, err = ctrl.service.UpdatePassword(UpdatePasswordDto{
-		Id:       account.Id,
-		Password: req.NewPassword,
+	_, err := ctrl.service.UpdatePassword(UpdatePasswordDto{
+		Id:       accountId,
+		OldPassword: req.OldPassword,
+		NewPassword: req.NewPassword,
 	}, ctrl.db)
 	if err != nil {
 		c.Error(err)

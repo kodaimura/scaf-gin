@@ -58,7 +58,11 @@ func (srv *service) UpdatePassword(in UpdatePasswordDto, db *gorm.DB) (account.A
 	if err != nil {
 		return account.Account{}, err
 	}
-	hashed, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
+	if err = bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(in.OldPassword)); err != nil {
+		return account.Account{}, core.ErrBadRequest
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(in.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return account.Account{}, err
 	}
