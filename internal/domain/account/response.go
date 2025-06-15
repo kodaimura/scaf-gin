@@ -15,7 +15,7 @@ type AccountResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func FromModelAccount(m Account) AccountResponse {
+func ToAccountResponse(m Account) AccountResponse {
 	return AccountResponse{
 		Id:        m.Id,
 		Name:      m.Name,
@@ -24,10 +24,10 @@ func FromModelAccount(m Account) AccountResponse {
 	}
 }
 
-func FromModelAccountList(models []Account) []AccountResponse {
+func ToAccountResponseList(models []Account) []AccountResponse {
 	res := make([]AccountResponse, 0, len(models))
 	for _, m := range models {
-		res = append(res, FromModelAccount(m))
+		res = append(res, ToAccountResponse(m))
 	}
 	return res
 }

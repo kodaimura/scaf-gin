@@ -17,14 +17,9 @@ type CreateOneDto struct {
 type UpdateOneDto struct {
 	Id int
 	Name     string
-	Password string
 }
 
 type DeleteOneDto struct {
-	Id int
-}
-
-type AccountPK struct {
 	Id int
 }
 

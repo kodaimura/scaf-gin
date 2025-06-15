@@ -69,7 +69,7 @@ func (ctrl *controller) ApiSignup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, FromModelAccount(account))
+	c.JSON(201, ToAccountResponse(account))
 }
 
 // POST /api/accounts/login
@@ -114,7 +114,7 @@ func (ctrl *controller) ApiLogin(c *gin.Context) {
 		RefreshToken:     refreshToken,
 		AccessExpiresIn:  config.AccessTokenExpiresSeconds,
 		RefreshExpiresIn: config.RefreshTokenExpiresSeconds,
-		Account:          FromModelAccount(account),
+		Account:          ToAccountResponse(account),
 	})
 }
 
@@ -164,7 +164,7 @@ func (ctrl *controller) ApiGetMe(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, FromModelAccount(account))
+	c.JSON(200, ToAccountResponse(account))
 }
 
 // PUT /api/accounts/me
@@ -186,7 +186,7 @@ func (ctrl *controller) ApiPutMe(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, FromModelAccount(account))
+	c.JSON(200, ToAccountResponse(account))
 }
 
 // PUT /api/accounts/me/password
