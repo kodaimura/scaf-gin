@@ -31,24 +31,3 @@ func ToAccountResponseList(models []Account) []AccountResponse {
 	}
 	return res
 }
-
-// ============================
-// Login
-// ============================
-
-type LoginResponse struct {
-	AccessToken      string  `json:"access_token"`
-	RefreshToken     string  `json:"refresh_token"`
-	AccessExpiresIn  int     `json:"access_expires_in"`
-	RefreshExpiresIn int     `json:"refresh_expires_in"`
-	Account          AccountResponse `json:"account"`
-}
-
-// ============================
-// Refresh
-// ============================
-
-type RefreshResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-}
