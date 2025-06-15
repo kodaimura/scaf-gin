@@ -1,4 +1,4 @@
-package impl
+package helper
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"scaf-gin/internal/core"
 )
 
-func handleGormError(err error) error {
+func HandleGormError(err error) error {
 	if err == nil {
 		return nil
 	}

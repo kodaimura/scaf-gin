@@ -1,7 +1,6 @@
-package response
+package account
 
 import (
-	"scaf-gin/internal/model"
 	"time"
 )
 
@@ -9,15 +8,15 @@ import (
 // Account
 // ============================
 
-type Account struct {
+type AccountResponse struct {
 	Id        int       `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func FromModelAccount(m model.Account) Account {
-	return Account{
+func FromModelAccount(m Account) AccountResponse {
+	return AccountResponse{
 		Id:        m.Id,
 		Name:      m.Name,
 		CreatedAt: m.CreatedAt,
@@ -25,8 +24,8 @@ func FromModelAccount(m model.Account) Account {
 	}
 }
 
-func FromModelAccountList(models []model.Account) []Account {
-	res := make([]Account, 0, len(models))
+func FromModelAccountList(models []Account) []AccountResponse {
+	res := make([]AccountResponse, 0, len(models))
 	for _, m := range models {
 		res = append(res, FromModelAccount(m))
 	}
@@ -37,19 +36,19 @@ func FromModelAccountList(models []model.Account) []Account {
 // Login
 // ============================
 
-type Login struct {
+type LoginResponse struct {
 	AccessToken      string  `json:"access_token"`
 	RefreshToken     string  `json:"refresh_token"`
 	AccessExpiresIn  int     `json:"access_expires_in"`
 	RefreshExpiresIn int     `json:"refresh_expires_in"`
-	Account          Account `json:"account"`
+	Account          AccountResponse `json:"account"`
 }
 
 // ============================
 // Refresh
 // ============================
 
-type Refresh struct {
+type RefreshResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 }

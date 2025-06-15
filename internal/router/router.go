@@ -3,28 +3,24 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"scaf-gin/internal/controller"
+	"scaf-gin/internal/domain/account"
+	"scaf-gin/internal/domain/general"
 	"scaf-gin/internal/infrastructure/db"
 	"scaf-gin/internal/middleware"
-	repository "scaf-gin/internal/repository/impl"
-	"scaf-gin/internal/service"
 )
 
 var gorm = db.NewGormDB()
 //var sqlx = db.NewSqlxDB()
 
 /* DI (Repository) */
-var accountRepository = repository.NewGormAccountRepository(gorm)
-
-/* DI (Query) */
-//var xxxQuery = query.NewXxxQuery(sqlx)
+var accountRepository = account.NewRepository()
 
 /* DI (Service) */
-var accountService = service.NewAccountService(accountRepository)
+var accountService = account.NewService(accountRepository)
 
 /* DI (Controller) */
-var indexController = controller.NewIndexController()
-var accountController = controller.NewAccountController(accountService)
+var generalController = general.NewController()
+var accountController = account.NewController(gorm, accountService)
 
 func SetStatic(r *gin.Engine) {
 	r.LoadHTMLGlob("web/template/*.html")
@@ -44,7 +40,7 @@ func SetWeb(r *gin.RouterGroup) {
 
 	auth := r.Group("", middleware.WebAuth())
 	{
-		auth.GET("/", indexController.IndexPage)
+		auth.GET("/", generalController.IndexPage)
 	}
 }
 
@@ -57,9 +53,9 @@ func SetApi(r *gin.RouterGroup) {
 
 	auth := r.Group("", middleware.ApiAuth())
 	{
-		auth.GET("/accounts/me", accountController.ApiGetOne)
-		auth.PUT("/accounts/me", accountController.ApiPutOne)
-		auth.PUT("/accounts/me/password", accountController.ApiPutPassword)
-		auth.DELETE("/accounts/me", accountController.ApiDeleteOne)
+		auth.GET("/accounts/me", accountController.ApiGetMe)
+		auth.PUT("/accounts/me", accountController.ApiPutMe)
+		auth.PUT("/accounts/me/password", accountController.ApiPutMePassword)
+		auth.DELETE("/accounts/me", accountController.ApiDeleteMe)
 	}
 }

@@ -1,39 +1,54 @@
-package controller
+package account
 
 import (
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
-	"scaf-gin/internal/dto/input"
-	"scaf-gin/internal/dto/request"
-	"scaf-gin/internal/dto/response"
 	"scaf-gin/internal/helper"
-	"scaf-gin/internal/service"
 )
 
-type AccountController struct {
-	accountService service.AccountService
+type Controller interface {
+	SignupPage(c *gin.Context)
+	LoginPage(c *gin.Context)
+	Logout(c *gin.Context)
+	
+	ApiSignup(c *gin.Context)
+	ApiLogin(c *gin.Context)
+	ApiRefresh(c *gin.Context)
+	ApiLogout(c *gin.Context)
+
+	ApiGetMe(c *gin.Context)
+	ApiPutMe(c *gin.Context)
+	ApiPutMePassword(c *gin.Context)
+	ApiDeleteMe(c *gin.Context)
 }
 
-func NewAccountController(accountService service.AccountService) *AccountController {
-	return &AccountController{
-		accountService: accountService,
+type controller struct {
+	db *gorm.DB
+	service Service
+}
+
+func NewController(db *gorm.DB, service Service) Controller {
+	return &controller{
+		db:      db,
+		service: service,
 	}
 }
 
 // GET /signup
-func (ctrl *AccountController) SignupPage(c *gin.Context) {
+func (ctrl *controller) SignupPage(c *gin.Context) {
 	c.HTML(200, "signup.html", gin.H{})
 }
 
 // GET /login
-func (ctrl *AccountController) LoginPage(c *gin.Context) {
+func (ctrl *controller) LoginPage(c *gin.Context) {
 	c.HTML(200, "login.html", gin.H{})
 }
 
 // GET /logout
-func (ctrl *AccountController) Logout(c *gin.Context) {
+func (ctrl *controller) Logout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
 	helper.SetAccessTokenCookie(c, "")
 	helper.SetRefreshTokenCookie(c, "")
@@ -41,37 +56,31 @@ func (ctrl *AccountController) Logout(c *gin.Context) {
 }
 
 // POST /api/accounts/signup
-func (ctrl *AccountController) ApiSignup(c *gin.Context) {
-	var req request.Signup
+func (ctrl *controller) ApiSignup(c *gin.Context) {
+	var req SignupRequest
 	if err := helper.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
 
-	account, err := ctrl.accountService.CreateOne(input.Account{
-		Name:     req.Name,
-		Password: req.Password,
-	})
+	account, err := ctrl.service.CreateOne(CreateOneDto(req), ctrl.db)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(201, response.FromModelAccount(account))
+	c.JSON(201, FromModelAccount(account))
 }
 
 // POST /api/accounts/login
-func (ctrl *AccountController) ApiLogin(c *gin.Context) {
-	var req request.Login
+func (ctrl *controller) ApiLogin(c *gin.Context) {
+	var req LoginRequest
 	if err := helper.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
 
-	account, err := ctrl.accountService.Login(input.Login{
-		Name:     req.Name,
-		Password: req.Password,
-	})
+	account, err := ctrl.service.Login(LoginDto(req), ctrl.db)
 	if err != nil {
 		c.Error(err)
 		return
@@ -100,17 +109,17 @@ func (ctrl *AccountController) ApiLogin(c *gin.Context) {
 
 	core.Logger.Info("account login: id=%d name=%s", account.Id, account.Name)
 
-	c.JSON(200, response.Login{
+	c.JSON(200, LoginResponse{
 		AccessToken:      accessToken,
 		RefreshToken:     refreshToken,
 		AccessExpiresIn:  config.AccessTokenExpiresSeconds,
 		RefreshExpiresIn: config.RefreshTokenExpiresSeconds,
-		Account:          response.FromModelAccount(account),
+		Account:          FromModelAccount(account),
 	})
 }
 
 // POST /api/accounts/refresh
-func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
+func (ctrl *controller) ApiRefresh(c *gin.Context) {
 	refreshToken := helper.GetRefreshToken(c)
 
 	payload, err := core.Auth.VerifyRefreshToken(refreshToken)
@@ -132,14 +141,14 @@ func (ctrl *AccountController) ApiRefresh(c *gin.Context) {
 
 	core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
 
-	c.JSON(200, response.Refresh{
+	c.JSON(200, RefreshResponse{
 		AccessToken: accessToken,
 		ExpiresIn:   config.AccessTokenExpiresSeconds,
 	})
 }
 
 // POST /api/accounts/logout
-func (ctrl *AccountController) ApiLogout(c *gin.Context) {
+func (ctrl *controller) ApiLogout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
 	helper.SetAccessTokenCookie(c, "")
 	helper.SetRefreshTokenCookie(c, "")
@@ -147,62 +156,62 @@ func (ctrl *AccountController) ApiLogout(c *gin.Context) {
 }
 
 // GET /api/accounts/me
-func (ctrl *AccountController) ApiGetOne(c *gin.Context) {
+func (ctrl *controller) ApiGetMe(c *gin.Context) {
 	accountId := helper.GetAccountId(c)
-	account, err := ctrl.accountService.GetOne(input.Account{Id: accountId})
+	account, err := ctrl.service.GetOne(GetOneDto{Id: accountId}, ctrl.db)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(200, response.FromModelAccount(account))
+	c.JSON(200, FromModelAccount(account))
 }
 
 // PUT /api/accounts/me
-func (ctrl *AccountController) ApiPutOne(c *gin.Context) {
+func (ctrl *controller) ApiPutMe(c *gin.Context) {
 	accountId := helper.GetAccountId(c)
 
-	var req request.PutAccount
+	var req PutMeRequest
 	if err := helper.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
 
-	account, err := ctrl.accountService.UpdateOne(input.Account{
+	account, err := ctrl.service.UpdateOne(UpdateOneDto{
 		Id:   accountId,
 		Name: req.Name,
-	})
+	}, ctrl.db)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(200, response.FromModelAccount(account))
+	c.JSON(200, FromModelAccount(account))
 }
 
 // PUT /api/accounts/me/password
-func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
+func (ctrl *controller) ApiPutMePassword(c *gin.Context) {
 	accountName := helper.GetAccountName(c)
 
-	var req request.PutPassword
+	var req PutMePasswordRequest
 	if err := helper.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
 
-	account, err := ctrl.accountService.Login(input.Login{
+	account, err := ctrl.service.Login(LoginDto{
 		Name:     accountName,
 		Password: req.OldPassword,
-	})
+	}, ctrl.db)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	_, err = ctrl.accountService.UpdatePassword(input.UpdatePassword{
+	_, err = ctrl.service.UpdatePassword(UpdatePasswordDto{
 		Id:       account.Id,
 		Password: req.NewPassword,
-	})
+	}, ctrl.db)
 	if err != nil {
 		c.Error(err)
 		return
@@ -212,9 +221,9 @@ func (ctrl *AccountController) ApiPutPassword(c *gin.Context) {
 }
 
 // DELETE /api/accounts/me
-func (ctrl *AccountController) ApiDeleteOne(c *gin.Context) {
+func (ctrl *controller) ApiDeleteMe(c *gin.Context) {
 	accountId := helper.GetAccountId(c)
-	if err := ctrl.accountService.DeleteOne(input.Account{Id: accountId}); err != nil {
+	if err := ctrl.service.DeleteOne(DeleteOneDto{Id: accountId}, ctrl.db); err != nil {
 		c.Error(err)
 		return
 	}
