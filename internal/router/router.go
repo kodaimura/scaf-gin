@@ -7,7 +7,6 @@ import (
 	"scaf-gin/internal/domain/auth"
 	"scaf-gin/internal/feature/index"
 	"scaf-gin/internal/infrastructure/db"
-	"scaf-gin/internal/middleware"
 )
 
 var gorm = db.NewGormDB()
@@ -37,25 +36,25 @@ func SetStatic(r *gin.Engine) {
 }
 
 func SetWeb(r *gin.RouterGroup) {
-	r.Use(middleware.WebErrorHandler())
+	r.Use(WebErrorHandler())
 	r.GET("/signup", authController.SignupPage)
 	r.GET("/login", authController.LoginPage)
 	r.GET("/logout", authController.Logout)
 
-	auth := r.Group("", middleware.WebAuth())
+	auth := r.Group("", WebAuthMiddleware())
 	{
 		auth.GET("/", indexController.IndexPage)
 	}
 }
 
 func SetApi(r *gin.RouterGroup) {
-	r.Use(middleware.ApiErrorHandler())
+	r.Use(ApiErrorHandler())
 	r.POST("/accounts/signup", authController.ApiSignup)
 	r.POST("/accounts/login", authController.ApiLogin)
 	r.POST("/accounts/refresh", authController.ApiRefresh)
 	r.POST("/accounts/logout", authController.ApiLogout)
 
-	auth := r.Group("", middleware.ApiAuth())
+	auth := r.Group("", ApiAuthMiddleware())
 	{
 		auth.GET("/accounts/me", accountController.ApiGetMe)
 		auth.PUT("/accounts/me", accountController.ApiPutMe)

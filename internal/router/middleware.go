@@ -1,4 +1,4 @@
-package middleware
+package router
 
 import (
 	"errors"
@@ -11,9 +11,9 @@ import (
 	"scaf-gin/internal/helper"
 )
 
-// BasicAuth is a middleware that checks for Basic Authentication credentials.
+// BasicAuthMiddleware is a middleware that checks for Basic Authentication credentials.
 // If the credentials are incorrect, it returns an Unauthorized status.
-func BasicAuth() gin.HandlerFunc {
+func BasicAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, pass, ok := c.Request.BasicAuth()
 		if !ok || user != config.BasicAuthUser || pass != config.BasicAuthPass {
@@ -25,10 +25,10 @@ func BasicAuth() gin.HandlerFunc {
 	}
 }
 
-// WebAuth is a middleware that validates the JWT access token and refresh token.
+// WebAuthMiddleware is a middleware that validates the JWT access token and refresh token.
 // If both are invalid, the user is redirected to login,
 // otherwise, a new access token is created and stored in a cookie.
-func WebAuth() gin.HandlerFunc {
+func WebAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Try to verify the access token
 		payload, err := core.Auth.VerifyAccessToken(helper.GetAccessToken(c))
@@ -97,9 +97,9 @@ func WebErrorHandler() gin.HandlerFunc {
 	}
 }
 
-// ApiAuth is a middleware that validates the JWT token for API access.
+// ApiAuthMiddleware is a middleware that validates the JWT token for API access.
 // If the token is invalid, it returns an Unauthorized error in JSON format.
-func ApiAuth() gin.HandlerFunc {
+func ApiAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
 		payload, err := core.Auth.VerifyAccessToken(token)
