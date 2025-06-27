@@ -77,7 +77,11 @@ class Api {
     }
   }
 
-  async get(endpoint) {
+  async get(endpoint, params = null) {
+    if (params && typeof params === 'object') {
+      const query = new URLSearchParams(params).toString();
+      endpoint += `?${query}`;
+    }
     return this.apiFetch(endpoint, 'GET');
   }
 
