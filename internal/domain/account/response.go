@@ -5,7 +5,7 @@ import (
 )
 
 // ============================
-// Account
+// AccountResponse
 // ============================
 
 type AccountResponse struct {

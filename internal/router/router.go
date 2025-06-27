@@ -5,7 +5,7 @@ import (
 
 	"scaf-gin/internal/domain/account"
 	"scaf-gin/internal/domain/auth"
-	"scaf-gin/internal/domain/general"
+	"scaf-gin/internal/feature/index"
 	"scaf-gin/internal/infrastructure/db"
 	"scaf-gin/internal/middleware"
 )
@@ -23,7 +23,7 @@ var accountService = account.NewService(accountRepository)
 /* DI (Controller) */
 var authController = auth.NewController(gorm, authService)
 var accountController = account.NewController(gorm, accountService)
-var generalController = general.NewController()
+var indexController = index.NewController()
 
 func SetStatic(r *gin.Engine) {
 	r.LoadHTMLGlob("web/template/*.html")
@@ -43,7 +43,7 @@ func SetWeb(r *gin.RouterGroup) {
 
 	auth := r.Group("", middleware.WebAuth())
 	{
-		auth.GET("/", generalController.IndexPage)
+		auth.GET("/", indexController.IndexPage)
 	}
 }
 

@@ -1,7 +1,7 @@
 package auth
 
 // ============================
-// Login
+// LoginResponse
 // ============================
 
 type LoginResponse struct {
@@ -13,7 +13,7 @@ type LoginResponse struct {
 }
 
 // ============================
-// Refresh
+// RefreshResponse
 // ============================
 
 type RefreshResponse struct {
