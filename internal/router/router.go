@@ -11,6 +11,7 @@ import (
 )
 
 var gorm = db.NewGormDB()
+
 //var sqlx = db.NewSqlxDB()
 
 /* DI (Repository) */

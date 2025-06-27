@@ -44,11 +44,11 @@ func SetAccessTokenCookie(c *gin.Context, accessToken string) {
 	}
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
-		COOKIE_KEY_ACCESS_TOKEN, 
-		accessToken, 
-		maxAge, 
-		"/", config.AppHost, 
-		config.CookieAccessSecure, 
+		COOKIE_KEY_ACCESS_TOKEN,
+		accessToken,
+		maxAge,
+		"/", config.AppHost,
+		config.CookieAccessSecure,
 		config.CookieAccessHttpOnly,
 	)
 }
@@ -61,11 +61,11 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
 	}
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
-		COOKIE_KEY_REFRESH_TOKEN, 
-		refreshToken, 
+		COOKIE_KEY_REFRESH_TOKEN,
+		refreshToken,
 		maxAge,
-		"/", config.AppHost, 
-		config.CookieRefreshSecure, 
+		"/", config.AppHost,
+		config.CookieRefreshSecure,
 		config.CookieRefreshHttpOnly,
 	)
 }

@@ -7,7 +7,7 @@
   "[go]": {
     "editor.insertSpaces": false,
     "editor.tabSize": 4,
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "[html]": {
     "editor.insertSpaces": true,

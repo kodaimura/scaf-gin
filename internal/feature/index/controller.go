@@ -10,7 +10,7 @@ type Controller interface {
 	IndexPage(c *gin.Context)
 }
 
-type controller struct {}
+type controller struct{}
 
 func NewController() Controller {
 	return &controller{}
