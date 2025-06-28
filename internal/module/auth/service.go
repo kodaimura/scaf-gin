@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"scaf-gin/internal/core"
-	"scaf-gin/internal/domain/account"
+	"scaf-gin/internal/module/account"
 )
 
 type Service interface {
