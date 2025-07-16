@@ -33,12 +33,7 @@ func (srv *service) GetOne(in AccountProfile, db *gorm.DB) (AccountProfile, erro
 }
 
 func (srv *service) CreateOne(in AccountProfile, db *gorm.DB) (AccountProfile, error) {
-	return srv.repository.Insert(&AccountProfile{
-		AccountId:   in.AccountId,
-		DisplayName: in.DisplayName,
-		Bio:         in.Bio,
-		AvatarURL:   in.AvatarURL,
-	}, db)
+	return srv.repository.Insert(&in, db)
 }
 
 func (srv *service) UpdateOne(in AccountProfile, db *gorm.DB) (AccountProfile, error) {
