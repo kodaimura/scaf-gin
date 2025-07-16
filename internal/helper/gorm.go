@@ -28,5 +28,5 @@ func HandleGormError(err error) error {
 	}
 
 	core.Logger.Error(err.Error())
-	return core.ErrUnexpected
+	return core.NewUnexpectedError(err)
 }

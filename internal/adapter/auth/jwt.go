@@ -71,7 +71,7 @@ func (j *JwtAuth) VerifyRefreshToken(token string) (core.AuthPayload, error) {
 
 // Common function to validate a JWT token (access or refresh)
 func (j *JwtAuth) verifyToken(token string, secretKey string) (core.AuthPayload, error) {
-	parsedToken, err := jwtpackage.Parse(token, func(t *jwtpackage.Token) (interface{}, error) {
+	parsedToken, err := jwtpackage.Parse(token, func(t *jwtpackage.Token) (any, error) {
 		if _, ok := t.Method.(*jwtpackage.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}

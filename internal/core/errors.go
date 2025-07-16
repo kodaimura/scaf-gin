@@ -2,75 +2,94 @@ package core
 
 import (
 	"errors"
+	"net/http"
 )
 
 const (
-	ErrCodeBadRequest   = "BAD_REQUEST"
-	ErrCodeForbidden    = "FORBIDDEN"
-	ErrCodeUnauthorized = "UNAUTHORIZED"
-	ErrCodeNotFound     = "NOT_FOUND"
-	ErrCodeConflict     = "CONFLICT"
-	ErrCodeUnexpected   = "UNEXPECTED"
+	ErrCodeBadRequest    = "BAD_REQUEST"
+	ErrCodeUnauthorized  = "UNAUTHORIZED"
+	ErrCodeForbidden     = "FORBIDDEN"
+	ErrCodeNotFound      = "NOT_FOUND"
+	ErrCodeConflict      = "CONFLICT"
+	ErrCodeUnprocessable = "UNPROCESSABLE_ENTITY"
+	ErrCodeUnexpected    = "UNEXPECTED"
+)
+
+const (
+	ErrMessageBadRequest    = "Bad request"
+	ErrMessageUnauthorized  = "Unauthorized access"
+	ErrMessageForbidden     = "Forbidden"
+	ErrMessageNotFound      = "Resource not found"
+	ErrMessageConflict      = "Conflict occurred"
+	ErrMessageUnprocessable = "Unprocessable entity"
+	ErrMessageUnexpected    = "Unexpected error occurred"
 )
 
 var (
-	ErrBadRequest   = NewAppError("Bad request", ErrCodeBadRequest)
-	ErrForbidden    = NewAppError("Forbidden", ErrCodeForbidden)
-	ErrUnauthorized = NewAppError("Unauthorized access", ErrCodeUnauthorized)
-	ErrNotFound     = NewAppError("Resource not found", ErrCodeNotFound)
-	ErrConflict     = NewAppError("Conflict occurred", ErrCodeConflict)
-	ErrUnexpected   = NewAppError("Unexpected error occurred", ErrCodeUnexpected)
+	ErrBadRequest    = NewAppError(ErrMessageBadRequest, ErrCodeBadRequest, http.StatusBadRequest)
+	ErrUnauthorized  = NewAppError(ErrMessageUnauthorized, ErrCodeUnauthorized, http.StatusUnauthorized)
+	ErrForbidden     = NewAppError(ErrMessageForbidden, ErrCodeForbidden, http.StatusForbidden)
+	ErrNotFound      = NewAppError(ErrMessageNotFound, ErrCodeNotFound, http.StatusNotFound)
+	ErrConflict      = NewAppError(ErrMessageConflict, ErrCodeConflict, http.StatusConflict)
+	ErrUnprocessable = NewAppError(ErrMessageUnprocessable, ErrCodeUnprocessable, http.StatusUnprocessableEntity)
+	ErrUnexpected    = NewAppError(ErrMessageUnexpected, ErrCodeUnexpected, http.StatusInternalServerError)
 )
 
+// AppError defines a reusable application-level error
 type AppError struct {
-	Message      string
-	ErrorCode    string
-	ErrorDetails []map[string]any
+	Message      string           `json:"message"`
+	ErrorCode    string           `json:"code"`
+	HTTPStatus   int              `json:"-"`
+	ErrorDetails []map[string]any `json:"details,omitempty"`
+	Err          error            `json:"-"`
 }
 
-// Implements the error interface
+// Error implements the error interface
 func (e *AppError) Error() string {
+	if e.Err != nil {
+		return e.Message + ": " + e.Err.Error()
+	}
 	return e.Message
 }
 
-// Get the error code of the AppError
-func (e *AppError) Code() string {
-	return e.ErrorCode
+// Unwrap allows use of errors.Unwrap(), errors.Is(), and errors.As()
+func (e *AppError) Unwrap() error {
+	return e.Err
 }
 
-// Get additional error details
-func (e *AppError) Details() []map[string]any {
-	return e.ErrorDetails
-}
-
-// Check if two errors are the same based on their error code
-func (e *AppError) Is(target error) bool {
-	if appErr, ok := target.(*AppError); ok {
-		return e.Code() == appErr.Code()
-	}
-	return false
-}
-
-// Create a new AppError instance
-func NewAppError(message, code string) *AppError {
+// Constructor: creates a new AppError without a wrapped internal error
+func NewAppError(message, code string, status int) *AppError {
 	return &AppError{
-		Message:      message,
-		ErrorCode:    code,
-		ErrorDetails: []map[string]any{},
+		Message:    message,
+		ErrorCode:  code,
+		HTTPStatus: status,
 	}
 }
 
-// Create a new validation error with additional details
+// Constructor: creates a new AppError with a wrapped internal error
+func WrapAppError(err error, message, code string, status int) *AppError {
+	var appErr *AppError
+	if errors.As(err, &appErr) {
+		return appErr
+	}
+	return &AppError{
+		Message:    message,
+		ErrorCode:  code,
+		HTTPStatus: status,
+		Err:        err,
+	}
+}
+
+func NewUnexpectedError(err error) *AppError {
+	return WrapAppError(err, ErrMessageUnexpected, ErrCodeUnexpected, http.StatusInternalServerError)
+}
+
+// Constructor: creates a validation error with additional detail information
 func NewValidationError(details []map[string]any) *AppError {
 	return &AppError{
-		Message:      "Bad request",
-		ErrorCode:    ErrCodeBadRequest,
+		Message:      ErrMessageUnprocessable,
+		ErrorCode:    ErrCodeUnprocessable,
+		HTTPStatus:   http.StatusUnprocessableEntity,
 		ErrorDetails: details,
 	}
-}
-
-// Check if the error is an AppError type
-func IsAppError(err error) bool {
-	var appErr *AppError
-	return errors.As(err, &appErr)
 }

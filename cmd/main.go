@@ -8,11 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"scaf-gin/config"
+	"scaf-gin/internal/adapter/auth"
+	"scaf-gin/internal/adapter/file"
+	"scaf-gin/internal/adapter/logger"
+	"scaf-gin/internal/adapter/mailer"
 	"scaf-gin/internal/core"
-	"scaf-gin/internal/infrastructure/auth"
-	"scaf-gin/internal/infrastructure/file"
-	"scaf-gin/internal/infrastructure/logger"
-	"scaf-gin/internal/infrastructure/mailer"
 	"scaf-gin/internal/router"
 )
 

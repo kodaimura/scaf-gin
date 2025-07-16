@@ -82,18 +82,35 @@ func WebErrorHandler() gin.HandlerFunc {
 
 		err := c.Errors.Last().Err
 
-		switch {
-		case errors.Is(err, core.ErrUnauthorized), errors.Is(err, core.ErrForbidden):
-			c.Redirect(http.StatusFound, "/login")
-		case errors.Is(err, core.ErrNotFound):
-			c.HTML(http.StatusNotFound, "404.html", nil)
-		case errors.Is(err, core.ErrBadRequest), errors.Is(err, core.ErrConflict), errors.Is(err, core.ErrUnexpected):
-			core.Logger.Error(err.Error())
-			c.HTML(http.StatusInternalServerError, "500.html", nil)
-		default:
-			core.Logger.Error(err.Error())
-			c.HTML(http.StatusInternalServerError, "500.html", nil)
+		status := http.StatusInternalServerError
+		template := "500.html"
+
+		var appErr *core.AppError
+		if errors.As(err, &appErr) {
+			status = appErr.HTTPStatus
+			switch status {
+			case http.StatusUnauthorized, http.StatusForbidden:
+				c.Redirect(http.StatusFound, "/login")
+				return
+			case http.StatusNotFound:
+				template = "404.html"
+			}
+		} else {
+			status = http.StatusInternalServerError
+			template = "500.html"
 		}
+
+		if status >= 500 {
+			core.Logger.Error(
+				"Error: %v method=%s url=%s headers=%v",
+				err,
+				c.Request.Method,
+				c.Request.URL.String(),
+				c.Request.Header,
+			)
+		}
+
+		c.HTML(status, template, nil)
 	}
 }
 
@@ -126,43 +143,31 @@ func ApiErrorHandler() gin.HandlerFunc {
 
 		err := c.Errors.Last().Err
 
-		var status int
-		var resp gin.H
+		status := http.StatusInternalServerError
+		resp := gin.H{
+			"message": "Unexpected Error",
+		}
 
-		switch {
-		case errors.Is(err, core.ErrBadRequest):
-			status = http.StatusBadRequest
-			if appErr, ok := err.(*core.AppError); ok {
-				resp = gin.H{
-					"message": appErr.Error(),
-					"details": appErr.Details(),
-				}
-			} else {
-				resp = gin.H{
-					"message": err.Error(),
-					"details": []map[string]any{},
-				}
+		var appErr *core.AppError
+		if errors.As(err, &appErr) {
+			status = appErr.HTTPStatus
+			resp = gin.H{
+				"code":    appErr.ErrorCode,
+				"message": appErr.Message,
 			}
-		case errors.Is(err, core.ErrUnauthorized):
-			status = http.StatusUnauthorized
-			resp = gin.H{"message": err.Error()}
-		case errors.Is(err, core.ErrForbidden):
-			status = http.StatusForbidden
-			resp = gin.H{"message": err.Error()}
-		case errors.Is(err, core.ErrNotFound):
-			status = http.StatusNotFound
-			resp = gin.H{"message": err.Error()}
-		case errors.Is(err, core.ErrConflict):
-			status = http.StatusConflict
-			resp = gin.H{"message": err.Error()}
-		case errors.Is(err, core.ErrUnexpected):
-			core.Logger.Error(err.Error())
-			status = http.StatusInternalServerError
-			resp = gin.H{"message": err.Error()}
-		default:
-			core.Logger.Error(err.Error())
-			status = http.StatusInternalServerError
-			resp = gin.H{"message": err.Error()}
+			if len(appErr.ErrorDetails) > 0 {
+				resp["details"] = appErr.ErrorDetails
+			}
+		}
+
+		if status >= 500 {
+			core.Logger.Error(
+				"Error: %v method=%s url=%s headers=%v",
+				err,
+				c.Request.Method,
+				c.Request.URL.String(),
+				c.Request.Header,
+			)
 		}
 
 		c.JSON(status, resp)
