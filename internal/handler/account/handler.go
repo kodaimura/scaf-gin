@@ -17,9 +17,6 @@ import (
 type Handler interface {
 	ApiGetAccounts(c *gin.Context)
 	ApiPostAccount(c *gin.Context)
-	ApiGetMe(c *gin.Context)
-	ApiPutMe(c *gin.Context)
-	ApiDeleteMe(c *gin.Context)
 	ApiGetAccount(c *gin.Context)
 	ApiPutAccount(c *gin.Context)
 	ApiPutAccountDisable(c *gin.Context)
@@ -72,55 +69,6 @@ func (h *handler) ApiPostAccount(c *gin.Context) {
 	}
 
 	c.JSON(201, PostAccountResponse{Account: ToAccountResponse(account)})
-}
-
-// GET /api/accounts/me
-func (h *handler) ApiGetMe(c *gin.Context) {
-	accountId := helper.GetAccountId(c)
-	account, err := h.usecase.GetOne(usecase.GetOneDto{Id: accountId})
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.JSON(200, GetCurrentAccountResponse{Account: ToAccountResponse(account)})
-}
-
-// PUT /api/accounts/me
-func (h *handler) ApiPutMe(c *gin.Context) {
-	accountId := helper.GetAccountId(c)
-
-	var req PutMeRequest
-	if err := helper.BindJSON(c, &req); err != nil {
-		c.Error(err)
-		return
-	}
-
-	account, err := h.usecase.UpdateOne(usecase.UpdateOneDto{
-		Id:        accountId,
-		LoginID:   req.LoginID,
-		Email:     req.Email,
-		Password:  req.Password,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-	})
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.JSON(200, PutAccountResponse{Account: ToAccountResponse(account)})
-}
-
-// DELETE /api/accounts/me
-func (h *handler) ApiDeleteMe(c *gin.Context) {
-	accountId := helper.GetAccountId(c)
-	if err := h.usecase.DeleteOne(usecase.DeleteOneDto{Id: accountId}); err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.JSON(204, nil)
 }
 
 // GET /api/accounts/:target_account_id

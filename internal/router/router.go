@@ -6,40 +6,29 @@ import (
 	"scaf-gin/internal/adapter/db"
 
 	"scaf-gin/internal/module/account"
-	"scaf-gin/internal/module/account_profile"
 	"scaf-gin/internal/module/password_reset_token"
 
 	account_uc "scaf-gin/internal/usecase/account"
-	account_profile_uc "scaf-gin/internal/usecase/account_profile"
 	auth_uc "scaf-gin/internal/usecase/auth"
 
 	account_h "scaf-gin/internal/handler/account"
-	account_profile_h "scaf-gin/internal/handler/account_profile"
 	auth_h "scaf-gin/internal/handler/auth"
 )
 
-var gorm = db.NewGormDB()
+var dbConn = db.NewGormDB()
 
 //var sqlx = db.NewSqlxDB()
 
-/* DI (Repository) */
-var accountRepository = account.NewRepository()
-var accountProfileRepository = account_profile.NewRepository()
-var passwordResetTokenRepository = password_reset_token.NewRepository()
-
-/* DI (Service) */
-var accountService = account.NewService(accountRepository)
-var accountProfileService = account_profile.NewService(accountProfileRepository)
-var passwordResetTokenService = password_reset_token.NewService(passwordResetTokenRepository)
+/* DI (Module) */
+var accountModule = account.NewModule(dbConn)
+var passwordResetTokenModule = password_reset_token.NewModule(dbConn)
 
 /* DI (Usecase) */
-var authUsecase = auth_uc.NewUsecase(gorm, accountService, accountProfileService, passwordResetTokenService)
-var accountUsecase = account_uc.NewUsecase(gorm, accountService)
-var accountProfileUsecase = account_profile_uc.NewUsecase(gorm, accountProfileService)
+var authUsecase = auth_uc.NewUsecase(dbConn, accountModule, passwordResetTokenModule)
+var accountUsecase = account_uc.NewUsecase(accountModule)
 
 /* DI (Handler) */
 var accountHandler = account_h.NewHandler(accountUsecase)
-var accountProfileHandler = account_profile_h.NewHandler(accountProfileUsecase)
 var authHandler = auth_h.NewHandler(authUsecase)
 
 func SetApi(r *gin.RouterGroup) {

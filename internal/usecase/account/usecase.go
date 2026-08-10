@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
 	"scaf-gin/internal/core"
 	accountModule "scaf-gin/internal/module/account"
@@ -21,28 +20,21 @@ type Usecase interface {
 }
 
 type usecase struct {
-	db             *gorm.DB
-	accountService accountModule.Service
+	accountModule accountModule.Module
 }
 
-func NewUsecase(
-	db *gorm.DB,
-	accountService accountModule.Service,
-) Usecase {
+func NewUsecase(accountModule accountModule.Module) Usecase {
 	return &usecase{
-		db:             db,
-		accountService: accountService,
+		accountModule: accountModule,
 	}
 }
 
 func (uc *usecase) Get(in GetDto) ([]accountModule.Account, error) {
-	return uc.accountService.Get(accountModule.Account{}, uc.db)
+	return uc.accountModule.GetAll()
 }
 
 func (uc *usecase) GetOne(in GetOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountService.GetOne(accountModule.Account{
-		Id: in.Id,
-	}, uc.db)
+	acct, err := uc.accountModule.GetByID(in.Id)
 	if errors.Is(err, core.ErrNotFound) {
 		return accountModule.Account{}, core.ErrAccountNotFound
 	}
@@ -66,21 +58,19 @@ func (uc *usecase) CreateOne(in CreateOneDto) (accountModule.Account, error) {
 		return accountModule.Account{}, err
 	}
 
-	acct, err := uc.accountService.CreateOne(accountModule.Account{
+	acct, err := uc.accountModule.Create(accountModule.Account{
 		LoginID:      loginID,
 		Email:        in.Email,
 		PasswordHash: hashed,
 		TokenVersion: 1,
 		FirstName:    in.FirstName,
 		LastName:     in.LastName,
-	}, uc.db)
+	})
 	return acct, err
 }
 
 func (uc *usecase) UpdateOne(in UpdateOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountService.GetOne(accountModule.Account{
-		Id: in.Id,
-	}, uc.db)
+	acct, err := uc.accountModule.GetByID(in.Id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return accountModule.Account{}, core.ErrAccountNotFound
@@ -112,7 +102,7 @@ func (uc *usecase) UpdateOne(in UpdateOneDto) (accountModule.Account, error) {
 		acct.TokenVersion++
 	}
 
-	return uc.accountService.UpdateOne(accountModule.Account{
+	return uc.accountModule.Update(accountModule.Account{
 		Id:           acct.Id,
 		LoginID:      acct.LoginID,
 		Email:        acct.Email,
@@ -120,13 +110,18 @@ func (uc *usecase) UpdateOne(in UpdateOneDto) (accountModule.Account, error) {
 		TokenVersion: acct.TokenVersion,
 		FirstName:    acct.FirstName,
 		LastName:     acct.LastName,
-	}, uc.db)
+	})
 }
 
 func (uc *usecase) DisableOne(in DisableOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountService.DisableOne(accountModule.Account{
-		Id: in.Id,
-	}, uc.db)
+	acct, err := uc.accountModule.GetByID(in.Id)
+	if errors.Is(err, core.ErrNotFound) {
+		return accountModule.Account{}, core.ErrAccountNotFound
+	}
+	if err != nil {
+		return accountModule.Account{}, err
+	}
+	acct, err = uc.accountModule.Disable(acct)
 	if errors.Is(err, core.ErrNotFound) {
 		return accountModule.Account{}, core.ErrAccountNotFound
 	}
@@ -134,9 +129,14 @@ func (uc *usecase) DisableOne(in DisableOneDto) (accountModule.Account, error) {
 }
 
 func (uc *usecase) EnableOne(in EnableOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountService.EnableOne(accountModule.Account{
-		Id: in.Id,
-	}, uc.db)
+	acct, err := uc.accountModule.GetByID(in.Id)
+	if errors.Is(err, core.ErrNotFound) {
+		return accountModule.Account{}, core.ErrAccountNotFound
+	}
+	if err != nil {
+		return accountModule.Account{}, err
+	}
+	acct, err = uc.accountModule.Enable(acct)
 	if errors.Is(err, core.ErrNotFound) {
 		return accountModule.Account{}, core.ErrAccountNotFound
 	}
@@ -144,13 +144,18 @@ func (uc *usecase) EnableOne(in EnableOneDto) (accountModule.Account, error) {
 }
 
 func (uc *usecase) DeleteOne(in DeleteOneDto) error {
-	return uc.accountService.DeleteOne(accountModule.Account{
-		Id: in.Id,
-	}, uc.db)
+	acct, err := uc.accountModule.GetByID(in.Id)
+	if errors.Is(err, core.ErrNotFound) {
+		return core.ErrAccountNotFound
+	}
+	if err != nil {
+		return err
+	}
+	return uc.accountModule.Delete(acct)
 }
 
 func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int) error {
-	existing, err := uc.accountService.GetByLoginID(loginID, uc.db)
+	existing, err := uc.accountModule.GetByLoginID(loginID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return nil
@@ -167,7 +172,7 @@ func (uc *usecase) ensureUniqueEmail(email *string, exceptID int) error {
 	if email == nil || *email == "" {
 		return nil
 	}
-	existing, err := uc.accountService.GetByEmail(*email, uc.db)
+	existing, err := uc.accountModule.GetByEmail(*email)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return nil

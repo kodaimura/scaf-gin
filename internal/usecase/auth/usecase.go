@@ -12,7 +12,6 @@ import (
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
 	accountModule "scaf-gin/internal/module/account"
-	profileModule "scaf-gin/internal/module/account_profile"
 	passwordResetTokenModule "scaf-gin/internal/module/password_reset_token"
 )
 
@@ -27,37 +26,36 @@ type Usecase interface {
 }
 
 type usecase struct {
-	db                        *gorm.DB
-	accountService            accountModule.Service
-	accountProfileService     profileModule.Service
-	passwordResetTokenService passwordResetTokenModule.Service
+	db                       *gorm.DB
+	accountModule            accountModule.Module
+	passwordResetTokenModule passwordResetTokenModule.Module
 }
 
 func NewUsecase(
 	db *gorm.DB,
-	accountService accountModule.Service,
-	accountProfileService profileModule.Service,
-	passwordResetTokenService passwordResetTokenModule.Service,
+	accountModule accountModule.Module,
+	passwordResetTokenModule passwordResetTokenModule.Module,
 ) Usecase {
 	return &usecase{
-		db:                        db,
-		accountService:            accountService,
-		accountProfileService:     accountProfileService,
-		passwordResetTokenService: passwordResetTokenService,
+		db:                       db,
+		accountModule:            accountModule,
+		passwordResetTokenModule: passwordResetTokenModule,
 	}
 }
 
 func (uc *usecase) Signup(in SignupDto) (accountModule.Account, error) {
 	var account accountModule.Account
 	err := uc.db.Transaction(func(tx *gorm.DB) error {
+		accountModuleTx := uc.accountModule.WithTx(tx)
+
 		loginID, err := core.ResolveLoginID(in.LoginID, in.Email)
 		if err != nil {
 			return err
 		}
-		if err := uc.ensureUniqueLoginID(loginID, 0, tx); err != nil {
+		if err := ensureUniqueLoginID(accountModuleTx, loginID, 0); err != nil {
 			return err
 		}
-		if err := uc.ensureUniqueEmail(in.Email, 0, tx); err != nil {
+		if err := ensureUniqueEmail(accountModuleTx, in.Email, 0); err != nil {
 			return err
 		}
 
@@ -66,25 +64,14 @@ func (uc *usecase) Signup(in SignupDto) (accountModule.Account, error) {
 			return err
 		}
 
-		account, err = uc.accountService.CreateOne(accountModule.Account{
+		account, err = accountModuleTx.Create(accountModule.Account{
 			LoginID:      loginID,
 			Email:        in.Email,
-			PasswordHash: string(hashed),
+			PasswordHash: hashed,
 			TokenVersion: 1,
 			FirstName:    in.FirstName,
 			LastName:     in.LastName,
-		}, tx)
-
-		if err != nil {
-			return err
-		}
-
-		_, err = uc.accountProfileService.CreateOne(profileModule.AccountProfile{
-			AccountId:   account.Id,
-			DisplayName: account.LastName + " " + account.FirstName,
-			Bio:         "",
-			AvatarURL:   "",
-		}, tx)
+		})
 		return err
 	})
 
@@ -92,7 +79,7 @@ func (uc *usecase) Signup(in SignupDto) (accountModule.Account, error) {
 }
 
 func (uc *usecase) Login(in LoginDto) (accountModule.Account, string, string, error) {
-	acct, err := uc.accountService.GetByLoginID(in.LoginID, uc.db)
+	account, err := uc.accountModule.GetByLoginID(in.LoginID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return accountModule.Account{}, "", "", core.ErrInvalidCredentials
@@ -100,31 +87,29 @@ func (uc *usecase) Login(in LoginDto) (accountModule.Account, string, string, er
 		return accountModule.Account{}, "", "", err
 	}
 
-	if !verifyPassword(acct.PasswordHash, in.Password) {
+	if !verifyPassword(account.PasswordHash, in.Password) {
 		return accountModule.Account{}, "", "", core.ErrInvalidCredentials
 	}
-	if acct.DisabledAt != nil {
+	if account.DisabledAt != nil {
 		return accountModule.Account{}, "", "", core.ErrAccountDisabled
 	}
 
-	accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
-		AccountId:    acct.Id,
-		LoginID:      acct.LoginID,
-		TokenVersion: acct.TokenVersion,
-	})
+	payload := core.AuthPayload{
+		AccountId:    account.Id,
+		LoginID:      account.LoginID,
+		TokenVersion: account.TokenVersion,
+	}
+
+	accessToken, err := core.Auth.CreateAccessToken(payload)
 	if err != nil {
 		return accountModule.Account{}, "", "", err
 	}
 
-	refreshToken, err := core.Auth.CreateRefreshToken(core.AuthPayload{
-		AccountId:    acct.Id,
-		LoginID:      acct.LoginID,
-		TokenVersion: acct.TokenVersion,
-	}, in.RememberMe)
+	refreshToken, err := core.Auth.CreateRefreshToken(payload, in.RememberMe)
 	if err != nil {
 		return accountModule.Account{}, "", "", err
 	}
-	return acct, accessToken, refreshToken, nil
+	return account, accessToken, refreshToken, nil
 }
 
 func (uc *usecase) Refresh(refreshToken string) (core.AuthPayload, string, error) {
@@ -136,43 +121,43 @@ func (uc *usecase) Refresh(refreshToken string) (core.AuthPayload, string, error
 		return core.AuthPayload{}, "", core.ErrRefreshInvalid
 	}
 
-	acct, err := uc.accountService.GetOne(accountModule.Account{Id: payload.AccountId}, uc.db)
+	account, err := uc.accountModule.GetByID(payload.AccountId)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return core.AuthPayload{}, "", core.ErrAuthNotFound
 		}
 		return core.AuthPayload{}, "", err
 	}
-	if acct.DisabledAt != nil {
+	if account.DisabledAt != nil {
 		return core.AuthPayload{}, "", core.ErrAccountDisabled
 	}
-	if payload.TokenVersion != acct.TokenVersion {
+	if payload.TokenVersion != account.TokenVersion {
 		return core.AuthPayload{}, "", core.ErrAuthTokenRevoked
 	}
 
 	accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
-		AccountId:    acct.Id,
-		LoginID:      acct.LoginID,
-		TokenVersion: acct.TokenVersion,
+		AccountId:    account.Id,
+		LoginID:      account.LoginID,
+		TokenVersion: account.TokenVersion,
 	})
 
 	return payload, accessToken, err
 }
 
 func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
-	acct, err := uc.accountService.GetByEmail(in.Email, uc.db)
+	account, err := uc.accountModule.GetByEmail(in.Email)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return nil
 		}
 		return err
 	}
-	if acct.DisabledAt != nil {
+	if account.DisabledAt != nil {
 		return nil
 	}
 
 	now := time.Now()
-	latest, err := uc.passwordResetTokenService.FindLatestByAccountId(acct.Id, uc.db)
+	latest, err := uc.passwordResetTokenModule.FindLatestByAccountID(account.Id)
 	if err != nil && !errors.Is(err, core.ErrNotFound) {
 		return err
 	}
@@ -191,14 +176,15 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 	expiresAt := now.Add(time.Minute * time.Duration(config.PasswordResetTokenExpiresMinutes))
 
 	err = uc.db.Transaction(func(tx *gorm.DB) error {
-		if err := uc.passwordResetTokenService.InvalidateActiveTokens(acct.Id, now, tx); err != nil {
+		tokenModuleTx := uc.passwordResetTokenModule.WithTx(tx)
+		if err := tokenModuleTx.InvalidateActiveTokens(account.Id, now); err != nil {
 			return err
 		}
-		_, err := uc.passwordResetTokenService.CreateOne(passwordResetTokenModule.PasswordResetToken{
-			AccountId: acct.Id,
+		_, err := tokenModuleTx.Create(passwordResetTokenModule.PasswordResetToken{
+			AccountId: account.Id,
 			TokenHash: tokenHash,
 			ExpiresAt: expiresAt,
-		}, tx)
+		})
 		return err
 	})
 	if err != nil {
@@ -206,12 +192,12 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 	}
 
 	resetURL := buildResetURL(rawToken)
-	body := buildPasswordResetMailBody(acct.LastName+" "+acct.FirstName, resetURL, config.PasswordResetTokenExpiresMinutes)
+	body := buildPasswordResetMailBody(account.LastName+" "+account.FirstName, resetURL, config.PasswordResetTokenExpiresMinutes)
 	return core.Mailer.SendText([]string{in.Email}, "Password reset", body)
 }
 
 func (uc *usecase) VerifyResetPasswordToken(in VerifyResetPasswordTokenDto) error {
-	token, err := uc.passwordResetTokenService.GetByHash(core.HashToken(in.Token), uc.db)
+	token, err := uc.passwordResetTokenModule.GetByHash(core.HashToken(in.Token))
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return core.ErrTokenInvalid
@@ -222,7 +208,7 @@ func (uc *usecase) VerifyResetPasswordToken(in VerifyResetPasswordTokenDto) erro
 }
 
 func (uc *usecase) ResetPassword(in ResetPasswordDto) error {
-	token, err := uc.passwordResetTokenService.GetByHash(core.HashToken(in.Token), uc.db)
+	token, err := uc.passwordResetTokenModule.GetByHash(core.HashToken(in.Token))
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return core.ErrTokenInvalid
@@ -233,7 +219,7 @@ func (uc *usecase) ResetPassword(in ResetPasswordDto) error {
 		return err
 	}
 
-	acct, err := uc.accountService.GetOne(accountModule.Account{Id: token.AccountId}, uc.db)
+	account, err := uc.accountModule.GetByID(token.AccountId)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return core.ErrAccountNotFound
@@ -247,27 +233,27 @@ func (uc *usecase) ResetPassword(in ResetPasswordDto) error {
 	}
 
 	now := time.Now()
-	acct.PasswordHash = hashed
-	acct.TokenVersion++
+	account.PasswordHash = hashed
+	account.TokenVersion++
 	token.UsedAt = &now
 
 	return uc.db.Transaction(func(tx *gorm.DB) error {
-		if _, err := uc.accountService.UpdateOne(acct, tx); err != nil {
+		accountModuleTx := uc.accountModule.WithTx(tx)
+		tokenModuleTx := uc.passwordResetTokenModule.WithTx(tx)
+		if _, err := accountModuleTx.Update(account); err != nil {
 			return err
 		}
-		_, err := uc.passwordResetTokenService.UpdateOne(token, tx)
+		_, err := tokenModuleTx.Update(token)
 		return err
 	})
 }
 
 func (uc *usecase) UpdatePassword(in UpdatePasswordDto) error {
-	acct, err := uc.accountService.GetOne(accountModule.Account{
-		Id: in.Id,
-	}, uc.db)
+	account, err := uc.accountModule.GetByID(in.Id)
 	if err != nil {
 		return err
 	}
-	if !verifyPassword(acct.PasswordHash, in.OldPassword) {
+	if !verifyPassword(account.PasswordHash, in.OldPassword) {
 		return core.ErrCurrentPasswordIncorrect
 	}
 
@@ -275,14 +261,14 @@ func (uc *usecase) UpdatePassword(in UpdatePasswordDto) error {
 	if err != nil {
 		return err
 	}
-	acct.PasswordHash = string(hashed)
-	acct.TokenVersion++
-	_, err = uc.accountService.UpdateOne(acct, uc.db)
+	account.PasswordHash = hashed
+	account.TokenVersion++
+	_, err = uc.accountModule.Update(account)
 	return err
 }
 
-func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int, db *gorm.DB) error {
-	existing, err := uc.accountService.GetByLoginID(loginID, db)
+func ensureUniqueLoginID(module accountModule.Module, loginID string, exceptID int) error {
+	existing, err := module.GetByLoginID(loginID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return nil
@@ -295,11 +281,11 @@ func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int, db *gorm.DB
 	return nil
 }
 
-func (uc *usecase) ensureUniqueEmail(email *string, exceptID int, db *gorm.DB) error {
+func ensureUniqueEmail(module accountModule.Module, email *string, exceptID int) error {
 	if email == nil || *email == "" {
 		return nil
 	}
-	existing, err := uc.accountService.GetByEmail(*email, db)
+	existing, err := module.GetByEmail(*email)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return nil

@@ -46,14 +46,6 @@ func ToAccountResponseList(models []accountModule.Account) []AccountResponse {
 // DTO（Request）
 // -----------------------------
 
-type PutMeRequest struct {
-	LoginID   *string `json:"login_id" binding:"omitempty,max=255"`
-	Email     *string `json:"email" binding:"omitempty,email"`
-	FirstName string  `json:"first_name" binding:"required,max=100"`
-	LastName  string  `json:"last_name" binding:"required,max=100"`
-	Password  *string `json:"password" binding:"omitempty,min=8,max=255"`
-}
-
 type PostAccountRequest struct {
 	LoginID   *string `json:"login_id" binding:"omitempty,max=255"`
 	Email     *string `json:"email" binding:"omitempty,email"`
@@ -72,10 +64,6 @@ type PutAccountRequest struct {
 
 type GetAccountsResponse struct {
 	Accounts []AccountResponse `json:"accounts"`
-}
-
-type GetCurrentAccountResponse struct {
-	Account AccountResponse `json:"account"`
 }
 
 type GetAccountResponse struct {
