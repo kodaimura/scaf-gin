@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -55,9 +54,15 @@ func New(cfg config.Config) (*App, error) {
 
 	engine := gin.New()
 	engine.Use(accessLogMiddleware(log))
+	engine.Use(securityHeadersMiddleware(cfg))
 	engine.Use(gin.CustomRecovery(func(c *gin.Context, recovered any) {
-		log.Error("panic recovered: %v", recovered)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		log.ErrorFields("panic recovered", map[string]any{
+			"error_type": "panic",
+			"recovered":  fmt.Sprint(recovered),
+			"path":       c.Request.URL.String(),
+			"method":     c.Request.Method,
+		})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
 	}))
 	engine.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.FrontendOrigins,
@@ -95,24 +100,5 @@ func PrintRoutes(r *gin.Engine) {
 	})
 	for _, route := range routes {
 		fmt.Printf("%s %s\n", route.Method, route.Path)
-	}
-}
-
-func accessLogMiddleware(log core.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		startedAt := time.Now()
-		c.Next()
-
-		log.Info(
-			"access method=%s path=%s status=%d latency_ms=%d client_ip=%s",
-			c.Request.Method,
-			c.Request.URL.Path,
-			c.Writer.Status(),
-			time.Since(startedAt).Milliseconds(),
-			c.ClientIP(),
-		)
-		if len(c.Errors) > 0 {
-			log.Error("request errors: %s", fmt.Sprint(c.Errors))
-		}
 	}
 }

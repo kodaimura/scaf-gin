@@ -66,6 +66,10 @@ type GetAccountsResponse struct {
 	Accounts []AccountResponse `json:"accounts"`
 }
 
+type GetCurrentAccountResponse struct {
+	Account AccountResponse `json:"account"`
+}
+
 type GetAccountResponse struct {
 	Account AccountResponse `json:"account"`
 }

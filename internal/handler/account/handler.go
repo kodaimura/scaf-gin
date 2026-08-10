@@ -17,6 +17,7 @@ import (
 type Handler interface {
 	ApiGetAccounts(c *gin.Context)
 	ApiPostAccount(c *gin.Context)
+	ApiGetCurrentAccount(c *gin.Context)
 	ApiGetAccount(c *gin.Context)
 	ApiPutAccount(c *gin.Context)
 	ApiPutAccountDisable(c *gin.Context)
@@ -45,7 +46,7 @@ func (h *handler) ApiGetAccounts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, GetAccountsResponse{Accounts: ToAccountResponseList(accounts)})
+	handlerutil.OK(c, GetAccountsResponse{Accounts: ToAccountResponseList(accounts)})
 }
 
 // POST /api/accounts
@@ -68,7 +69,18 @@ func (h *handler) ApiPostAccount(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, PostAccountResponse{Account: ToAccountResponse(account)})
+	handlerutil.Created(c, PostAccountResponse{Account: ToAccountResponse(account)})
+}
+
+// GET /api/accounts/me
+func (h *handler) ApiGetCurrentAccount(c *gin.Context) {
+	account, err := h.usecase.Get(usecase.GetDto{ID: handlerutil.GetAccountID(c)})
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	handlerutil.OK(c, GetCurrentAccountResponse{Account: ToAccountResponse(account)})
 }
 
 // GET /api/accounts/:target_account_id
@@ -85,7 +97,7 @@ func (h *handler) ApiGetAccount(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, GetAccountResponse{Account: ToAccountResponse(account)})
+	handlerutil.OK(c, GetAccountResponse{Account: ToAccountResponse(account)})
 }
 
 // PUT /api/accounts/:target_account_id
@@ -115,7 +127,7 @@ func (h *handler) ApiPutAccount(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, PutAccountResponse{Account: ToAccountResponse(account)})
+	handlerutil.OK(c, PutAccountResponse{Account: ToAccountResponse(account)})
 }
 
 // PUT /api/accounts/:target_account_id/disable
@@ -132,7 +144,7 @@ func (h *handler) ApiPutAccountDisable(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, PutAccountDisableResponse{Account: ToAccountResponse(account)})
+	handlerutil.OK(c, PutAccountDisableResponse{Account: ToAccountResponse(account)})
 }
 
 // PUT /api/accounts/:target_account_id/enable
@@ -149,7 +161,7 @@ func (h *handler) ApiPutAccountEnable(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, PutAccountEnableResponse{Account: ToAccountResponse(account)})
+	handlerutil.OK(c, PutAccountEnableResponse{Account: ToAccountResponse(account)})
 }
 
 func parseAccountID(c *gin.Context) (int64, error) {

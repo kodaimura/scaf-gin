@@ -66,7 +66,7 @@ func (h *handler) ApiSignup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, SignupResponse{Account: ToAccountResponse(account)})
+	handlerutil.Created(c, SignupResponse{Account: ToAccountResponse(account)})
 }
 
 // POST /api/auth/login
@@ -83,11 +83,10 @@ func (h *handler) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	handlerutil.SetAccessTokenCookie(c, accessToken)
 	handlerutil.SetRefreshTokenCookie(c, refreshToken, req.RememberMe)
 	h.logger.Info("account login: id=%d login_id=%s", acct.ID, acct.LoginID)
 
-	c.JSON(200, LoginResponse{
+	handlerutil.OK(c, LoginResponse{
 		Account:     ToAccountResponse(acct),
 		AccessToken: accessToken,
 	})
@@ -103,19 +102,17 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 		return
 	}
 
-	handlerutil.SetAccessTokenCookie(c, accessToken)
 	h.logger.Info("access token refreshed: id=%d", payload.AccountID)
 
-	c.JSON(200, RefreshResponse{
+	handlerutil.OK(c, RefreshResponse{
 		AccessToken: accessToken,
 	})
 }
 
 // POST /api/auth/logout
 func (h *handler) ApiLogout(c *gin.Context) {
-	handlerutil.SetAccessTokenCookie(c, "")
 	handlerutil.SetRefreshTokenCookie(c, "", false)
-	c.Status(204)
+	handlerutil.NoContent(c)
 }
 
 // POST /api/auth/forgot-password
@@ -131,7 +128,7 @@ func (h *handler) ApiForgotPassword(c *gin.Context) {
 		return
 	}
 
-	c.Status(204)
+	handlerutil.NoContent(c)
 }
 
 // GET /api/auth/reset-password/verify
@@ -147,7 +144,7 @@ func (h *handler) ApiVerifyResetPasswordToken(c *gin.Context) {
 		return
 	}
 
-	c.Status(204)
+	handlerutil.NoContent(c)
 }
 
 // POST /api/auth/reset-password
@@ -166,7 +163,7 @@ func (h *handler) ApiResetPassword(c *gin.Context) {
 		return
 	}
 
-	c.Status(204)
+	handlerutil.NoContent(c)
 }
 
 // PUT /api/accounts/me/password
@@ -194,5 +191,5 @@ func (h *handler) ApiPutMePassword(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	handlerutil.NoContent(c)
 }

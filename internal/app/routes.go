@@ -30,6 +30,7 @@ func registerAPIRoutes(
 	{
 		auth.GET("/accounts", accountHandler.ApiGetAccounts)
 		auth.POST("/accounts", accountHandler.ApiPostAccount)
+		auth.GET("/accounts/me", accountHandler.ApiGetCurrentAccount)
 		auth.PUT("/accounts/:target_account_id/password", authHandler.ApiPutMePassword)
 		auth.PUT("/accounts/:target_account_id/disable", accountHandler.ApiPutAccountDisable)
 		auth.PUT("/accounts/:target_account_id/enable", accountHandler.ApiPutAccountEnable)

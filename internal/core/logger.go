@@ -14,6 +14,10 @@ type Logger interface {
 	Info(format string, v ...any)
 	Warn(format string, v ...any)
 	Error(format string, v ...any)
+	DebugFields(message string, fields map[string]any)
+	InfoFields(message string, fields map[string]any)
+	WarnFields(message string, fields map[string]any)
+	ErrorFields(message string, fields map[string]any)
 }
 
 // JSONLogger logs JSON lines to stdout.
@@ -21,13 +25,6 @@ type JSONLogger struct {
 	name  string
 	level logLevel
 	mu    sync.Mutex
-}
-
-type logEntry struct {
-	Timestamp string `json:"timestamp"`
-	Level     string `json:"level"`
-	Logger    string `json:"logger"`
-	Message   string `json:"message"`
 }
 
 func NewConsoleLogger(logLevel string) Logger {
@@ -61,22 +58,46 @@ func (l *JSONLogger) Error(format string, v ...any) {
 	l.logf(ERROR, "ERROR", format, v...)
 }
 
+func (l *JSONLogger) DebugFields(message string, fields map[string]any) {
+	l.log(DEBUG, "DEBUG", message, fields)
+}
+
+func (l *JSONLogger) InfoFields(message string, fields map[string]any) {
+	l.log(INFO, "INFO", message, fields)
+}
+
+func (l *JSONLogger) WarnFields(message string, fields map[string]any) {
+	l.log(WARN, "WARN", message, fields)
+}
+
+func (l *JSONLogger) ErrorFields(message string, fields map[string]any) {
+	l.log(ERROR, "ERROR", message, fields)
+}
+
 func (l *JSONLogger) logf(level logLevel, tag, format string, v ...any) {
+	l.log(level, tag, fmt.Sprintf(format, v...), nil)
+}
+
+func (l *JSONLogger) log(level logLevel, tag, message string, fields map[string]any) {
 	if l.level <= level {
-		entry := logEntry{
-			Timestamp: time.Now().UTC().Format("2006-01-02T15:04:05.000-07:00"),
-			Level:     tag,
-			Logger:    l.name,
-			Message:   fmt.Sprintf(format, v...),
+		entry := map[string]any{
+			"timestamp": time.Now().UTC().Format("2006-01-02T15:04:05.000-07:00"),
+			"level":     tag,
+			"logger":    l.name,
+			"message":   message,
+		}
+		for key, value := range fields {
+			entry[key] = value
 		}
 		body, err := json.Marshal(entry)
 		if err != nil {
-			body = []byte(fmt.Sprintf(
-				`{"timestamp":"%s","level":"ERROR","logger":"%s","message":"failed to marshal log entry: %s"}`,
-				time.Now().UTC().Format("2006-01-02T15:04:05.000-07:00"),
-				l.name,
-				err.Error(),
-			))
+			fallback := map[string]any{
+				"timestamp": time.Now().UTC().Format("2006-01-02T15:04:05.000-07:00"),
+				"level":     "ERROR",
+				"logger":    l.name,
+				"message":   fmt.Sprintf("failed to marshal log entry: %s", err.Error()),
+			}
+			body, _ = json.Marshal(fallback)
 		}
 
 		l.mu.Lock()
