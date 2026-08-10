@@ -152,12 +152,12 @@ func (h *handler) ApiPutAccountEnable(c *gin.Context) {
 	c.JSON(200, PutAccountEnableResponse{Account: ToAccountResponse(account)})
 }
 
-func parseAccountID(c *gin.Context) (int, error) {
+func parseAccountID(c *gin.Context) (int64, error) {
 	rawAccountID := c.Param("target_account_id")
 	if rawAccountID == "me" {
 		return handlerutil.GetAccountID(c), nil
 	}
-	accountID, err := strconv.Atoi(rawAccountID)
+	accountID, err := strconv.ParseInt(rawAccountID, 10, 64)
 	if err != nil {
 		return 0, core.ErrBadRequest
 	}

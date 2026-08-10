@@ -8,7 +8,7 @@ import (
 )
 
 type GetDto struct {
-	ID int
+	ID int64
 }
 
 func (uc *usecase) Get(in GetDto) (model.Account, error) {

@@ -46,9 +46,9 @@ func SetAccessTokenCookie(c *gin.Context, accessToken string) {
 		CookieKeyAccessToken,
 		accessToken,
 		maxAge,
-		"/", config.Current.AppHost,
-		config.Current.CookieAccessSecure,
-		config.Current.CookieAccessHttpOnly,
+		"/", "",
+		config.Current.AppEnv == "production",
+		true,
 	)
 }
 
@@ -65,8 +65,8 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string, rememberMe bool)
 		CookieKeyRefreshToken,
 		refreshToken,
 		maxAge,
-		"/", config.Current.AppHost,
-		config.Current.CookieRefreshSecure,
-		config.Current.CookieRefreshHttpOnly,
+		"/", "",
+		config.Current.AppEnv == "production",
+		true,
 	)
 }

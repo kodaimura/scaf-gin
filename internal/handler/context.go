@@ -24,6 +24,6 @@ func GetPayload(c *gin.Context) core.AuthPayload {
 	return core.AuthPayload{}
 }
 
-func GetAccountID(c *gin.Context) int {
+func GetAccountID(c *gin.Context) int64 {
 	return GetPayload(c).AccountID
 }

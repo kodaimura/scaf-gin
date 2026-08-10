@@ -18,7 +18,7 @@ type Auth interface {
 }
 
 type AuthPayload struct {
-	AccountID    int
+	AccountID    int64
 	TokenVersion int
 }
 
@@ -66,7 +66,7 @@ func (j *JwtAuth) createToken(payload AuthPayload, secretKey string, tokenType s
 		TokenVersion: payload.TokenVersion,
 		TokenType:    tokenType,
 		RegisteredClaims: jwtpackage.RegisteredClaims{
-			Subject:   strconv.Itoa(payload.AccountID),
+			Subject:   strconv.FormatInt(payload.AccountID, 10),
 			IssuedAt:  jwtpackage.NewNumericDate(now),
 			NotBefore: jwtpackage.NewNumericDate(now),
 			ExpiresAt: jwtpackage.NewNumericDate(now.Add(expiresIn)),
@@ -107,7 +107,7 @@ func (j *JwtAuth) verifyToken(token string, secretKey string, expectedType strin
 	if claims.TokenType != expectedType {
 		return AuthPayload{}, errors.New("invalid token type")
 	}
-	accountID, err := strconv.Atoi(claims.Subject)
+	accountID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil || accountID == 0 || claims.TokenVersion == 0 {
 		return AuthPayload{}, errors.New("invalid token payload")
 	}

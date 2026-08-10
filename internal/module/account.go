@@ -12,7 +12,7 @@ import (
 type AccountModule interface {
 	Create(entity model.Account) (model.Account, error)
 	GetAll() ([]model.Account, error)
-	GetByID(accountID int) (model.Account, error)
+	GetByID(accountID int64) (model.Account, error)
 	GetByEmail(email string) (model.Account, error)
 	GetByLoginID(loginID string) (model.Account, error)
 	Update(entity model.Account) (model.Account, error)
@@ -48,7 +48,7 @@ func (m *accountModule) GetAll() ([]model.Account, error) {
 	return accounts, core.HandleGormError(err)
 }
 
-func (m *accountModule) GetByID(accountID int) (model.Account, error) {
+func (m *accountModule) GetByID(accountID int64) (model.Account, error) {
 	var account model.Account
 	err := m.db.First(&account, model.Account{ID: accountID}).Error
 	return account, core.HandleGormError(err)

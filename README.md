@@ -4,6 +4,8 @@ Gin backend scaffold.
 
 This template is intended to run through Docker. Local Go and Node are not
 required for normal development.
+PostgreSQL is the supported database. Configure it with `DATABASE_URL`.
+The server stores and emits timestamps in UTC.
 
 ## Development
 
@@ -43,7 +45,7 @@ internal/
   module/     # persistence-oriented domain modules
   service/    # shared business logic
   usecase/    # application use cases
-migrations/   # numbered SQL migrations
+migrations/   # numbered PostgreSQL SQL migrations
 ```
 
 Migration files are numbered sequentially from `001`.
@@ -52,7 +54,7 @@ Use production compose settings with `ENV=prod`.
 
 ```sh
 cp .env.example .env
-# Edit production secrets and database settings in .env.
+# Edit production secrets and DATABASE_URL in .env.
 make build ENV=prod
 make up ENV=prod
 ```

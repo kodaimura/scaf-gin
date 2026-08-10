@@ -7,7 +7,7 @@ import (
 )
 
 type DeleteDto struct {
-	ID int
+	ID int64
 }
 
 func (uc *usecase) Delete(in DeleteDto) error {

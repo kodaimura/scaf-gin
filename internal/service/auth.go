@@ -7,7 +7,7 @@ import (
 	"scaf-gin/internal/module"
 )
 
-func ValidateAccessTokenAccount(accountModule module.AccountModule, payload core.AuthPayload) (int, error) {
+func ValidateAccessTokenAccount(accountModule module.AccountModule, payload core.AuthPayload) (int64, error) {
 	if payload.AccountID == 0 || payload.TokenVersion == 0 {
 		return 0, core.ErrAuthInvalidPayload
 	}

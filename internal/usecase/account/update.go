@@ -9,7 +9,7 @@ import (
 )
 
 type UpdateDto struct {
-	ID        int
+	ID        int64
 	LoginID   *string
 	Email     *string
 	Password  *string

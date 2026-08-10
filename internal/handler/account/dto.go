@@ -11,7 +11,7 @@ import (
 // -----------------------------
 
 type AccountResponse struct {
-	ID         int        `json:"id"`
+	ID         int64      `json:"id"`
 	Email      *string    `json:"email"`
 	LoginID    string     `json:"login_id"`
 	FirstName  string     `json:"first_name"`

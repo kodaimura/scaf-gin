@@ -17,6 +17,7 @@ type SmtpMailer struct {
 	port     string
 	username string
 	password string
+	useTLS   bool
 	provider string
 }
 
@@ -41,6 +42,7 @@ func NewMailHogMailer(cfg config.Config) Mailer {
 		from:     cfg.MailFrom,
 		host:     "mailhog",
 		port:     "1025",
+		useTLS:   false,
 		provider: "mailhog",
 	}
 }
@@ -50,8 +52,9 @@ func NewSmtpMailer(cfg config.Config) Mailer {
 		from:     cfg.MailFrom,
 		host:     cfg.SMTPHost,
 		port:     cfg.SMTPPort,
-		username: cfg.SMTPUser,
+		username: cfg.SMTPUsername,
 		password: cfg.SMTPPass,
+		useTLS:   cfg.SMTPUseTLS,
 		provider: "smtp",
 	}
 }
@@ -91,7 +94,7 @@ func (s *SmtpMailer) sendSMTP(to []string, msg []byte) error {
 	}
 	defer c.Close()
 
-	if ok, _ := c.Extension("STARTTLS"); ok {
+	if ok, _ := c.Extension("STARTTLS"); s.useTLS && ok {
 		if err := c.StartTLS(&tls.Config{ServerName: s.host, MinVersion: tls.VersionTLS12}); err != nil {
 			return err
 		}

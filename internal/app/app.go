@@ -22,7 +22,6 @@ import (
 type App struct {
 	Engine *gin.Engine
 	Logger core.Logger
-	cfg    config.Config
 }
 
 func New(cfg config.Config) (*App, error) {
@@ -70,17 +69,16 @@ func New(cfg config.Config) (*App, error) {
 	engine.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
-	registerAPIRoutes(engine.Group("/api"), accountHandler, authHandler, accountModule, authService, log, cfg)
+	registerAPIRoutes(engine.Group("/api"), accountHandler, authHandler, accountModule, authService, log)
 
 	return &App{
 		Engine: engine,
 		Logger: log,
-		cfg:    cfg,
 	}, nil
 }
 
 func (a *App) Run() error {
-	return a.Engine.Run(":" + a.cfg.AppPort)
+	return a.Engine.Run(":8000")
 }
 
 func ShouldPrintRoutes() bool {

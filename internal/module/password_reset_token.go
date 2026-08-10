@@ -12,8 +12,8 @@ import (
 type PasswordResetTokenModule interface {
 	Create(entity model.PasswordResetToken) (model.PasswordResetToken, error)
 	GetByHash(tokenHash string) (model.PasswordResetToken, error)
-	FindLatestByAccountID(accountID int) (model.PasswordResetToken, error)
-	InvalidateActiveTokens(accountID int, now time.Time) error
+	FindLatestByAccountID(accountID int64) (model.PasswordResetToken, error)
+	InvalidateActiveTokens(accountID int64, now time.Time) error
 	Update(entity model.PasswordResetToken) (model.PasswordResetToken, error)
 	WithTx(tx *gorm.DB) PasswordResetTokenModule
 }
@@ -41,13 +41,13 @@ func (m *passwordResetTokenModule) GetByHash(tokenHash string) (model.PasswordRe
 	return token, core.HandleGormError(err)
 }
 
-func (m *passwordResetTokenModule) FindLatestByAccountID(accountID int) (model.PasswordResetToken, error) {
+func (m *passwordResetTokenModule) FindLatestByAccountID(accountID int64) (model.PasswordResetToken, error) {
 	var token model.PasswordResetToken
 	err := m.db.Where("account_id = ?", accountID).Order("created_at DESC").First(&token).Error
 	return token, core.HandleGormError(err)
 }
 
-func (m *passwordResetTokenModule) InvalidateActiveTokens(accountID int, now time.Time) error {
+func (m *passwordResetTokenModule) InvalidateActiveTokens(accountID int64, now time.Time) error {
 	err := m.db.Model(&model.PasswordResetToken{}).
 		Where("account_id = ?", accountID).
 		Where("used_at IS NULL").

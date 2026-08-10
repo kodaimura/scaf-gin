@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
@@ -27,17 +25,7 @@ func NewGormDB(cfg config.Config, log Logger) (*gorm.DB, error) {
 		},
 	}
 
-	switch cfg.DBEngine {
-	case "postgres":
-		db, err = gorm.Open(postgres.Open(buildPostgresDSN(cfg)), gormConfig)
-	case "mysql":
-		db, err = gorm.Open(mysql.Open(buildMySQLDSN(cfg)), gormConfig)
-	case "sqlite3":
-		db, err = gorm.Open(sqlite.Open(buildSQLiteDSN(cfg)), gormConfig)
-	default:
-		return nil, fmt.Errorf("invalid DB_ENGINE. Please choose 'postgres', 'mysql', or 'sqlite3'")
-	}
-
+	db, err = gorm.Open(postgres.Open(cfg.DatabaseURL), gormConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -53,24 +41,6 @@ func NewGormDB(cfg config.Config, log Logger) (*gorm.DB, error) {
 
 	log.Info("database connected via gorm")
 	return db, nil
-}
-
-func buildPostgresDSN(cfg config.Config) string {
-	return fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		cfg.DBHost, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBPort,
-	)
-}
-
-func buildMySQLDSN(cfg config.Config) string {
-	return fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		cfg.DBUser, cfg.DBPass, cfg.DBHost, cfg.DBPort, cfg.DBName,
-	)
-}
-
-func buildSQLiteDSN(cfg config.Config) string {
-	return fmt.Sprintf("%s.db", cfg.DBName)
 }
 
 func HandleGormError(err error) error {

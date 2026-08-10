@@ -6,24 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"scaf-gin/config"
 	"scaf-gin/internal/core"
 	handlerutil "scaf-gin/internal/handler"
 	"scaf-gin/internal/module"
 	"scaf-gin/internal/service"
 )
-
-func basicAuthMiddleware(cfg config.Config) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user, pass, ok := c.Request.BasicAuth()
-		if !ok || user != cfg.BasicAuthUser || pass != cfg.BasicAuthPass {
-			c.Header("WWW-Authenticate", "Basic realm=Authorization Required")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		c.Next()
-	}
-}
 
 func apiAuthMiddleware(accountModule module.AccountModule, authService core.Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {

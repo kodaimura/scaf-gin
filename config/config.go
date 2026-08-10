@@ -11,41 +11,26 @@ import (
 )
 
 type Config struct {
-	AppEnv  string
-	AppName string
-	AppHost string
-	AppPort string
+	AppEnv string
 
 	EnableSignup    bool
 	AuthLoginIDMode string
 
-	DBEngine string
-	DBName   string
-	DBHost   string
-	DBPort   string
-	DBUser   string
-	DBPass   string
+	DatabaseURL string
 
 	MailProvider string
 	SMTPHost     string
 	SMTPPort     string
-	SMTPUser     string
+	SMTPUsername string
 	SMTPPass     string
+	SMTPUseTLS   bool
 	MailFrom     string
-
-	BasicAuthUser string
-	BasicAuthPass string
 
 	AccessTokenSecret                    string
 	RefreshTokenSecret                   string
 	AccessTokenExpiresSeconds            int
 	RefreshTokenExpiresSeconds           int
 	RefreshTokenRememberMeExpiresSeconds int
-
-	CookieAccessSecure    bool
-	CookieRefreshSecure   bool
-	CookieAccessHttpOnly  bool
-	CookieRefreshHttpOnly bool
 
 	PasswordResetURLBase               string
 	PasswordResetTokenExpiresMinutes   int
@@ -64,41 +49,26 @@ func Load() Config {
 	}
 
 	cfg := Config{
-		AppEnv:  requireChoice("APP_ENV", getEnv("APP_ENV", "dev"), "dev", "production", "test"),
-		AppName: getEnv("APP_NAME", "scaf-gin"),
-		AppHost: getEnv("APP_HOST", "localhost"),
-		AppPort: getEnv("APP_PORT", "8000"),
+		AppEnv: requireChoice("APP_ENV", getEnv("APP_ENV", "dev"), "dev", "production", "test"),
 
 		EnableSignup:    parseBool("ENABLE_SIGNUP", getEnv("ENABLE_SIGNUP", "true")),
 		AuthLoginIDMode: requireChoice("AUTH_LOGIN_ID_MODE", getEnv("AUTH_LOGIN_ID_MODE", "email"), "email", "login_id"),
 
-		DBEngine: requireChoice("DB_ENGINE", getEnv("DB_ENGINE", "postgres"), "postgres", "mysql", "sqlite3"),
-		DBName:   getEnv("DB_NAME", "project_db"),
-		DBHost:   getEnv("DB_HOST", "db"),
-		DBPort:   getEnv("DB_PORT", "5432"),
-		DBUser:   getEnv("DB_USER", "postgres"),
-		DBPass:   getEnv("DB_PASSWORD", "postgres"),
+		DatabaseURL: getEnv("DATABASE_URL", "postgresql://postgres:postgres@db:5432/project_db?sslmode=disable"),
 
 		MailProvider: requireChoice("MAIL_PROVIDER", getEnv("MAIL_PROVIDER", "mailhog"), "mailhog", "smtp"),
 		SMTPHost:     getEnv("SMTP_HOST"),
 		SMTPPort:     getEnv("SMTP_PORT", "587"),
-		SMTPUser:     getEnv("SMTP_USER"),
+		SMTPUsername: getEnv("SMTP_USERNAME"),
 		SMTPPass:     getEnv("SMTP_PASSWORD"),
+		SMTPUseTLS:   parseBool("SMTP_USE_TLS", getEnv("SMTP_USE_TLS", "true")),
 		MailFrom:     getEnv("MAIL_FROM", "no-reply@example.local"),
-
-		BasicAuthUser: getEnv("BASIC_AUTH_USER"),
-		BasicAuthPass: getEnv("BASIC_AUTH_PASSWORD"),
 
 		AccessTokenSecret:                    getEnv("ACCESS_TOKEN_SECRET", "randomstring"),
 		AccessTokenExpiresSeconds:            parseInt("ACCESS_TOKEN_EXPIRES_SECONDS", getEnv("ACCESS_TOKEN_EXPIRES_SECONDS", "900")),
 		RefreshTokenSecret:                   getEnv("REFRESH_TOKEN_SECRET", "randomstring"),
 		RefreshTokenExpiresSeconds:           parseInt("REFRESH_TOKEN_EXPIRES_SECONDS", getEnv("REFRESH_TOKEN_EXPIRES_SECONDS", "2592000")),
 		RefreshTokenRememberMeExpiresSeconds: parseInt("REFRESH_TOKEN_REMEMBER_ME_EXPIRES_SECONDS", getEnv("REFRESH_TOKEN_REMEMBER_ME_EXPIRES_SECONDS", "2592000")),
-
-		CookieAccessSecure:    parseBool("COOKIE_ACCESS_SECURE", getEnv("COOKIE_ACCESS_SECURE", "true")),
-		CookieRefreshSecure:   parseBool("COOKIE_REFRESH_SECURE", getEnv("COOKIE_REFRESH_SECURE", "true")),
-		CookieAccessHttpOnly:  parseBool("COOKIE_ACCESS_HTTPONLY", getEnv("COOKIE_ACCESS_HTTPONLY", "true")),
-		CookieRefreshHttpOnly: parseBool("COOKIE_REFRESH_HTTPONLY", getEnv("COOKIE_REFRESH_HTTPONLY", "true")),
 
 		PasswordResetURLBase:               getEnv("PASSWORD_RESET_URL_BASE", "http://localhost:3000/reset-password"),
 		PasswordResetTokenExpiresMinutes:   parseInt("PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", getEnv("PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", "30")),

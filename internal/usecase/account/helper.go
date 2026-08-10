@@ -8,7 +8,7 @@ import (
 	"scaf-gin/internal/core"
 )
 
-func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int) error {
+func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int64) error {
 	existing, err := uc.accountModule.GetByLoginID(loginID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
@@ -22,7 +22,7 @@ func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int) error {
 	return nil
 }
 
-func (uc *usecase) ensureUniqueEmail(email *string, exceptID int) error {
+func (uc *usecase) ensureUniqueEmail(email *string, exceptID int64) error {
 	if email == nil || *email == "" {
 		return nil
 	}

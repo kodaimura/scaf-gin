@@ -8,7 +8,7 @@ import (
 )
 
 type DisableDto struct {
-	ID int
+	ID int64
 }
 
 func (uc *usecase) Disable(in DisableDto) (model.Account, error) {

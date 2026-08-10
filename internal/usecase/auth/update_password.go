@@ -3,7 +3,7 @@ package auth
 import "scaf-gin/internal/core"
 
 type UpdatePasswordDto struct {
-	ID          int
+	ID          int64
 	OldPassword string
 	NewPassword string
 }
