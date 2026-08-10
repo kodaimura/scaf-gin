@@ -1,22 +1,15 @@
 package account
 
-import (
-	"errors"
-
-	"golang.org/x/crypto/bcrypt"
-
-	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
-)
+import accountModule "scaf-gin/internal/module/account"
 
 type Usecase interface {
-	Get(in GetDto) ([]accountModule.Account, error)
-	GetOne(in GetOneDto) (accountModule.Account, error)
-	CreateOne(in CreateOneDto) (accountModule.Account, error)
-	UpdateOne(in UpdateOneDto) (accountModule.Account, error)
-	DisableOne(in DisableOneDto) (accountModule.Account, error)
-	EnableOne(in EnableOneDto) (accountModule.Account, error)
-	DeleteOne(in DeleteOneDto) error
+	List(in ListDto) ([]accountModule.Account, error)
+	Get(in GetDto) (accountModule.Account, error)
+	Create(in CreateDto) (accountModule.Account, error)
+	Update(in UpdateDto) (accountModule.Account, error)
+	Disable(in DisableDto) (accountModule.Account, error)
+	Enable(in EnableDto) (accountModule.Account, error)
+	Delete(in DeleteDto) error
 }
 
 type usecase struct {
@@ -27,165 +20,4 @@ func NewUsecase(accountModule accountModule.Module) Usecase {
 	return &usecase{
 		accountModule: accountModule,
 	}
-}
-
-func (uc *usecase) Get(in GetDto) ([]accountModule.Account, error) {
-	return uc.accountModule.GetAll()
-}
-
-func (uc *usecase) GetOne(in GetOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountModule.GetByID(in.Id)
-	if errors.Is(err, core.ErrNotFound) {
-		return accountModule.Account{}, core.ErrAccountNotFound
-	}
-	return acct, err
-}
-
-func (uc *usecase) CreateOne(in CreateOneDto) (accountModule.Account, error) {
-	loginID, err := core.ResolveLoginID(in.LoginID, in.Email)
-	if err != nil {
-		return accountModule.Account{}, err
-	}
-	if err := uc.ensureUniqueLoginID(loginID, 0); err != nil {
-		return accountModule.Account{}, err
-	}
-	if err := uc.ensureUniqueEmail(in.Email, 0); err != nil {
-		return accountModule.Account{}, err
-	}
-
-	hashed, err := hashPassword(in.Password)
-	if err != nil {
-		return accountModule.Account{}, err
-	}
-
-	acct, err := uc.accountModule.Create(accountModule.Account{
-		LoginID:      loginID,
-		Email:        in.Email,
-		PasswordHash: hashed,
-		TokenVersion: 1,
-		FirstName:    in.FirstName,
-		LastName:     in.LastName,
-	})
-	return acct, err
-}
-
-func (uc *usecase) UpdateOne(in UpdateOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountModule.GetByID(in.Id)
-	if err != nil {
-		if errors.Is(err, core.ErrNotFound) {
-			return accountModule.Account{}, core.ErrAccountNotFound
-		}
-		return accountModule.Account{}, err
-	}
-
-	loginID, err := core.ResolveLoginID(in.LoginID, in.Email)
-	if err != nil {
-		return accountModule.Account{}, err
-	}
-	if err := uc.ensureUniqueLoginID(loginID, acct.Id); err != nil {
-		return accountModule.Account{}, err
-	}
-	if err := uc.ensureUniqueEmail(in.Email, acct.Id); err != nil {
-		return accountModule.Account{}, err
-	}
-
-	acct.LoginID = loginID
-	acct.Email = in.Email
-	acct.FirstName = in.FirstName
-	acct.LastName = in.LastName
-	if in.Password != nil {
-		hashed, err := hashPassword(*in.Password)
-		if err != nil {
-			return accountModule.Account{}, err
-		}
-		acct.PasswordHash = hashed
-		acct.TokenVersion++
-	}
-
-	return uc.accountModule.Update(accountModule.Account{
-		Id:           acct.Id,
-		LoginID:      acct.LoginID,
-		Email:        acct.Email,
-		PasswordHash: acct.PasswordHash,
-		TokenVersion: acct.TokenVersion,
-		FirstName:    acct.FirstName,
-		LastName:     acct.LastName,
-	})
-}
-
-func (uc *usecase) DisableOne(in DisableOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountModule.GetByID(in.Id)
-	if errors.Is(err, core.ErrNotFound) {
-		return accountModule.Account{}, core.ErrAccountNotFound
-	}
-	if err != nil {
-		return accountModule.Account{}, err
-	}
-	acct, err = uc.accountModule.Disable(acct)
-	if errors.Is(err, core.ErrNotFound) {
-		return accountModule.Account{}, core.ErrAccountNotFound
-	}
-	return acct, err
-}
-
-func (uc *usecase) EnableOne(in EnableOneDto) (accountModule.Account, error) {
-	acct, err := uc.accountModule.GetByID(in.Id)
-	if errors.Is(err, core.ErrNotFound) {
-		return accountModule.Account{}, core.ErrAccountNotFound
-	}
-	if err != nil {
-		return accountModule.Account{}, err
-	}
-	acct, err = uc.accountModule.Enable(acct)
-	if errors.Is(err, core.ErrNotFound) {
-		return accountModule.Account{}, core.ErrAccountNotFound
-	}
-	return acct, err
-}
-
-func (uc *usecase) DeleteOne(in DeleteOneDto) error {
-	acct, err := uc.accountModule.GetByID(in.Id)
-	if errors.Is(err, core.ErrNotFound) {
-		return core.ErrAccountNotFound
-	}
-	if err != nil {
-		return err
-	}
-	return uc.accountModule.Delete(acct)
-}
-
-func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int) error {
-	existing, err := uc.accountModule.GetByLoginID(loginID)
-	if err != nil {
-		if errors.Is(err, core.ErrNotFound) {
-			return nil
-		}
-		return err
-	}
-	if existing.Id != exceptID {
-		return core.ErrLoginIDAlreadyExists
-	}
-	return nil
-}
-
-func (uc *usecase) ensureUniqueEmail(email *string, exceptID int) error {
-	if email == nil || *email == "" {
-		return nil
-	}
-	existing, err := uc.accountModule.GetByEmail(*email)
-	if err != nil {
-		if errors.Is(err, core.ErrNotFound) {
-			return nil
-		}
-		return err
-	}
-	if existing.Id != exceptID {
-		return core.ErrEmailAlreadyExists
-	}
-	return nil
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(bytes), err
 }

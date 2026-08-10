@@ -39,7 +39,7 @@ func NewHandler(usecase usecase.Usecase) Handler {
 
 // GET /api/accounts
 func (h *handler) ApiGetAccounts(c *gin.Context) {
-	accounts, err := h.usecase.Get(usecase.GetDto{})
+	accounts, err := h.usecase.List(usecase.ListDto{})
 	if err != nil {
 		c.Error(err)
 		return
@@ -56,7 +56,7 @@ func (h *handler) ApiPostAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.usecase.CreateOne(usecase.CreateOneDto{
+	account, err := h.usecase.Create(usecase.CreateDto{
 		LoginID:   req.LoginID,
 		Email:     req.Email,
 		Password:  req.Password,
@@ -79,7 +79,7 @@ func (h *handler) ApiGetAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.usecase.GetOne(usecase.GetOneDto{Id: targetAccountId})
+	account, err := h.usecase.Get(usecase.GetDto{Id: targetAccountId})
 	if err != nil {
 		c.Error(err)
 		return
@@ -102,7 +102,7 @@ func (h *handler) ApiPutAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.usecase.UpdateOne(usecase.UpdateOneDto{
+	account, err := h.usecase.Update(usecase.UpdateDto{
 		Id:        targetAccountId,
 		LoginID:   req.LoginID,
 		Email:     req.Email,
@@ -126,7 +126,7 @@ func (h *handler) ApiPutAccountDisable(c *gin.Context) {
 		return
 	}
 
-	account, err := h.usecase.DisableOne(usecase.DisableOneDto{Id: targetAccountId})
+	account, err := h.usecase.Disable(usecase.DisableDto{Id: targetAccountId})
 	if err != nil {
 		c.Error(err)
 		return
@@ -143,7 +143,7 @@ func (h *handler) ApiPutAccountEnable(c *gin.Context) {
 		return
 	}
 
-	account, err := h.usecase.EnableOne(usecase.EnableOneDto{Id: targetAccountId})
+	account, err := h.usecase.Enable(usecase.EnableDto{Id: targetAccountId})
 	if err != nil {
 		c.Error(err)
 		return
