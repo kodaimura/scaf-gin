@@ -64,5 +64,5 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 
 	resetURL := buildResetURL(rawToken)
 	body := buildPasswordResetMailBody(account.LastName+" "+account.FirstName, resetURL, config.PasswordResetTokenExpiresMinutes)
-	return core.Mailer.SendText([]string{in.Email}, "Password reset", body)
+	return uc.mailer.SendText([]string{in.Email}, "Password reset", body)
 }

@@ -10,7 +10,7 @@ func (uc *usecase) Refresh(refreshToken string) (core.AuthPayload, string, error
 	if refreshToken == "" {
 		return core.AuthPayload{}, "", core.ErrRefreshMissing
 	}
-	payload, err := core.Auth.VerifyRefreshToken(refreshToken)
+	payload, err := uc.auth.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		return core.AuthPayload{}, "", core.ErrRefreshInvalid
 	}
@@ -29,7 +29,7 @@ func (uc *usecase) Refresh(refreshToken string) (core.AuthPayload, string, error
 		return core.AuthPayload{}, "", core.ErrAuthTokenRevoked
 	}
 
-	accessToken, err := core.Auth.CreateAccessToken(core.AuthPayload{
+	accessToken, err := uc.auth.CreateAccessToken(core.AuthPayload{
 		AccountId:    account.Id,
 		LoginID:      account.LoginID,
 		TokenVersion: account.TokenVersion,

@@ -111,7 +111,10 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 
 // POST /api/auth/logout
 func (h *handler) ApiLogout(c *gin.Context) {
-	core.Auth.RevokeRefreshToken(handlerutil.GetRefreshToken(c))
+	if err := h.usecase.Logout(handlerutil.GetRefreshToken(c)); err != nil {
+		c.Error(err)
+		return
+	}
 	handlerutil.SetAccessTokenCookie(c, "")
 	handlerutil.SetRefreshTokenCookie(c, "", false)
 	c.Status(204)

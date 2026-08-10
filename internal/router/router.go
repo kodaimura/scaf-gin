@@ -3,46 +3,37 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"scaf-gin/internal/adapter/db"
-
-	"scaf-gin/internal/module"
-
-	account_uc "scaf-gin/internal/usecase/account"
-	auth_uc "scaf-gin/internal/usecase/auth"
-
+	"scaf-gin/internal/core"
 	account_h "scaf-gin/internal/handler/account"
 	auth_h "scaf-gin/internal/handler/auth"
+	"scaf-gin/internal/module"
 )
 
-func SetApi(r *gin.RouterGroup) {
-	dbConn := db.NewGormDB()
+type API struct {
+	AccountHandler account_h.Handler
+	AuthHandler    auth_h.Handler
+	AccountModule  module.AccountModule
+	Auth           core.AuthI
+}
 
-	accountModule := module.NewAccountModule(dbConn)
-	passwordResetTokenModule := module.NewPasswordResetTokenModule(dbConn)
-
-	authUsecase := auth_uc.NewUsecase(dbConn, accountModule, passwordResetTokenModule)
-	accountUsecase := account_uc.NewUsecase(accountModule)
-
-	accountHandler := account_h.NewHandler(accountUsecase)
-	authHandler := auth_h.NewHandler(authUsecase)
-
+func SetAPI(r *gin.RouterGroup, api API) {
 	r.Use(ApiErrorHandler())
-	r.POST("/auth/signup", authHandler.ApiSignup)
-	r.POST("/auth/login", authHandler.ApiLogin)
-	r.POST("/auth/refresh", authHandler.ApiRefresh)
-	r.POST("/auth/logout", authHandler.ApiLogout)
-	r.POST("/auth/forgot-password", authHandler.ApiForgotPassword)
-	r.GET("/auth/reset-password/verify", authHandler.ApiVerifyResetPasswordToken)
-	r.POST("/auth/reset-password", authHandler.ApiResetPassword)
+	r.POST("/auth/signup", api.AuthHandler.ApiSignup)
+	r.POST("/auth/login", api.AuthHandler.ApiLogin)
+	r.POST("/auth/refresh", api.AuthHandler.ApiRefresh)
+	r.POST("/auth/logout", api.AuthHandler.ApiLogout)
+	r.POST("/auth/forgot-password", api.AuthHandler.ApiForgotPassword)
+	r.GET("/auth/reset-password/verify", api.AuthHandler.ApiVerifyResetPasswordToken)
+	r.POST("/auth/reset-password", api.AuthHandler.ApiResetPassword)
 
-	auth := r.Group("", ApiAuthMiddleware(accountModule))
+	auth := r.Group("", ApiAuthMiddleware(api.AccountModule, api.Auth))
 	{
-		auth.GET("/accounts", accountHandler.ApiGetAccounts)
-		auth.POST("/accounts", accountHandler.ApiPostAccount)
-		auth.PUT("/accounts/:target_account_id/password", authHandler.ApiPutMePassword)
-		auth.PUT("/accounts/:target_account_id/disable", accountHandler.ApiPutAccountDisable)
-		auth.PUT("/accounts/:target_account_id/enable", accountHandler.ApiPutAccountEnable)
-		auth.GET("/accounts/:target_account_id", accountHandler.ApiGetAccount)
-		auth.PUT("/accounts/:target_account_id", accountHandler.ApiPutAccount)
+		auth.GET("/accounts", api.AccountHandler.ApiGetAccounts)
+		auth.POST("/accounts", api.AccountHandler.ApiPostAccount)
+		auth.PUT("/accounts/:target_account_id/password", api.AuthHandler.ApiPutMePassword)
+		auth.PUT("/accounts/:target_account_id/disable", api.AccountHandler.ApiPutAccountDisable)
+		auth.PUT("/accounts/:target_account_id/enable", api.AccountHandler.ApiPutAccountEnable)
+		auth.GET("/accounts/:target_account_id", api.AccountHandler.ApiGetAccount)
+		auth.PUT("/accounts/:target_account_id", api.AccountHandler.ApiPutAccount)
 	}
 }

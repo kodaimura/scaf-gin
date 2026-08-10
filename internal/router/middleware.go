@@ -29,7 +29,7 @@ func BasicAuthMiddleware() gin.HandlerFunc {
 
 // ApiAuthMiddleware is a middleware that validates the JWT token for API access.
 // If the token is invalid, it returns an Unauthorized error in JSON format.
-func ApiAuthMiddleware(accountModule module.AccountModule) gin.HandlerFunc {
+func ApiAuthMiddleware(accountModule module.AccountModule, authService core.AuthI) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := handlerutil.GetAccessToken(c)
 		if token == "" {
@@ -37,7 +37,7 @@ func ApiAuthMiddleware(accountModule module.AccountModule) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		payload, err := core.Auth.VerifyAccessToken(token)
+		payload, err := authService.VerifyAccessToken(token)
 		if err != nil {
 			c.Error(core.ErrAuthInvalid)
 			c.Abort()

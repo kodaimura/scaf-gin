@@ -35,12 +35,12 @@ func (uc *usecase) Login(in LoginDto) (model.Account, string, string, error) {
 		TokenVersion: account.TokenVersion,
 	}
 
-	accessToken, err := core.Auth.CreateAccessToken(payload)
+	accessToken, err := uc.auth.CreateAccessToken(payload)
 	if err != nil {
 		return model.Account{}, "", "", err
 	}
 
-	refreshToken, err := core.Auth.CreateRefreshToken(payload, in.RememberMe)
+	refreshToken, err := uc.auth.CreateRefreshToken(payload, in.RememberMe)
 	if err != nil {
 		return model.Account{}, "", "", err
 	}
