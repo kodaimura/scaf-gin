@@ -1,4 +1,4 @@
-package router
+package app
 
 import (
 	"errors"
@@ -13,9 +13,7 @@ import (
 	"scaf-gin/internal/service"
 )
 
-// BasicAuthMiddleware is a middleware that checks for Basic Authentication credentials.
-// If the credentials are incorrect, it returns an Unauthorized status.
-func BasicAuthMiddleware() gin.HandlerFunc {
+func basicAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, pass, ok := c.Request.BasicAuth()
 		if !ok || user != config.BasicAuthUser || pass != config.BasicAuthPass {
@@ -27,9 +25,7 @@ func BasicAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// ApiAuthMiddleware is a middleware that validates the JWT token for API access.
-// If the token is invalid, it returns an Unauthorized error in JSON format.
-func ApiAuthMiddleware(accountModule module.AccountModule, authService core.AuthI) gin.HandlerFunc {
+func apiAuthMiddleware(accountModule module.AccountModule, authService core.AuthI) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := handlerutil.GetAccessToken(c)
 		if token == "" {
@@ -57,9 +53,7 @@ func ApiAuthMiddleware(accountModule module.AccountModule, authService core.Auth
 	}
 }
 
-// ApiErrorHandler is a middleware that handles API errors.
-// It checks for specific error types and returns the appropriate HTTP status and message.
-func ApiErrorHandler() gin.HandlerFunc {
+func apiErrorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 

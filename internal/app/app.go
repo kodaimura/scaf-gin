@@ -19,7 +19,6 @@ import (
 	account_handler "scaf-gin/internal/handler/account"
 	auth_handler "scaf-gin/internal/handler/auth"
 	"scaf-gin/internal/module"
-	"scaf-gin/internal/router"
 	account_usecase "scaf-gin/internal/usecase/account"
 	auth_usecase "scaf-gin/internal/usecase/auth"
 )
@@ -72,12 +71,7 @@ func New() *App {
 	engine.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
-	router.SetAPI(engine.Group("/api"), router.API{
-		AccountHandler: accountHandler,
-		AuthHandler:    authHandler,
-		AccountModule:  accountModule,
-		Auth:           authService,
-	})
+	registerAPIRoutes(engine.Group("/api"), accountHandler, authHandler, accountModule, authService)
 
 	return &App{
 		Engine: engine,
