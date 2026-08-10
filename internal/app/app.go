@@ -11,10 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"scaf-gin/config"
-	auth_adapter "scaf-gin/internal/adapter/auth"
-	"scaf-gin/internal/adapter/db"
-	"scaf-gin/internal/adapter/logger"
-	"scaf-gin/internal/adapter/mailer"
 	"scaf-gin/internal/core"
 	account_handler "scaf-gin/internal/handler/account"
 	auth_handler "scaf-gin/internal/handler/auth"
@@ -29,17 +25,17 @@ type App struct {
 }
 
 func New() *App {
-	log := logger.NewJSONLogger()
+	log := core.NewJSONLogger()
 	core.SetLogger(log)
 
 	if config.AppEnv == "production" || ShouldPrintRoutes() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	authService := auth_adapter.NewJwtAuth()
-	mailerService := mailer.NewMailer()
+	authService := core.NewJwtAuth()
+	mailerService := core.NewMailer()
 
-	dbConn := db.NewGormDB()
+	dbConn := core.NewGormDB()
 	accountModule := module.NewAccountModule(dbConn)
 	passwordResetTokenModule := module.NewPasswordResetTokenModule(dbConn)
 
