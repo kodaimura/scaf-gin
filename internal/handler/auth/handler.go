@@ -18,6 +18,9 @@ type Handler interface {
 	ApiLogin(c *gin.Context)
 	ApiRefresh(c *gin.Context)
 	ApiLogout(c *gin.Context)
+	ApiForgotPassword(c *gin.Context)
+	ApiVerifyResetPasswordToken(c *gin.Context)
+	ApiResetPassword(c *gin.Context)
 
 	ApiPutMePassword(c *gin.Context)
 }
@@ -36,24 +39,35 @@ func NewHandler(usecase usecase.Usecase) Handler {
 // Handler Implementations
 // -----------------------------
 
-// POST /api/accounts/signup
+// POST /api/auth/signup
 func (h *handler) ApiSignup(c *gin.Context) {
+	if !config.EnableSignup {
+		c.Error(core.ErrForbidden)
+		return
+	}
+
 	var req SignupRequest
 	if err := helper.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
 
-	_, err := h.usecase.Signup(usecase.SignupDto(req))
+	account, err := h.usecase.Signup(usecase.SignupDto{
+		LoginID:   req.LoginID,
+		Email:     req.Email,
+		Password:  req.Password,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+	})
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(201, gin.H{})
+	c.JSON(201, SignupResponse{Account: ToAccountResponse(account)})
 }
 
-// POST /api/accounts/login
+// POST /api/auth/login
 func (h *handler) ApiLogin(c *gin.Context) {
 	var req LoginRequest
 	if err := helper.BindJSON(c, &req); err != nil {
@@ -68,19 +82,16 @@ func (h *handler) ApiLogin(c *gin.Context) {
 	}
 
 	helper.SetAccessTokenCookie(c, accessToken)
-	helper.SetRefreshTokenCookie(c, refreshToken)
-	core.Logger.Info("account login: id=%d name=%s", acct.Id, acct.Name)
+	helper.SetRefreshTokenCookie(c, refreshToken, req.RememberMe)
+	core.Logger.Info("account login: id=%d login_id=%s", acct.Id, acct.LoginID)
 
 	c.JSON(200, LoginResponse{
-		AccountId:        acct.Id,
-		AccessToken:      accessToken,
-		RefreshToken:     refreshToken,
-		AccessExpiresIn:  config.AccessTokenExpiresSeconds,
-		RefreshExpiresIn: config.RefreshTokenExpiresSeconds,
+		Account:     ToAccountResponse(acct),
+		AccessToken: accessToken,
 	})
 }
 
-// POST /api/accounts/refresh
+// POST /api/auth/refresh
 func (h *handler) ApiRefresh(c *gin.Context) {
 	refreshToken := helper.GetRefreshToken(c)
 
@@ -91,24 +102,79 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 	}
 
 	helper.SetAccessTokenCookie(c, accessToken)
-	core.Logger.Info("access token refreshed: id=%d name=%s", payload.AccountId, payload.AccountName)
+	core.Logger.Info("access token refreshed: id=%d login_id=%s", payload.AccountId, payload.LoginID)
 
 	c.JSON(200, RefreshResponse{
 		AccessToken: accessToken,
-		ExpiresIn:   config.AccessTokenExpiresSeconds,
 	})
 }
 
-// POST /api/accounts/logout
+// POST /api/auth/logout
 func (h *handler) ApiLogout(c *gin.Context) {
 	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
 	helper.SetAccessTokenCookie(c, "")
-	helper.SetRefreshTokenCookie(c, "")
-	c.JSON(200, gin.H{})
+	helper.SetRefreshTokenCookie(c, "", false)
+	c.Status(204)
+}
+
+// POST /api/auth/forgot-password
+func (h *handler) ApiForgotPassword(c *gin.Context) {
+	var req ForgotPasswordRequest
+	if err := helper.BindJSON(c, &req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := h.usecase.ForgotPassword(usecase.ForgotPasswordDto{Email: req.Email}); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(204)
+}
+
+// GET /api/auth/reset-password/verify
+func (h *handler) ApiVerifyResetPasswordToken(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		c.Error(core.ErrBadRequest)
+		return
+	}
+
+	if err := h.usecase.VerifyResetPasswordToken(usecase.VerifyResetPasswordTokenDto{Token: token}); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(204)
+}
+
+// POST /api/auth/reset-password
+func (h *handler) ApiResetPassword(c *gin.Context) {
+	var req ResetPasswordRequest
+	if err := helper.BindJSON(c, &req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := h.usecase.ResetPassword(usecase.ResetPasswordDto{
+		Token:       req.Token,
+		NewPassword: req.NewPassword,
+	}); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(204)
 }
 
 // PUT /api/accounts/me/password
 func (h *handler) ApiPutMePassword(c *gin.Context) {
+	if targetAccountID := c.Param("target_account_id"); targetAccountID != "" && targetAccountID != "me" {
+		c.Error(core.ErrBadRequest)
+		return
+	}
+
 	accountId := helper.GetAccountId(c)
 
 	var req PutMePasswordRequest

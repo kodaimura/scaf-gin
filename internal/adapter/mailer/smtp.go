@@ -1,6 +1,7 @@
 package mailer
 
 import (
+	"crypto/tls"
 	"fmt"
 	"mime"
 	"net/smtp"
@@ -19,6 +20,25 @@ type SmtpMailer struct {
 	password string
 }
 
+func NewMailer() core.MailerI {
+	switch strings.ToLower(config.MailProvider) {
+	case "mailhog":
+		return NewMailHogMailer()
+	case "smtp":
+		return NewSmtpMailer()
+	default:
+		return NewMailHogMailer()
+	}
+}
+
+func NewMailHogMailer() core.MailerI {
+	return &SmtpMailer{
+		from: config.MailFrom,
+		host: "mailhog",
+		port: "1025",
+	}
+}
+
 func NewSmtpMailer() core.MailerI {
 	return &SmtpMailer{
 		from:     config.MailFrom,
@@ -32,13 +52,13 @@ func NewSmtpMailer() core.MailerI {
 // SendText sends a plain text email to the specified recipients.
 func (s *SmtpMailer) SendText(to []string, subject, body string) error {
 	msg := s.composeMessage(to, subject, "text/plain", body)
-	return smtp.SendMail(s.address(), s.auth(), s.from, to, msg)
+	return s.send(to, msg)
 }
 
 // SendHTML sends an HTML email to the specified recipients.
 func (s *SmtpMailer) SendHTML(to []string, subject, body string) error {
 	msg := s.composeMessage(to, subject, "text/html", body)
-	return smtp.SendMail(s.address(), s.auth(), s.from, to, msg)
+	return s.send(to, msg)
 }
 
 func (s *SmtpMailer) address() string {
@@ -46,7 +66,52 @@ func (s *SmtpMailer) address() string {
 }
 
 func (s *SmtpMailer) auth() smtp.Auth {
+	if s.username == "" || s.password == "" {
+		return nil
+	}
 	return smtp.PlainAuth("", s.username, s.password, s.host)
+}
+
+func (s *SmtpMailer) send(to []string, msg []byte) error {
+	if config.MailProvider != "smtp" {
+		return smtp.SendMail(s.address(), nil, s.from, to, msg)
+	}
+	return s.sendSMTP(to, msg)
+}
+
+func (s *SmtpMailer) sendSMTP(to []string, msg []byte) error {
+	c, err := smtp.Dial(s.address())
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+
+	if ok, _ := c.Extension("STARTTLS"); ok {
+		if err := c.StartTLS(&tls.Config{ServerName: s.host, MinVersion: tls.VersionTLS12}); err != nil {
+			return err
+		}
+	}
+	if auth := s.auth(); auth != nil {
+		if err := c.Auth(auth); err != nil {
+			return err
+		}
+	}
+	if err := c.Mail(s.from); err != nil {
+		return err
+	}
+	for _, recipient := range to {
+		if err := c.Rcpt(recipient); err != nil {
+			return err
+		}
+	}
+	w, err := c.Data()
+	if err != nil {
+		return err
+	}
+	if _, err := w.Write(msg); err != nil {
+		return err
+	}
+	return w.Close()
 }
 
 func (s *SmtpMailer) composeMessage(to []string, subject, contentType, body string) []byte {

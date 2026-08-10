@@ -25,7 +25,7 @@ func main() {
 	gin.DefaultWriter = io.MultiWriter(os.Stdout, f1)
 
 	core.SetLogger(logger.NewMultiLogger(f2))
-	core.SetMailer(mailer.NewSmtpMailer())
+	core.SetMailer(mailer.NewMailer())
 	core.SetAuth(auth.NewJwtAuth())
 
 	r := gin.Default()

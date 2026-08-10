@@ -13,6 +13,31 @@ const (
 	ErrCodeConflict      = "CONFLICT"
 	ErrCodeUnprocessable = "UNPROCESSABLE_ENTITY"
 	ErrCodeUnexpected    = "UNEXPECTED"
+
+	ErrCodeAccountDisabled          = "ACCOUNT_DISABLED"
+	ErrCodeAccountNotFound          = "ACCOUNT_NOT_FOUND"
+	ErrCodeAuthInvalid              = "AUTH_INVALID"
+	ErrCodeAuthInvalidPayload       = "AUTH_INVALID_PAYLOAD"
+	ErrCodeAuthInvalidSubject       = "AUTH_INVALID_SUBJECT"
+	ErrCodeAuthInvalidType          = "AUTH_INVALID_TYPE"
+	ErrCodeAuthMissing              = "AUTH_MISSING"
+	ErrCodeAuthNotFound             = "AUTH_NOT_FOUND"
+	ErrCodeAuthTokenRevoked         = "AUTH_TOKEN_REVOKED"
+	ErrCodeCurrentPasswordIncorrect = "CURRENT_PASSWORD_INCORRECT"
+	ErrCodeInvalidCredentials       = "INVALID_CREDENTIALS"
+	ErrCodeMalformedToken           = "MALFORMED_TOKEN"
+	ErrCodeRefreshInvalid           = "REFRESH_INVALID"
+	ErrCodeRefreshInvalidPayload    = "REFRESH_INVALID_PAYLOAD"
+	ErrCodeRefreshInvalidType       = "REFRESH_INVALID_TYPE"
+	ErrCodeRefreshMissing           = "REFRESH_MISSING"
+	ErrCodeTokenAlreadyUsed         = "TOKEN_ALREADY_USED"
+	ErrCodeTokenExpired             = "TOKEN_EXPIRED"
+	ErrCodeTokenInvalid             = "TOKEN_INVALID"
+	ErrCodeInvalidState             = "INVALID_STATE"
+	ErrCodeLoginIDAlreadyExists     = "LOGIN_ID_ALREADY_EXISTS"
+	ErrCodeEmailAlreadyExists       = "EMAIL_ALREADY_EXISTS"
+	ErrCodeEmailRequired            = "EMAIL_REQUIRED"
+	ErrCodeLoginIDRequired          = "LOGIN_ID_REQUIRED"
 )
 
 const (
@@ -33,6 +58,31 @@ var (
 	ErrConflict      = NewAppError(ErrMessageConflict, ErrCodeConflict, http.StatusConflict)
 	ErrUnprocessable = NewAppError(ErrMessageUnprocessable, ErrCodeUnprocessable, http.StatusUnprocessableEntity)
 	ErrUnexpected    = NewAppError(ErrMessageUnexpected, ErrCodeUnexpected, http.StatusInternalServerError)
+
+	ErrAccountDisabled          = NewAppError("Account is disabled", ErrCodeAccountDisabled, http.StatusUnauthorized)
+	ErrAccountNotFound          = NewAppError("Account not found", ErrCodeAccountNotFound, http.StatusNotFound)
+	ErrAuthInvalid              = NewAppError("Invalid access token", ErrCodeAuthInvalid, http.StatusUnauthorized)
+	ErrAuthInvalidPayload       = NewAppError("Invalid access token payload", ErrCodeAuthInvalidPayload, http.StatusUnauthorized)
+	ErrAuthInvalidSubject       = NewAppError("Invalid access token subject", ErrCodeAuthInvalidSubject, http.StatusUnauthorized)
+	ErrAuthInvalidType          = NewAppError("Invalid access token type", ErrCodeAuthInvalidType, http.StatusUnauthorized)
+	ErrAuthMissing              = NewAppError("Missing access token", ErrCodeAuthMissing, http.StatusUnauthorized)
+	ErrAuthNotFound             = NewAppError("Authenticated account not found", ErrCodeAuthNotFound, http.StatusUnauthorized)
+	ErrAuthTokenRevoked         = NewAppError("Authentication token was revoked", ErrCodeAuthTokenRevoked, http.StatusUnauthorized)
+	ErrCurrentPasswordIncorrect = NewAppError("Current password is incorrect", ErrCodeCurrentPasswordIncorrect, http.StatusUnauthorized)
+	ErrInvalidCredentials       = NewAppError("Invalid credentials", ErrCodeInvalidCredentials, http.StatusUnauthorized)
+	ErrMalformedToken           = NewAppError("Malformed token", ErrCodeMalformedToken, http.StatusUnauthorized)
+	ErrRefreshInvalid           = NewAppError("Invalid refresh token", ErrCodeRefreshInvalid, http.StatusUnauthorized)
+	ErrRefreshInvalidPayload    = NewAppError("Invalid refresh token payload", ErrCodeRefreshInvalidPayload, http.StatusUnauthorized)
+	ErrRefreshInvalidType       = NewAppError("Invalid refresh token type", ErrCodeRefreshInvalidType, http.StatusUnauthorized)
+	ErrRefreshMissing           = NewAppError("Missing refresh token", ErrCodeRefreshMissing, http.StatusUnauthorized)
+	ErrTokenAlreadyUsed         = NewAppError("Token already used", ErrCodeTokenAlreadyUsed, http.StatusBadRequest)
+	ErrTokenExpired             = NewAppError("Token expired", ErrCodeTokenExpired, http.StatusBadRequest)
+	ErrTokenInvalid             = NewAppError("Invalid token", ErrCodeTokenInvalid, http.StatusBadRequest)
+	ErrInvalidState             = NewAppError("Invalid state", ErrCodeInvalidState, http.StatusBadRequest)
+	ErrLoginIDAlreadyExists     = NewAppError("Login ID already exists", ErrCodeLoginIDAlreadyExists, http.StatusConflict)
+	ErrEmailAlreadyExists       = NewAppError("Email already exists", ErrCodeEmailAlreadyExists, http.StatusConflict)
+	ErrEmailRequired            = NewAppError("Email is required", ErrCodeEmailRequired, http.StatusBadRequest)
+	ErrLoginIDRequired          = NewAppError("Login ID is required", ErrCodeLoginIDRequired, http.StatusBadRequest)
 )
 
 // AppError defines a reusable application-level error

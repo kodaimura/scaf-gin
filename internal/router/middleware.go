@@ -9,6 +9,7 @@ import (
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
 	"scaf-gin/internal/helper"
+	accountModule "scaf-gin/internal/module/account"
 )
 
 // BasicAuthMiddleware is a middleware that checks for Basic Authentication credentials.
@@ -30,9 +31,37 @@ func BasicAuthMiddleware() gin.HandlerFunc {
 func ApiAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
+		if token == "" {
+			c.Error(core.ErrAuthMissing)
+			c.Abort()
+			return
+		}
 		payload, err := core.Auth.VerifyAccessToken(token)
 		if err != nil {
-			c.Error(core.ErrUnauthorized)
+			c.Error(core.ErrAuthInvalid)
+			c.Abort()
+			return
+		}
+
+		if payload.AccountId == 0 || payload.TokenVersion == 0 {
+			c.Error(core.ErrAuthInvalidPayload)
+			c.Abort()
+			return
+		}
+
+		account, err := accountService.GetOne(accountModule.Account{Id: payload.AccountId}, gorm)
+		if err != nil {
+			c.Error(core.ErrAuthNotFound)
+			c.Abort()
+			return
+		}
+		if account.DisabledAt != nil {
+			c.Error(core.ErrAccountDisabled)
+			c.Abort()
+			return
+		}
+		if payload.TokenVersion != account.TokenVersion {
+			c.Error(core.ErrAuthTokenRevoked)
 			c.Abort()
 			return
 		}

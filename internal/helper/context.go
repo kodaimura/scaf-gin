@@ -26,7 +26,7 @@ func GetAccessToken(c *gin.Context) string {
 	return ""
 }
 
-// GetRefreshToken retrieves the access token from cookie.
+// GetRefreshToken retrieves the refresh token from cookie.
 func GetRefreshToken(c *gin.Context) string {
 	token, err := c.Cookie(COOKIE_KEY_REFRESH_TOKEN)
 	if err == nil {
@@ -54,8 +54,11 @@ func SetAccessTokenCookie(c *gin.Context, accessToken string) {
 }
 
 // SetRefreshTokenCookie sets the refresh token cookie in the response
-func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
+func SetRefreshTokenCookie(c *gin.Context, refreshToken string, rememberMe bool) {
 	maxAge := config.RefreshTokenExpiresSeconds
+	if rememberMe {
+		maxAge = config.RefreshTokenRememberMeExpiresSeconds
+	}
 	if refreshToken == "" {
 		maxAge = -1
 	}
@@ -89,7 +92,7 @@ func GetAccountId(c *gin.Context) int {
 	return GetPayload(c).AccountId
 }
 
-// GetAccountName returns the account name from the AuthPayload in the context.
+// GetAccountName returns the login ID from the AuthPayload in the context.
 func GetAccountName(c *gin.Context) string {
-	return GetPayload(c).AccountName
+	return GetPayload(c).LoginID
 }

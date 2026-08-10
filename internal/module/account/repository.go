@@ -10,6 +10,8 @@ type Repository interface {
 	Get(m *Account, db *gorm.DB) ([]Account, error)
 	GetOne(m *Account, db *gorm.DB) (Account, error)
 	GetAll(m *Account, db *gorm.DB) ([]Account, error)
+	GetByEmail(email string, db *gorm.DB) (Account, error)
+	GetByLoginID(loginID string, db *gorm.DB) (Account, error)
 	Insert(m *Account, db *gorm.DB) (Account, error)
 	Update(m *Account, db *gorm.DB) (Account, error)
 	Delete(m *Account, db *gorm.DB) error
@@ -35,8 +37,20 @@ func (rep *repository) GetOne(m *Account, db *gorm.DB) (Account, error) {
 
 func (rep *repository) GetAll(m *Account, db *gorm.DB) ([]Account, error) {
 	var accounts []Account
-	err := db.Unscoped().Find(&accounts, m).Error
+	err := db.Order("id").Find(&accounts, m).Error
 	return accounts, helper.HandleGormError(err)
+}
+
+func (rep *repository) GetByEmail(email string, db *gorm.DB) (Account, error) {
+	var account Account
+	err := db.Where("email = ?", email).First(&account).Error
+	return account, helper.HandleGormError(err)
+}
+
+func (rep *repository) GetByLoginID(loginID string, db *gorm.DB) (Account, error) {
+	var account Account
+	err := db.Where("login_id = ?", loginID).First(&account).Error
+	return account, helper.HandleGormError(err)
 }
 
 func (rep *repository) Insert(m *Account, db *gorm.DB) (Account, error) {

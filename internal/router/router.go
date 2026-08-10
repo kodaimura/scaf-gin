@@ -7,6 +7,7 @@ import (
 
 	"scaf-gin/internal/module/account"
 	"scaf-gin/internal/module/account_profile"
+	"scaf-gin/internal/module/password_reset_token"
 
 	account_uc "scaf-gin/internal/usecase/account"
 	account_profile_uc "scaf-gin/internal/usecase/account_profile"
@@ -24,13 +25,15 @@ var gorm = db.NewGormDB()
 /* DI (Repository) */
 var accountRepository = account.NewRepository()
 var accountProfileRepository = account_profile.NewRepository()
+var passwordResetTokenRepository = password_reset_token.NewRepository()
 
 /* DI (Service) */
 var accountService = account.NewService(accountRepository)
 var accountProfileService = account_profile.NewService(accountProfileRepository)
+var passwordResetTokenService = password_reset_token.NewService(passwordResetTokenRepository)
 
 /* DI (Usecase) */
-var authUsecase = auth_uc.NewUsecase(gorm, accountService, accountProfileService)
+var authUsecase = auth_uc.NewUsecase(gorm, accountService, accountProfileService, passwordResetTokenService)
 var accountUsecase = account_uc.NewUsecase(gorm, accountService)
 var accountProfileUsecase = account_profile_uc.NewUsecase(gorm, accountProfileService)
 
@@ -41,19 +44,22 @@ var authHandler = auth_h.NewHandler(authUsecase)
 
 func SetApi(r *gin.RouterGroup) {
 	r.Use(ApiErrorHandler())
-	r.POST("/accounts/signup", authHandler.ApiSignup)
-	r.POST("/accounts/login", authHandler.ApiLogin)
-	r.POST("/accounts/refresh", authHandler.ApiRefresh)
-	r.POST("/accounts/logout", authHandler.ApiLogout)
+	r.POST("/auth/signup", authHandler.ApiSignup)
+	r.POST("/auth/login", authHandler.ApiLogin)
+	r.POST("/auth/refresh", authHandler.ApiRefresh)
+	r.POST("/auth/logout", authHandler.ApiLogout)
+	r.POST("/auth/forgot-password", authHandler.ApiForgotPassword)
+	r.GET("/auth/reset-password/verify", authHandler.ApiVerifyResetPasswordToken)
+	r.POST("/auth/reset-password", authHandler.ApiResetPassword)
 
 	auth := r.Group("", ApiAuthMiddleware())
 	{
-		auth.PUT("/accounts/me/password", authHandler.ApiPutMePassword)
-		auth.GET("/accounts/me", accountHandler.ApiGetMe)
-		auth.PUT("/accounts/me", accountHandler.ApiPutMe)
-		auth.DELETE("/accounts/me", accountHandler.ApiDeleteMe)
-
-		auth.GET("/accounts/me/profile", accountProfileHandler.ApiGetMe)
-		auth.PUT("/accounts/me/profile", accountProfileHandler.ApiPutMe)
+		auth.GET("/accounts", accountHandler.ApiGetAccounts)
+		auth.POST("/accounts", accountHandler.ApiPostAccount)
+		auth.PUT("/accounts/:target_account_id/password", authHandler.ApiPutMePassword)
+		auth.PUT("/accounts/:target_account_id/disable", accountHandler.ApiPutAccountDisable)
+		auth.PUT("/accounts/:target_account_id/enable", accountHandler.ApiPutAccountEnable)
+		auth.GET("/accounts/:target_account_id", accountHandler.ApiGetAccount)
+		auth.PUT("/accounts/:target_account_id", accountHandler.ApiPutAccount)
 	}
 }
