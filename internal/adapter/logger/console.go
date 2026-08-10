@@ -1,23 +1,31 @@
 package logger
 
 import (
-	"log"
+	"encoding/json"
+	"fmt"
+	"os"
 	"strings"
+	"sync"
+	"time"
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
 )
 
-// ConsoleLogger logs messages to the standard output.
+// ConsoleLogger logs JSON lines to stdout.
 type ConsoleLogger struct {
 	level logLevel
+	mu    sync.Mutex
 }
 
 func NewConsoleLogger() core.LoggerI {
-	log.SetFlags(0) // Disable default timestamps and flags in the log output
 	return &ConsoleLogger{
 		level: getLogLevel(),
 	}
+}
+
+func NewJSONLogger() core.LoggerI {
+	return NewConsoleLogger()
 }
 
 // Debug logs a debug-level message.
@@ -42,7 +50,19 @@ func (l *ConsoleLogger) Error(format string, v ...any) {
 
 func (l *ConsoleLogger) logf(level logLevel, tag, format string, v ...any) {
 	if l.level <= level {
-		log.Printf("["+tag+"] "+format, v...)
+		entry := map[string]any{
+			"time":    time.Now().UTC().Format(time.RFC3339Nano),
+			"level":   strings.ToLower(tag),
+			"message": fmt.Sprintf(format, v...),
+		}
+		body, err := json.Marshal(entry)
+		if err != nil {
+			body = []byte(fmt.Sprintf(`{"level":"error","message":"failed to marshal log entry: %s"}`, err.Error()))
+		}
+
+		l.mu.Lock()
+		defer l.mu.Unlock()
+		fmt.Fprintln(os.Stdout, string(body))
 	}
 }
 
