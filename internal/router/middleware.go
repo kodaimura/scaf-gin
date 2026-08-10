@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
 	"scaf-gin/internal/helper"
+	"scaf-gin/internal/module"
 	"scaf-gin/internal/service"
 )
 
@@ -29,7 +29,7 @@ func BasicAuthMiddleware() gin.HandlerFunc {
 
 // ApiAuthMiddleware is a middleware that validates the JWT token for API access.
 // If the token is invalid, it returns an Unauthorized error in JSON format.
-func ApiAuthMiddleware(dbConn *gorm.DB) gin.HandlerFunc {
+func ApiAuthMiddleware(accountModule module.AccountModule) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := helper.GetAccessToken(c)
 		if token == "" {
@@ -44,7 +44,7 @@ func ApiAuthMiddleware(dbConn *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		accountID, err := service.ValidateAccessTokenAccount(dbConn, payload)
+		accountID, err := service.ValidateAccessTokenAccount(accountModule, payload)
 		if err != nil {
 			c.Error(err)
 			c.Abort()

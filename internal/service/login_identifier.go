@@ -1,24 +1,25 @@
-package core
+package service
 
 import (
 	"strings"
 
 	"scaf-gin/config"
+	"scaf-gin/internal/core"
 )
 
 func ResolveLoginID(loginID *string, email *string) (string, error) {
 	switch strings.ToLower(strings.TrimSpace(config.AuthLoginIDMode)) {
 	case "email":
 		if email == nil || strings.TrimSpace(*email) == "" {
-			return "", ErrEmailRequired
+			return "", core.ErrEmailRequired
 		}
 		return strings.TrimSpace(*email), nil
 	case "login_id":
 		if loginID == nil || strings.TrimSpace(*loginID) == "" {
-			return "", ErrLoginIDRequired
+			return "", core.ErrLoginIDRequired
 		}
 		return strings.TrimSpace(*loginID), nil
 	default:
-		return "", ErrInvalidState
+		return "", core.ErrInvalidState
 	}
 }

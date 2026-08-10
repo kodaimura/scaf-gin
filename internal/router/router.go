@@ -35,7 +35,7 @@ func SetApi(r *gin.RouterGroup) {
 	r.GET("/auth/reset-password/verify", authHandler.ApiVerifyResetPasswordToken)
 	r.POST("/auth/reset-password", authHandler.ApiResetPassword)
 
-	auth := r.Group("", ApiAuthMiddleware(dbConn))
+	auth := r.Group("", ApiAuthMiddleware(accountModule))
 	{
 		auth.GET("/accounts", accountHandler.ApiGetAccounts)
 		auth.POST("/accounts", accountHandler.ApiPostAccount)
