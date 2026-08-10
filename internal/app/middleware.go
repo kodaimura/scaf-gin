@@ -46,7 +46,7 @@ func apiAuthMiddleware(accountModule module.AccountModule, authService core.Auth
 			c.Abort()
 			return
 		}
-		payload.AccountId = accountID
+		payload.AccountID = accountID
 
 		handlerutil.SetPayload(c, payload)
 		c.Next()

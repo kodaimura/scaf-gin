@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"scaf-gin/internal/core"
 	"scaf-gin/internal/model"
 )
 
@@ -38,36 +39,36 @@ func (m *accountModule) Create(entity model.Account) (model.Account, error) {
 		entity.TokenVersion = 1
 	}
 	err := m.db.Create(&entity).Error
-	return entity, handleGormError(err)
+	return entity, core.HandleGormError(err)
 }
 
 func (m *accountModule) GetAll() ([]model.Account, error) {
 	var accounts []model.Account
 	err := m.db.Order("id").Find(&accounts).Error
-	return accounts, handleGormError(err)
+	return accounts, core.HandleGormError(err)
 }
 
 func (m *accountModule) GetByID(accountID int) (model.Account, error) {
 	var account model.Account
-	err := m.db.First(&account, model.Account{Id: accountID}).Error
-	return account, handleGormError(err)
+	err := m.db.First(&account, model.Account{ID: accountID}).Error
+	return account, core.HandleGormError(err)
 }
 
 func (m *accountModule) GetByEmail(email string) (model.Account, error) {
 	var account model.Account
 	err := m.db.Where("email = ?", email).First(&account).Error
-	return account, handleGormError(err)
+	return account, core.HandleGormError(err)
 }
 
 func (m *accountModule) GetByLoginID(loginID string) (model.Account, error) {
 	var account model.Account
 	err := m.db.Where("login_id = ?", loginID).First(&account).Error
-	return account, handleGormError(err)
+	return account, core.HandleGormError(err)
 }
 
 func (m *accountModule) Update(entity model.Account) (model.Account, error) {
 	err := m.db.Save(&entity).Error
-	return entity, handleGormError(err)
+	return entity, core.HandleGormError(err)
 }
 
 func (m *accountModule) Disable(entity model.Account) (model.Account, error) {
@@ -84,5 +85,5 @@ func (m *accountModule) Enable(entity model.Account) (model.Account, error) {
 
 func (m *accountModule) Delete(entity model.Account) error {
 	err := m.db.Delete(&entity).Error
-	return handleGormError(err)
+	return core.HandleGormError(err)
 }

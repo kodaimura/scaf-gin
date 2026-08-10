@@ -1,7 +1,9 @@
 package core
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -69,4 +71,22 @@ func buildMySQLDSN(cfg config.Config) string {
 
 func buildSQLiteDSN(cfg config.Config) string {
 	return fmt.Sprintf("%s.db", cfg.DBName)
+}
+
+func HandleGormError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return ErrNotFound
+	}
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return ErrConflict
+	}
+	if strings.Contains(err.Error(), "SQLSTATE 23505") {
+		return ErrConflict
+	}
+
+	return NewUnexpectedError(err)
 }

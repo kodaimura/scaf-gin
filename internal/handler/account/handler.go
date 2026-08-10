@@ -73,13 +73,13 @@ func (h *handler) ApiPostAccount(c *gin.Context) {
 
 // GET /api/accounts/:target_account_id
 func (h *handler) ApiGetAccount(c *gin.Context) {
-	targetAccountId, err := parseAccountID(c)
+	targetAccountID, err := parseAccountID(c)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	account, err := h.usecase.Get(usecase.GetDto{Id: targetAccountId})
+	account, err := h.usecase.Get(usecase.GetDto{ID: targetAccountID})
 	if err != nil {
 		c.Error(err)
 		return
@@ -90,7 +90,7 @@ func (h *handler) ApiGetAccount(c *gin.Context) {
 
 // PUT /api/accounts/:target_account_id
 func (h *handler) ApiPutAccount(c *gin.Context) {
-	targetAccountId, err := parseAccountID(c)
+	targetAccountID, err := parseAccountID(c)
 	if err != nil {
 		c.Error(err)
 		return
@@ -103,7 +103,7 @@ func (h *handler) ApiPutAccount(c *gin.Context) {
 	}
 
 	account, err := h.usecase.Update(usecase.UpdateDto{
-		Id:        targetAccountId,
+		ID:        targetAccountID,
 		LoginID:   req.LoginID,
 		Email:     req.Email,
 		Password:  req.Password,
@@ -120,13 +120,13 @@ func (h *handler) ApiPutAccount(c *gin.Context) {
 
 // PUT /api/accounts/:target_account_id/disable
 func (h *handler) ApiPutAccountDisable(c *gin.Context) {
-	targetAccountId, err := parseAccountID(c)
+	targetAccountID, err := parseAccountID(c)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	account, err := h.usecase.Disable(usecase.DisableDto{Id: targetAccountId})
+	account, err := h.usecase.Disable(usecase.DisableDto{ID: targetAccountID})
 	if err != nil {
 		c.Error(err)
 		return
@@ -137,13 +137,13 @@ func (h *handler) ApiPutAccountDisable(c *gin.Context) {
 
 // PUT /api/accounts/:target_account_id/enable
 func (h *handler) ApiPutAccountEnable(c *gin.Context) {
-	targetAccountId, err := parseAccountID(c)
+	targetAccountID, err := parseAccountID(c)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	account, err := h.usecase.Enable(usecase.EnableDto{Id: targetAccountId})
+	account, err := h.usecase.Enable(usecase.EnableDto{ID: targetAccountID})
 	if err != nil {
 		c.Error(err)
 		return

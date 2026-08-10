@@ -28,7 +28,7 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 	}
 
 	now := time.Now()
-	latest, err := uc.passwordResetTokenModule.FindLatestByAccountID(account.Id)
+	latest, err := uc.passwordResetTokenModule.FindLatestByAccountID(account.ID)
 	if err != nil && !errors.Is(err, core.ErrNotFound) {
 		return err
 	}
@@ -48,11 +48,11 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 
 	err = uc.db.Transaction(func(tx *gorm.DB) error {
 		tokenModuleTx := uc.passwordResetTokenModule.WithTx(tx)
-		if err := tokenModuleTx.InvalidateActiveTokens(account.Id, now); err != nil {
+		if err := tokenModuleTx.InvalidateActiveTokens(account.ID, now); err != nil {
 			return err
 		}
 		_, err := tokenModuleTx.Create(model.PasswordResetToken{
-			AccountId: account.Id,
+			AccountID: account.ID,
 			TokenHash: tokenHash,
 			ExpiresAt: expiresAt,
 		})

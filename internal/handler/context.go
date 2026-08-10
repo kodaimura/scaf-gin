@@ -25,5 +25,5 @@ func GetPayload(c *gin.Context) core.AuthPayload {
 }
 
 func GetAccountID(c *gin.Context) int {
-	return GetPayload(c).AccountId
+	return GetPayload(c).AccountID
 }

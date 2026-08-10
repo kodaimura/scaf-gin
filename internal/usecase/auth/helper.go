@@ -20,7 +20,7 @@ func ensureUniqueLoginID(accountModule module.AccountModule, loginID string, exc
 		}
 		return err
 	}
-	if existing.Id != exceptID {
+	if existing.ID != exceptID {
 		return core.ErrLoginIDAlreadyExists
 	}
 	return nil
@@ -37,7 +37,7 @@ func ensureUniqueEmail(accountModule module.AccountModule, email *string, except
 		}
 		return err
 	}
-	if existing.Id != exceptID {
+	if existing.ID != exceptID {
 		return core.ErrEmailAlreadyExists
 	}
 	return nil

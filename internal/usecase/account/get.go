@@ -8,11 +8,11 @@ import (
 )
 
 type GetDto struct {
-	Id int
+	ID int
 }
 
 func (uc *usecase) Get(in GetDto) (model.Account, error) {
-	acct, err := uc.accountModule.GetByID(in.Id)
+	acct, err := uc.accountModule.GetByID(in.ID)
 	if errors.Is(err, core.ErrNotFound) {
 		return model.Account{}, core.ErrAccountNotFound
 	}

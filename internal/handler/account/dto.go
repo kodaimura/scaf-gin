@@ -11,7 +11,7 @@ import (
 // -----------------------------
 
 type AccountResponse struct {
-	Id         int        `json:"id"`
+	ID         int        `json:"id"`
 	Email      *string    `json:"email"`
 	LoginID    string     `json:"login_id"`
 	FirstName  string     `json:"first_name"`
@@ -23,7 +23,7 @@ type AccountResponse struct {
 
 func ToAccountResponse(m model.Account) AccountResponse {
 	return AccountResponse{
-		Id:         m.Id,
+		ID:         m.ID,
 		Email:      m.Email,
 		LoginID:    m.LoginID,
 		FirstName:  m.FirstName,

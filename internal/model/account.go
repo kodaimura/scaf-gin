@@ -7,7 +7,7 @@ import (
 )
 
 type Account struct {
-	Id           int            `db:"id" gorm:"column:id;primaryKey;autoIncrement"`
+	ID           int            `db:"id" gorm:"column:id;primaryKey;autoIncrement"`
 	Email        *string        `db:"email" gorm:"column:email;uniqueIndex"`
 	LoginID      string         `db:"login_id" gorm:"column:login_id;uniqueIndex"`
 	PasswordHash string         `db:"password_hash" gorm:"column:password_hash"`

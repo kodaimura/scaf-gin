@@ -85,7 +85,7 @@ func (h *handler) ApiLogin(c *gin.Context) {
 
 	handlerutil.SetAccessTokenCookie(c, accessToken)
 	handlerutil.SetRefreshTokenCookie(c, refreshToken, req.RememberMe)
-	h.logger.Info("account login: id=%d login_id=%s", acct.Id, acct.LoginID)
+	h.logger.Info("account login: id=%d login_id=%s", acct.ID, acct.LoginID)
 
 	c.JSON(200, LoginResponse{
 		Account:     ToAccountResponse(acct),
@@ -104,7 +104,7 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 	}
 
 	handlerutil.SetAccessTokenCookie(c, accessToken)
-	h.logger.Info("access token refreshed: id=%d", payload.AccountId)
+	h.logger.Info("access token refreshed: id=%d", payload.AccountID)
 
 	c.JSON(200, RefreshResponse{
 		AccessToken: accessToken,
@@ -176,7 +176,7 @@ func (h *handler) ApiPutMePassword(c *gin.Context) {
 		return
 	}
 
-	accountId := handlerutil.GetAccountID(c)
+	accountID := handlerutil.GetAccountID(c)
 
 	var req PutMePasswordRequest
 	if err := handlerutil.BindJSON(c, &req); err != nil {
@@ -185,7 +185,7 @@ func (h *handler) ApiPutMePassword(c *gin.Context) {
 	}
 
 	err := h.usecase.UpdatePassword(usecase.UpdatePasswordDto{
-		Id:          accountId,
+		ID:          accountID,
 		OldPassword: req.OldPassword,
 		NewPassword: req.NewPassword,
 	})

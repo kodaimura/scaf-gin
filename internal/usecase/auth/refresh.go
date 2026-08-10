@@ -15,7 +15,7 @@ func (uc *usecase) Refresh(refreshToken string) (core.AuthPayload, string, error
 		return core.AuthPayload{}, "", core.ErrRefreshInvalid
 	}
 
-	account, err := uc.accountModule.GetByID(payload.AccountId)
+	account, err := uc.accountModule.GetByID(payload.AccountID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return core.AuthPayload{}, "", core.ErrAuthNotFound
@@ -30,7 +30,7 @@ func (uc *usecase) Refresh(refreshToken string) (core.AuthPayload, string, error
 	}
 
 	accessToken, err := uc.auth.CreateAccessToken(core.AuthPayload{
-		AccountId:    account.Id,
+		AccountID:    account.ID,
 		TokenVersion: account.TokenVersion,
 	})
 

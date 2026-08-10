@@ -16,7 +16,7 @@ func (uc *usecase) ensureUniqueLoginID(loginID string, exceptID int) error {
 		}
 		return err
 	}
-	if existing.Id != exceptID {
+	if existing.ID != exceptID {
 		return core.ErrLoginIDAlreadyExists
 	}
 	return nil
@@ -33,7 +33,7 @@ func (uc *usecase) ensureUniqueEmail(email *string, exceptID int) error {
 		}
 		return err
 	}
-	if existing.Id != exceptID {
+	if existing.ID != exceptID {
 		return core.ErrEmailAlreadyExists
 	}
 	return nil

@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"scaf-gin/internal/core"
 	"scaf-gin/internal/model"
 )
 
@@ -31,19 +32,19 @@ func (m *passwordResetTokenModule) WithTx(tx *gorm.DB) PasswordResetTokenModule 
 
 func (m *passwordResetTokenModule) Create(entity model.PasswordResetToken) (model.PasswordResetToken, error) {
 	err := m.db.Create(&entity).Error
-	return entity, handleGormError(err)
+	return entity, core.HandleGormError(err)
 }
 
 func (m *passwordResetTokenModule) GetByHash(tokenHash string) (model.PasswordResetToken, error) {
 	var token model.PasswordResetToken
 	err := m.db.Where("token_hash = ?", tokenHash).First(&token).Error
-	return token, handleGormError(err)
+	return token, core.HandleGormError(err)
 }
 
 func (m *passwordResetTokenModule) FindLatestByAccountID(accountID int) (model.PasswordResetToken, error) {
 	var token model.PasswordResetToken
 	err := m.db.Where("account_id = ?", accountID).Order("created_at DESC").First(&token).Error
-	return token, handleGormError(err)
+	return token, core.HandleGormError(err)
 }
 
 func (m *passwordResetTokenModule) InvalidateActiveTokens(accountID int, now time.Time) error {
@@ -53,10 +54,10 @@ func (m *passwordResetTokenModule) InvalidateActiveTokens(accountID int, now tim
 		Where("expires_at > ?", now).
 		Update("used_at", now).
 		Error
-	return handleGormError(err)
+	return core.HandleGormError(err)
 }
 
 func (m *passwordResetTokenModule) Update(entity model.PasswordResetToken) (model.PasswordResetToken, error) {
 	err := m.db.Save(&entity).Error
-	return entity, handleGormError(err)
+	return entity, core.HandleGormError(err)
 }

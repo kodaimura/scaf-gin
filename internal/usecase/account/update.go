@@ -9,7 +9,7 @@ import (
 )
 
 type UpdateDto struct {
-	Id        int
+	ID        int
 	LoginID   *string
 	Email     *string
 	Password  *string
@@ -18,7 +18,7 @@ type UpdateDto struct {
 }
 
 func (uc *usecase) Update(in UpdateDto) (model.Account, error) {
-	acct, err := uc.accountModule.GetByID(in.Id)
+	acct, err := uc.accountModule.GetByID(in.ID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return model.Account{}, core.ErrAccountNotFound
@@ -30,10 +30,10 @@ func (uc *usecase) Update(in UpdateDto) (model.Account, error) {
 	if err != nil {
 		return model.Account{}, err
 	}
-	if err := uc.ensureUniqueLoginID(loginID, acct.Id); err != nil {
+	if err := uc.ensureUniqueLoginID(loginID, acct.ID); err != nil {
 		return model.Account{}, err
 	}
-	if err := uc.ensureUniqueEmail(in.Email, acct.Id); err != nil {
+	if err := uc.ensureUniqueEmail(in.Email, acct.ID); err != nil {
 		return model.Account{}, err
 	}
 

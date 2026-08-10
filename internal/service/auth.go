@@ -8,11 +8,11 @@ import (
 )
 
 func ValidateAccessTokenAccount(accountModule module.AccountModule, payload core.AuthPayload) (int, error) {
-	if payload.AccountId == 0 || payload.TokenVersion == 0 {
+	if payload.AccountID == 0 || payload.TokenVersion == 0 {
 		return 0, core.ErrAuthInvalidPayload
 	}
 
-	account, err := accountModule.GetByID(payload.AccountId)
+	account, err := accountModule.GetByID(payload.AccountID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return 0, core.ErrAuthNotFound
@@ -28,5 +28,5 @@ func ValidateAccessTokenAccount(accountModule module.AccountModule, payload core
 		return 0, core.ErrAuthTokenRevoked
 	}
 
-	return account.Id, nil
+	return account.ID, nil
 }

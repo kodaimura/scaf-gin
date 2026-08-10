@@ -3,13 +3,13 @@ package auth
 import "scaf-gin/internal/core"
 
 type UpdatePasswordDto struct {
-	Id          int
+	ID          int
 	OldPassword string
 	NewPassword string
 }
 
 func (uc *usecase) UpdatePassword(in UpdatePasswordDto) error {
-	account, err := uc.accountModule.GetByID(in.Id)
+	account, err := uc.accountModule.GetByID(in.ID)
 	if err != nil {
 		return err
 	}

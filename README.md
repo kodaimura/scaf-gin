@@ -30,6 +30,24 @@ Health check is available at `http://localhost:8000/health`.
 MailHog is available at `http://localhost:8025`.
 Source changes are reloaded automatically in the development container.
 
+## Structure
+
+```text
+cmd/          # application entrypoints
+config/       # environment loading and validation
+internal/
+  app/        # Gin bootstrap, middleware, and routes
+  core/       # config-backed infrastructure: auth, database, logger, mailer
+  handler/    # HTTP request/response handling
+  model/      # database models
+  module/     # persistence-oriented domain modules
+  service/    # shared business logic
+  usecase/    # application use cases
+migrations/   # numbered SQL migrations
+```
+
+Migration files are numbered sequentially from `001`.
+
 Use production compose settings with `ENV=prod`.
 
 ```sh

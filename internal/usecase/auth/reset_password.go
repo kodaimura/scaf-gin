@@ -27,7 +27,7 @@ func (uc *usecase) ResetPassword(in ResetPasswordDto) error {
 		return err
 	}
 
-	account, err := uc.accountModule.GetByID(token.AccountId)
+	account, err := uc.accountModule.GetByID(token.AccountID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return core.ErrAccountNotFound

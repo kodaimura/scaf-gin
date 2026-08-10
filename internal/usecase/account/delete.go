@@ -7,11 +7,11 @@ import (
 )
 
 type DeleteDto struct {
-	Id int
+	ID int
 }
 
 func (uc *usecase) Delete(in DeleteDto) error {
-	acct, err := uc.accountModule.GetByID(in.Id)
+	acct, err := uc.accountModule.GetByID(in.ID)
 	if errors.Is(err, core.ErrNotFound) {
 		return core.ErrAccountNotFound
 	}
