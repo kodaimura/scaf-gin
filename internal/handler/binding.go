@@ -11,7 +11,6 @@ import (
 
 func BindJSON(c *gin.Context, req any) error {
 	if err := c.ShouldBindJSON(req); err != nil {
-		core.Logger.Warn("failed to bind json: %v", err)
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return core.NewValidationError(extractValidationErrors(req, validationErrors))
 		}
@@ -22,7 +21,6 @@ func BindJSON(c *gin.Context, req any) error {
 
 func BindQuery(c *gin.Context, req any) error {
 	if err := c.ShouldBindQuery(req); err != nil {
-		core.Logger.Warn("failed to bind query: %v", err)
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return core.NewValidationError(extractValidationErrors(req, validationErrors))
 		}
@@ -33,7 +31,6 @@ func BindQuery(c *gin.Context, req any) error {
 
 func BindURI(c *gin.Context, req any) error {
 	if err := c.ShouldBindUri(req); err != nil {
-		core.Logger.Warn("failed to bind uri: %v", err)
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return core.NewValidationError(extractValidationErrors(req, validationErrors))
 		}

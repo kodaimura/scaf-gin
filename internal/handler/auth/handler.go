@@ -27,11 +27,13 @@ type Handler interface {
 
 type handler struct {
 	usecase usecase.Usecase
+	logger  core.Logger
 }
 
-func NewHandler(usecase usecase.Usecase) Handler {
+func NewHandler(usecase usecase.Usecase, logger core.Logger) Handler {
 	return &handler{
 		usecase: usecase,
+		logger:  logger,
 	}
 }
 
@@ -41,7 +43,7 @@ func NewHandler(usecase usecase.Usecase) Handler {
 
 // POST /api/auth/signup
 func (h *handler) ApiSignup(c *gin.Context) {
-	if !config.EnableSignup {
+	if !config.Current.EnableSignup {
 		c.Error(core.ErrForbidden)
 		return
 	}
@@ -83,7 +85,7 @@ func (h *handler) ApiLogin(c *gin.Context) {
 
 	handlerutil.SetAccessTokenCookie(c, accessToken)
 	handlerutil.SetRefreshTokenCookie(c, refreshToken, req.RememberMe)
-	core.Logger.Info("account login: id=%d login_id=%s", acct.Id, acct.LoginID)
+	h.logger.Info("account login: id=%d login_id=%s", acct.Id, acct.LoginID)
 
 	c.JSON(200, LoginResponse{
 		Account:     ToAccountResponse(acct),
@@ -102,7 +104,7 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 	}
 
 	handlerutil.SetAccessTokenCookie(c, accessToken)
-	core.Logger.Info("access token refreshed: id=%d login_id=%s", payload.AccountId, payload.LoginID)
+	h.logger.Info("access token refreshed: id=%d", payload.AccountId)
 
 	c.JSON(200, RefreshResponse{
 		AccessToken: accessToken,
@@ -111,10 +113,6 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 
 // POST /api/auth/logout
 func (h *handler) ApiLogout(c *gin.Context) {
-	if err := h.usecase.Logout(handlerutil.GetRefreshToken(c)); err != nil {
-		c.Error(err)
-		return
-	}
 	handlerutil.SetAccessTokenCookie(c, "")
 	handlerutil.SetRefreshTokenCookie(c, "", false)
 	c.Status(204)

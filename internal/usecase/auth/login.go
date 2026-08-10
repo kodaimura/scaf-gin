@@ -31,7 +31,6 @@ func (uc *usecase) Login(in LoginDto) (model.Account, string, string, error) {
 
 	payload := core.AuthPayload{
 		AccountId:    account.Id,
-		LoginID:      account.LoginID,
 		TokenVersion: account.TokenVersion,
 	}
 

@@ -33,7 +33,7 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 		return err
 	}
 	if err == nil {
-		resendAfter := now.Add(-time.Minute * time.Duration(config.PasswordResetResendIntervalMinutes))
+		resendAfter := now.Add(-time.Minute * time.Duration(config.Current.PasswordResetResendIntervalMinutes))
 		if latest.CreatedAt.After(resendAfter) {
 			return nil
 		}
@@ -44,7 +44,7 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 		return err
 	}
 	tokenHash := core.HashToken(rawToken)
-	expiresAt := now.Add(time.Minute * time.Duration(config.PasswordResetTokenExpiresMinutes))
+	expiresAt := now.Add(time.Minute * time.Duration(config.Current.PasswordResetTokenExpiresMinutes))
 
 	err = uc.db.Transaction(func(tx *gorm.DB) error {
 		tokenModuleTx := uc.passwordResetTokenModule.WithTx(tx)
@@ -63,6 +63,6 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 	}
 
 	resetURL := buildResetURL(rawToken)
-	body := buildPasswordResetMailBody(account.LastName+" "+account.FirstName, resetURL, config.PasswordResetTokenExpiresMinutes)
+	body := buildPasswordResetMailBody(account.LastName+" "+account.FirstName, resetURL, config.Current.PasswordResetTokenExpiresMinutes)
 	return uc.mailer.SendText([]string{in.Email}, "Password reset", body)
 }

@@ -13,10 +13,10 @@ import (
 	"scaf-gin/internal/service"
 )
 
-func basicAuthMiddleware() gin.HandlerFunc {
+func basicAuthMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, pass, ok := c.Request.BasicAuth()
-		if !ok || user != config.BasicAuthUser || pass != config.BasicAuthPass {
+		if !ok || user != cfg.BasicAuthUser || pass != cfg.BasicAuthPass {
 			c.Header("WWW-Authenticate", "Basic realm=Authorization Required")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
@@ -25,7 +25,7 @@ func basicAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func apiAuthMiddleware(accountModule module.AccountModule, authService core.AuthI) gin.HandlerFunc {
+func apiAuthMiddleware(accountModule module.AccountModule, authService core.Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := handlerutil.GetAccessToken(c)
 		if token == "" {
@@ -53,7 +53,7 @@ func apiAuthMiddleware(accountModule module.AccountModule, authService core.Auth
 	}
 }
 
-func apiErrorHandler() gin.HandlerFunc {
+func apiErrorHandler(log core.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
@@ -81,7 +81,7 @@ func apiErrorHandler() gin.HandlerFunc {
 		}
 
 		if status >= 500 {
-			core.Logger.Error(
+			log.Error(
 				"Error: %v method=%s url=%s headers=%v",
 				err,
 				c.Request.Method,

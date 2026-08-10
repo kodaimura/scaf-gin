@@ -15,18 +15,14 @@ func handleGormError(err error) error {
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		core.Logger.Debug("%s", err.Error())
 		return core.ErrNotFound
 	}
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		core.Logger.Debug("%s", err.Error())
 		return core.ErrConflict
 	}
 	if strings.Contains(err.Error(), "SQLSTATE 23505") {
-		core.Logger.Debug("%s", err.Error())
 		return core.ErrConflict
 	}
 
-	core.Logger.Error("%s", err.Error())
 	return core.NewUnexpectedError(err)
 }

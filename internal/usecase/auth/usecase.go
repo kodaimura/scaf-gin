@@ -12,7 +12,6 @@ type Usecase interface {
 	Signup(in SignupDto) (model.Account, error)
 	Login(in LoginDto) (model.Account, string, string, error)
 	Refresh(refreshToken string) (core.AuthPayload, string, error)
-	Logout(refreshToken string) error
 	ForgotPassword(in ForgotPasswordDto) error
 	VerifyResetPasswordToken(in VerifyResetPasswordTokenDto) error
 	ResetPassword(in ResetPasswordDto) error
@@ -23,16 +22,16 @@ type usecase struct {
 	db                       *gorm.DB
 	accountModule            module.AccountModule
 	passwordResetTokenModule module.PasswordResetTokenModule
-	auth                     core.AuthI
-	mailer                   core.MailerI
+	auth                     core.Auth
+	mailer                   core.Mailer
 }
 
 func NewUsecase(
 	db *gorm.DB,
 	accountModule module.AccountModule,
 	passwordResetTokenModule module.PasswordResetTokenModule,
-	auth core.AuthI,
-	mailer core.MailerI,
+	auth core.Auth,
+	mailer core.Mailer,
 ) Usecase {
 	return &usecase{
 		db:                       db,

@@ -56,9 +56,9 @@ func verifyPassword(hashedPassword, plainPassword string) bool {
 }
 
 func buildResetURL(token string) string {
-	resetURL, err := url.Parse(config.PasswordResetURLBase)
+	resetURL, err := url.Parse(config.Current.PasswordResetURLBase)
 	if err != nil {
-		return config.PasswordResetURLBase + "?token=" + url.QueryEscape(token)
+		return config.Current.PasswordResetURLBase + "?token=" + url.QueryEscape(token)
 	}
 	query := resetURL.Query()
 	query.Set("token", token)

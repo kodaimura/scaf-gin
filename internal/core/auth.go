@@ -10,50 +10,50 @@ import (
 	"scaf-gin/config"
 )
 
-type AuthI interface {
+type Auth interface {
 	CreateAccessToken(payload AuthPayload) (string, error)
 	CreateRefreshToken(payload AuthPayload, rememberMe bool) (string, error)
 	VerifyAccessToken(token string) (AuthPayload, error)
 	VerifyRefreshToken(token string) (AuthPayload, error)
-	RevokeRefreshToken(token string) error
 }
 
 type AuthPayload struct {
-	AccountId    int    `json:"account_id"`
-	LoginID      string `json:"login_id"`
-	TokenVersion int    `json:"token_version"`
+	AccountId    int
+	TokenVersion int
 }
 
-// JwtAuth implements AuthI using JWT.
-type JwtAuth struct{}
+// JwtAuth implements Auth using JWT.
+type JwtAuth struct {
+	cfg config.Config
+}
 
-func NewJwtAuth() AuthI {
-	return &JwtAuth{}
+func NewJwtAuth(cfg config.Config) Auth {
+	return &JwtAuth{cfg: cfg}
 }
 
 type jwtPayload struct {
 	jwtpackage.RegisteredClaims
-	AuthPayload
-	TokenType string `json:"type"`
+	TokenVersion int    `json:"token_version"`
+	TokenType    string `json:"type"`
 }
 
 func (j *JwtAuth) CreateAccessToken(payload AuthPayload) (string, error) {
 	return j.createToken(
 		payload,
-		config.AccessTokenSecret,
+		j.cfg.AccessTokenSecret,
 		"access",
-		time.Second*time.Duration(config.AccessTokenExpiresSeconds),
+		time.Second*time.Duration(j.cfg.AccessTokenExpiresSeconds),
 	)
 }
 
 func (j *JwtAuth) CreateRefreshToken(payload AuthPayload, rememberMe bool) (string, error) {
-	expiresSeconds := config.RefreshTokenExpiresSeconds
+	expiresSeconds := j.cfg.RefreshTokenExpiresSeconds
 	if rememberMe {
-		expiresSeconds = config.RefreshTokenRememberMeExpiresSeconds
+		expiresSeconds = j.cfg.RefreshTokenRememberMeExpiresSeconds
 	}
 	return j.createToken(
 		payload,
-		config.RefreshTokenSecret,
+		j.cfg.RefreshTokenSecret,
 		"refresh",
 		time.Second*time.Duration(expiresSeconds),
 	)
@@ -63,8 +63,8 @@ func (j *JwtAuth) createToken(payload AuthPayload, secretKey string, tokenType s
 	now := time.Now()
 
 	jp := jwtPayload{
-		AuthPayload: payload,
-		TokenType:   tokenType,
+		TokenVersion: payload.TokenVersion,
+		TokenType:    tokenType,
 		RegisteredClaims: jwtpackage.RegisteredClaims{
 			Subject:   strconv.Itoa(payload.AccountId),
 			IssuedAt:  jwtpackage.NewNumericDate(now),
@@ -78,11 +78,11 @@ func (j *JwtAuth) createToken(payload AuthPayload, secretKey string, tokenType s
 }
 
 func (j *JwtAuth) VerifyAccessToken(token string) (AuthPayload, error) {
-	return j.verifyToken(token, config.AccessTokenSecret, "access")
+	return j.verifyToken(token, j.cfg.AccessTokenSecret, "access")
 }
 
 func (j *JwtAuth) VerifyRefreshToken(token string) (AuthPayload, error) {
-	return j.verifyToken(token, config.RefreshTokenSecret, "refresh")
+	return j.verifyToken(token, j.cfg.RefreshTokenSecret, "refresh")
 }
 
 func (j *JwtAuth) verifyToken(token string, secretKey string, expectedType string) (AuthPayload, error) {
@@ -107,14 +107,13 @@ func (j *JwtAuth) verifyToken(token string, secretKey string, expectedType strin
 	if claims.TokenType != expectedType {
 		return AuthPayload{}, errors.New("invalid token type")
 	}
-	if claims.AccountId == 0 || claims.TokenVersion == 0 {
+	accountID, err := strconv.Atoi(claims.Subject)
+	if err != nil || accountID == 0 || claims.TokenVersion == 0 {
 		return AuthPayload{}, errors.New("invalid token payload")
 	}
 
-	return claims.AuthPayload, nil
-}
-
-// RevokeRefreshToken is a no-op in JWT-based authentication.
-func (j *JwtAuth) RevokeRefreshToken(token string) error {
-	return nil
+	return AuthPayload{
+		AccountId:    accountID,
+		TokenVersion: claims.TokenVersion,
+	}, nil
 }

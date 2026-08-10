@@ -10,42 +10,32 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var (
+type Config struct {
 	AppEnv  string
 	AppName string
 	AppHost string
 	AppPort string
-)
 
-var (
 	EnableSignup    bool
 	AuthLoginIDMode string
-)
 
-var (
 	DBEngine string
 	DBName   string
 	DBHost   string
 	DBPort   string
 	DBUser   string
 	DBPass   string
-)
 
-var (
 	MailProvider string
 	SMTPHost     string
 	SMTPPort     string
 	SMTPUser     string
 	SMTPPass     string
 	MailFrom     string
-)
 
-var (
 	BasicAuthUser string
 	BasicAuthPass string
-)
 
-var (
 	AccessTokenSecret                    string
 	RefreshTokenSecret                   string
 	AccessTokenExpiresSeconds            int
@@ -56,85 +46,86 @@ var (
 	CookieRefreshSecure   bool
 	CookieAccessHttpOnly  bool
 	CookieRefreshHttpOnly bool
-)
 
-var (
 	PasswordResetURLBase               string
 	PasswordResetTokenExpiresMinutes   int
 	PasswordResetResendIntervalMinutes int
-)
 
-var (
 	LogLevel        string
 	FrontendOrigins []string
-)
+}
 
-func init() {
+var Current = Load()
+
+func Load() Config {
 	err := godotenv.Load(".env")
 	if err != nil && !os.IsNotExist(err) {
 		log.Printf("unable to load .env: %v", err)
 	}
 
-	AppEnv = requireChoice("APP_ENV", getEnv("APP_ENV", "dev"), "dev", "production", "test")
-	AppName = getEnv("APP_NAME", "scaf-gin")
-	AppHost = getEnv("APP_HOST", "localhost")
-	AppPort = getEnv("APP_PORT", "8000")
-	EnableSignup = parseBool("ENABLE_SIGNUP", getEnv("ENABLE_SIGNUP", "true"))
-	AuthLoginIDMode = requireChoice("AUTH_LOGIN_ID_MODE", getEnv("AUTH_LOGIN_ID_MODE", "email"), "email", "login_id")
+	cfg := Config{
+		AppEnv:  requireChoice("APP_ENV", getEnv("APP_ENV", "dev"), "dev", "production", "test"),
+		AppName: getEnv("APP_NAME", "scaf-gin"),
+		AppHost: getEnv("APP_HOST", "localhost"),
+		AppPort: getEnv("APP_PORT", "8000"),
 
-	DBEngine = requireChoice("DB_ENGINE", getEnv("DB_ENGINE", "postgres"), "postgres", "mysql", "sqlite3")
-	DBName = getEnv("DB_NAME", "project_db")
-	DBHost = getEnv("DB_HOST", "db")
-	DBPort = getEnv("DB_PORT", "5432")
-	DBUser = getEnv("DB_USER", "postgres")
-	DBPass = getEnv("DB_PASSWORD", "postgres")
+		EnableSignup:    parseBool("ENABLE_SIGNUP", getEnv("ENABLE_SIGNUP", "true")),
+		AuthLoginIDMode: requireChoice("AUTH_LOGIN_ID_MODE", getEnv("AUTH_LOGIN_ID_MODE", "email"), "email", "login_id"),
 
-	MailProvider = requireChoice("MAIL_PROVIDER", getEnv("MAIL_PROVIDER", "mailhog"), "mailhog", "smtp")
-	SMTPHost = getEnv("SMTP_HOST")
-	SMTPPort = getEnv("SMTP_PORT", "587")
-	SMTPUser = getEnv("SMTP_USER")
-	SMTPPass = getEnv("SMTP_PASSWORD")
-	MailFrom = getEnv("MAIL_FROM", "no-reply@example.local")
+		DBEngine: requireChoice("DB_ENGINE", getEnv("DB_ENGINE", "postgres"), "postgres", "mysql", "sqlite3"),
+		DBName:   getEnv("DB_NAME", "project_db"),
+		DBHost:   getEnv("DB_HOST", "db"),
+		DBPort:   getEnv("DB_PORT", "5432"),
+		DBUser:   getEnv("DB_USER", "postgres"),
+		DBPass:   getEnv("DB_PASSWORD", "postgres"),
 
-	BasicAuthUser = getEnv("BASIC_AUTH_USER")
-	BasicAuthPass = getEnv("BASIC_AUTH_PASSWORD")
+		MailProvider: requireChoice("MAIL_PROVIDER", getEnv("MAIL_PROVIDER", "mailhog"), "mailhog", "smtp"),
+		SMTPHost:     getEnv("SMTP_HOST"),
+		SMTPPort:     getEnv("SMTP_PORT", "587"),
+		SMTPUser:     getEnv("SMTP_USER"),
+		SMTPPass:     getEnv("SMTP_PASSWORD"),
+		MailFrom:     getEnv("MAIL_FROM", "no-reply@example.local"),
 
-	AccessTokenSecret = getEnv("ACCESS_TOKEN_SECRET", "randomstring")
-	AccessTokenExpiresSeconds = parseInt("ACCESS_TOKEN_EXPIRES_SECONDS", getEnv("ACCESS_TOKEN_EXPIRES_SECONDS", "900"))
+		BasicAuthUser: getEnv("BASIC_AUTH_USER"),
+		BasicAuthPass: getEnv("BASIC_AUTH_PASSWORD"),
 
-	RefreshTokenSecret = getEnv("REFRESH_TOKEN_SECRET", "randomstring")
-	RefreshTokenExpiresSeconds = parseInt("REFRESH_TOKEN_EXPIRES_SECONDS", getEnv("REFRESH_TOKEN_EXPIRES_SECONDS", "2592000"))
-	RefreshTokenRememberMeExpiresSeconds = parseInt("REFRESH_TOKEN_REMEMBER_ME_EXPIRES_SECONDS", getEnv("REFRESH_TOKEN_REMEMBER_ME_EXPIRES_SECONDS", "2592000"))
+		AccessTokenSecret:                    getEnv("ACCESS_TOKEN_SECRET", "randomstring"),
+		AccessTokenExpiresSeconds:            parseInt("ACCESS_TOKEN_EXPIRES_SECONDS", getEnv("ACCESS_TOKEN_EXPIRES_SECONDS", "900")),
+		RefreshTokenSecret:                   getEnv("REFRESH_TOKEN_SECRET", "randomstring"),
+		RefreshTokenExpiresSeconds:           parseInt("REFRESH_TOKEN_EXPIRES_SECONDS", getEnv("REFRESH_TOKEN_EXPIRES_SECONDS", "2592000")),
+		RefreshTokenRememberMeExpiresSeconds: parseInt("REFRESH_TOKEN_REMEMBER_ME_EXPIRES_SECONDS", getEnv("REFRESH_TOKEN_REMEMBER_ME_EXPIRES_SECONDS", "2592000")),
 
-	CookieAccessSecure = parseBool("COOKIE_ACCESS_SECURE", getEnv("COOKIE_ACCESS_SECURE", "true"))
-	CookieRefreshSecure = parseBool("COOKIE_REFRESH_SECURE", getEnv("COOKIE_REFRESH_SECURE", "true"))
-	CookieAccessHttpOnly = parseBool("COOKIE_ACCESS_HTTPONLY", getEnv("COOKIE_ACCESS_HTTPONLY", "true"))
-	CookieRefreshHttpOnly = parseBool("COOKIE_REFRESH_HTTPONLY", getEnv("COOKIE_REFRESH_HTTPONLY", "true"))
+		CookieAccessSecure:    parseBool("COOKIE_ACCESS_SECURE", getEnv("COOKIE_ACCESS_SECURE", "true")),
+		CookieRefreshSecure:   parseBool("COOKIE_REFRESH_SECURE", getEnv("COOKIE_REFRESH_SECURE", "true")),
+		CookieAccessHttpOnly:  parseBool("COOKIE_ACCESS_HTTPONLY", getEnv("COOKIE_ACCESS_HTTPONLY", "true")),
+		CookieRefreshHttpOnly: parseBool("COOKIE_REFRESH_HTTPONLY", getEnv("COOKIE_REFRESH_HTTPONLY", "true")),
 
-	PasswordResetURLBase = getEnv("PASSWORD_RESET_URL_BASE", "http://localhost:3000/reset-password")
-	PasswordResetTokenExpiresMinutes = parseInt("PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", getEnv("PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", "30"))
-	PasswordResetResendIntervalMinutes = parseInt("PASSWORD_RESET_RESEND_INTERVAL_MINUTES", getEnv("PASSWORD_RESET_RESEND_INTERVAL_MINUTES", "5"))
+		PasswordResetURLBase:               getEnv("PASSWORD_RESET_URL_BASE", "http://localhost:3000/reset-password"),
+		PasswordResetTokenExpiresMinutes:   parseInt("PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", getEnv("PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", "30")),
+		PasswordResetResendIntervalMinutes: parseInt("PASSWORD_RESET_RESEND_INTERVAL_MINUTES", getEnv("PASSWORD_RESET_RESEND_INTERVAL_MINUTES", "5")),
 
-	LogLevel = requireChoice("LOG_LEVEL", strings.ToLower(getEnv("LOG_LEVEL", "info")), "debug", "info", "warn", "error")
-	FrontendOrigins = parseCSV(getEnv("FRONTEND_ORIGINS", "http://localhost:3000,http://localhost:5173"))
+		LogLevel:        requireChoice("LOG_LEVEL", strings.ToLower(getEnv("LOG_LEVEL", "info")), "debug", "info", "warn", "error"),
+		FrontendOrigins: parseCSV(getEnv("FRONTEND_ORIGINS", "http://localhost:3000,http://localhost:5173")),
+	}
 
-	validateConfig()
+	validateConfig(cfg)
+	return cfg
 }
 
-func validateConfig() {
-	if len(FrontendOrigins) == 0 {
+func validateConfig(cfg Config) {
+	if len(cfg.FrontendOrigins) == 0 {
 		log.Fatal("FRONTEND_ORIGINS must contain at least one origin")
 	}
-	if MailProvider == "smtp" && SMTPHost == "" {
+	if cfg.MailProvider == "smtp" && cfg.SMTPHost == "" {
 		log.Fatal("SMTP_HOST is required when MAIL_PROVIDER=smtp")
 	}
-	if AppEnv != "production" {
+	if cfg.AppEnv != "production" {
 		return
 	}
 
-	validateProductionSecret("ACCESS_TOKEN_SECRET", AccessTokenSecret)
-	validateProductionSecret("REFRESH_TOKEN_SECRET", RefreshTokenSecret)
-	for _, origin := range FrontendOrigins {
+	validateProductionSecret("ACCESS_TOKEN_SECRET", cfg.AccessTokenSecret)
+	validateProductionSecret("REFRESH_TOKEN_SECRET", cfg.RefreshTokenSecret)
+	for _, origin := range cfg.FrontendOrigins {
 		if origin == "*" {
 			log.Fatal("FRONTEND_ORIGINS must not contain * in production")
 		}

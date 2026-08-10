@@ -21,21 +21,24 @@ import (
 
 type App struct {
 	Engine *gin.Engine
-	Logger core.LoggerI
+	Logger core.Logger
+	cfg    config.Config
 }
 
-func New() *App {
-	log := core.NewJSONLogger()
-	core.SetLogger(log)
+func New(cfg config.Config) (*App, error) {
+	log := core.NewJSONLogger(cfg.LogLevel)
 
-	if config.AppEnv == "production" || ShouldPrintRoutes() {
+	if cfg.AppEnv == "production" || ShouldPrintRoutes() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	authService := core.NewJwtAuth()
-	mailerService := core.NewMailer()
+	authService := core.NewJwtAuth(cfg)
+	mailerService := core.NewMailer(cfg)
 
-	dbConn := core.NewGormDB()
+	dbConn, err := core.NewGormDB(cfg, log)
+	if err != nil {
+		return nil, err
+	}
 	accountModule := module.NewAccountModule(dbConn)
 	passwordResetTokenModule := module.NewPasswordResetTokenModule(dbConn)
 
@@ -49,7 +52,7 @@ func New() *App {
 	accountUsecase := account_usecase.NewUsecase(accountModule)
 
 	accountHandler := account_handler.NewHandler(accountUsecase)
-	authHandler := auth_handler.NewHandler(authUsecase)
+	authHandler := auth_handler.NewHandler(authUsecase, log)
 
 	engine := gin.New()
 	engine.Use(accessLogMiddleware(log))
@@ -58,7 +61,7 @@ func New() *App {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}))
 	engine.Use(cors.New(cors.Config{
-		AllowOrigins:     config.FrontendOrigins,
+		AllowOrigins:     cfg.FrontendOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -67,16 +70,17 @@ func New() *App {
 	engine.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
-	registerAPIRoutes(engine.Group("/api"), accountHandler, authHandler, accountModule, authService)
+	registerAPIRoutes(engine.Group("/api"), accountHandler, authHandler, accountModule, authService, log, cfg)
 
 	return &App{
 		Engine: engine,
 		Logger: log,
-	}
+		cfg:    cfg,
+	}, nil
 }
 
 func (a *App) Run() error {
-	return a.Engine.Run(":" + config.AppPort)
+	return a.Engine.Run(":" + a.cfg.AppPort)
 }
 
 func ShouldPrintRoutes() bool {
@@ -96,7 +100,7 @@ func PrintRoutes(r *gin.Engine) {
 	}
 }
 
-func accessLogMiddleware(log core.LoggerI) gin.HandlerFunc {
+func accessLogMiddleware(log core.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		startedAt := time.Now()
 		c.Next()

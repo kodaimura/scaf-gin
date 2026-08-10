@@ -37,7 +37,7 @@ func GetRefreshToken(c *gin.Context) string {
 }
 
 func SetAccessTokenCookie(c *gin.Context, accessToken string) {
-	maxAge := config.AccessTokenExpiresSeconds
+	maxAge := config.Current.AccessTokenExpiresSeconds
 	if accessToken == "" {
 		maxAge = -1
 	}
@@ -46,16 +46,16 @@ func SetAccessTokenCookie(c *gin.Context, accessToken string) {
 		CookieKeyAccessToken,
 		accessToken,
 		maxAge,
-		"/", config.AppHost,
-		config.CookieAccessSecure,
-		config.CookieAccessHttpOnly,
+		"/", config.Current.AppHost,
+		config.Current.CookieAccessSecure,
+		config.Current.CookieAccessHttpOnly,
 	)
 }
 
 func SetRefreshTokenCookie(c *gin.Context, refreshToken string, rememberMe bool) {
-	maxAge := config.RefreshTokenExpiresSeconds
+	maxAge := config.Current.RefreshTokenExpiresSeconds
 	if rememberMe {
-		maxAge = config.RefreshTokenRememberMeExpiresSeconds
+		maxAge = config.Current.RefreshTokenRememberMeExpiresSeconds
 	}
 	if refreshToken == "" {
 		maxAge = -1
@@ -65,8 +65,8 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string, rememberMe bool)
 		CookieKeyRefreshToken,
 		refreshToken,
 		maxAge,
-		"/", config.AppHost,
-		config.CookieRefreshSecure,
-		config.CookieRefreshHttpOnly,
+		"/", config.Current.AppHost,
+		config.Current.CookieRefreshSecure,
+		config.Current.CookieRefreshHttpOnly,
 	)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func ResolveLoginID(loginID *string, email *string) (string, error) {
-	switch strings.ToLower(strings.TrimSpace(config.AuthLoginIDMode)) {
+	switch strings.ToLower(strings.TrimSpace(config.Current.AuthLoginIDMode)) {
 	case "email":
 		if email == nil || strings.TrimSpace(*email) == "" {
 			return "", core.ErrEmailRequired

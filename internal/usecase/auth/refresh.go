@@ -31,7 +31,6 @@ func (uc *usecase) Refresh(refreshToken string) (core.AuthPayload, string, error
 
 	accessToken, err := uc.auth.CreateAccessToken(core.AuthPayload{
 		AccountId:    account.Id,
-		LoginID:      account.LoginID,
 		TokenVersion: account.TokenVersion,
 	})
 

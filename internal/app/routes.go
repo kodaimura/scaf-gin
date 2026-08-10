@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 
+	"scaf-gin/config"
 	"scaf-gin/internal/core"
 	account_handler "scaf-gin/internal/handler/account"
 	auth_handler "scaf-gin/internal/handler/auth"
@@ -14,9 +15,11 @@ func registerAPIRoutes(
 	accountHandler account_handler.Handler,
 	authHandler auth_handler.Handler,
 	accountModule module.AccountModule,
-	authService core.AuthI,
+	authService core.Auth,
+	log core.Logger,
+	cfg config.Config,
 ) {
-	r.Use(apiErrorHandler())
+	r.Use(apiErrorHandler(log))
 	r.POST("/auth/signup", authHandler.ApiSignup)
 	r.POST("/auth/login", authHandler.ApiLogin)
 	r.POST("/auth/refresh", authHandler.ApiRefresh)

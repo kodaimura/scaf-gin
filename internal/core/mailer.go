@@ -10,46 +10,49 @@ import (
 	"scaf-gin/config"
 )
 
-type MailerI interface {
-	SendText(to []string, subject, body string) error
-	SendHTML(to []string, subject, body string) error
-}
-
-// SmtpMailer implements MailerI using SMTP. MailHog also uses SMTP without auth.
+// SmtpMailer implements Mailer using SMTP. MailHog also uses SMTP without auth.
 type SmtpMailer struct {
 	from     string
 	host     string
 	port     string
 	username string
 	password string
+	provider string
 }
 
-func NewMailer() MailerI {
-	switch strings.ToLower(config.MailProvider) {
+func NewMailer(cfg config.Config) Mailer {
+	switch strings.ToLower(cfg.MailProvider) {
 	case "smtp":
-		return NewSmtpMailer()
+		return NewSmtpMailer(cfg)
 	case "mailhog":
-		return NewMailHogMailer()
+		return NewMailHogMailer(cfg)
 	default:
-		return NewMailHogMailer()
+		return NewMailHogMailer(cfg)
 	}
 }
 
-func NewMailHogMailer() MailerI {
+type Mailer interface {
+	SendText(to []string, subject, body string) error
+	SendHTML(to []string, subject, body string) error
+}
+
+func NewMailHogMailer(cfg config.Config) Mailer {
 	return &SmtpMailer{
-		from: config.MailFrom,
-		host: "mailhog",
-		port: "1025",
+		from:     cfg.MailFrom,
+		host:     "mailhog",
+		port:     "1025",
+		provider: "mailhog",
 	}
 }
 
-func NewSmtpMailer() MailerI {
+func NewSmtpMailer(cfg config.Config) Mailer {
 	return &SmtpMailer{
-		from:     config.MailFrom,
-		host:     config.SMTPHost,
-		port:     config.SMTPPort,
-		username: config.SMTPUser,
-		password: config.SMTPPass,
+		from:     cfg.MailFrom,
+		host:     cfg.SMTPHost,
+		port:     cfg.SMTPPort,
+		username: cfg.SMTPUser,
+		password: cfg.SMTPPass,
+		provider: "smtp",
 	}
 }
 
@@ -75,7 +78,7 @@ func (s *SmtpMailer) auth() smtp.Auth {
 }
 
 func (s *SmtpMailer) send(to []string, msg []byte) error {
-	if config.MailProvider != "smtp" {
+	if s.provider != "smtp" {
 		return smtp.SendMail(s.address(), nil, s.from, to, msg)
 	}
 	return s.sendSMTP(to, msg)

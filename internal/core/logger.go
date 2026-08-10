@@ -7,29 +7,14 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"scaf-gin/config"
 )
 
-type LoggerI interface {
+type Logger interface {
 	Debug(format string, v ...any)
 	Info(format string, v ...any)
 	Warn(format string, v ...any)
 	Error(format string, v ...any)
 }
-
-var Logger LoggerI = &noopLogger{}
-
-func SetLogger(l LoggerI) {
-	Logger = l
-}
-
-type noopLogger struct{}
-
-func (n *noopLogger) Debug(format string, v ...any) {}
-func (n *noopLogger) Info(format string, v ...any)  {}
-func (n *noopLogger) Warn(format string, v ...any)  {}
-func (n *noopLogger) Error(format string, v ...any) {}
 
 // JSONLogger logs JSON lines to stdout.
 type JSONLogger struct {
@@ -45,18 +30,18 @@ type logEntry struct {
 	Message   string `json:"message"`
 }
 
-func NewConsoleLogger() LoggerI {
-	return NewJSONLogger()
+func NewConsoleLogger(logLevel string) Logger {
+	return NewJSONLogger(logLevel)
 }
 
-func NewJSONLogger(names ...string) LoggerI {
+func NewJSONLogger(logLevel string, names ...string) Logger {
 	name := "app"
 	if len(names) > 0 && names[0] != "" {
 		name = names[0]
 	}
 	return &JSONLogger{
 		name:  name,
-		level: getLogLevel(),
+		level: getLogLevel(logLevel),
 	}
 }
 
@@ -109,8 +94,8 @@ const (
 	ERROR
 )
 
-func getLogLevel() logLevel {
-	switch strings.ToLower(config.LogLevel) {
+func getLogLevel(value string) logLevel {
+	switch strings.ToLower(value) {
 	case "debug":
 		return DEBUG
 	case "info":
