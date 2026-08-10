@@ -1,0 +1,13 @@
+.git
+.gocache
+.env
+.DS_Store
+
+data
+log
+tmp
+vendor
+
+main
+*.test
+*.out

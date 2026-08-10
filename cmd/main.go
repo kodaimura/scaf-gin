@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -34,7 +35,14 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 	router.SetApi(r.Group("/api"))
+	if os.Getenv("PRINT_ROUTES") == "true" {
+		printRoutes(r)
+		return
+	}
 	r.Run(":" + config.AppPort)
 }
 
@@ -54,5 +62,11 @@ func accessLogMiddleware() gin.HandlerFunc {
 		if len(c.Errors) > 0 {
 			core.Logger.Error("request errors: %s", fmt.Sprint(c.Errors))
 		}
+	}
+}
+
+func printRoutes(r *gin.Engine) {
+	for _, route := range r.Routes() {
+		core.Logger.Info("route method=%s path=%s handler=%s", route.Method, route.Path, route.Handler)
 	}
 }

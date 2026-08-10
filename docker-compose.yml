@@ -2,25 +2,38 @@ services:
   api:
     build:
       context: .
+      target: dev
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - .:/app
-      - ./linux/logrotate.d/app:/etc/logrotate.d/app
+      - go_mod_cache:/go/pkg/mod
     ports:
       - "8000:8000"
     depends_on:
       - db
-    environment:
-      - ENV=dev
-    working_dir: /app
-    command: sh -c "go run cmd/main.go"
+      - mailhog
+    command: go run ./cmd
     tty: true
 
   db:
     image: postgres:17.4
     volumes:
       - ./migrations:/docker-entrypoint-initdb.d
-      - ./data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=project_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    platform: linux/amd64
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  db_data:
+  go_mod_cache:
