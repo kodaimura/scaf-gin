@@ -1,4 +1,4 @@
-package helper
+package handler
 
 import (
 	"reflect"
@@ -9,39 +9,33 @@ import (
 	"scaf-gin/internal/core"
 )
 
-// BindJSON binds the JSON body to the provided request struct and handles validation errors.
 func BindJSON(c *gin.Context, req any) error {
 	if err := c.ShouldBindJSON(req); err != nil {
-		core.Logger.Warn("Failed to bind json: %v", err)
+		core.Logger.Warn("failed to bind json: %v", err)
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
-			errs := extractValidationErrors(req, validationErrors)
-			return core.NewValidationError(errs)
+			return core.NewValidationError(extractValidationErrors(req, validationErrors))
 		}
 		return core.ErrBadRequest
 	}
 	return nil
 }
 
-// BindQuery binds the query parameters to the provided request struct and handles validation errors.
 func BindQuery(c *gin.Context, req any) error {
 	if err := c.ShouldBindQuery(req); err != nil {
-		core.Logger.Warn("Failed to bind query: %v", err)
+		core.Logger.Warn("failed to bind query: %v", err)
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
-			errs := extractValidationErrors(req, validationErrors)
-			return core.NewValidationError(errs)
+			return core.NewValidationError(extractValidationErrors(req, validationErrors))
 		}
 		return core.ErrBadRequest
 	}
 	return nil
 }
 
-// BindUri binds the URI parameters to the provided request struct and handles validation errors.
-func BindUri(c *gin.Context, req any) error {
+func BindURI(c *gin.Context, req any) error {
 	if err := c.ShouldBindUri(req); err != nil {
-		core.Logger.Warn("Failed to bind uri: %v", err)
+		core.Logger.Warn("failed to bind uri: %v", err)
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
-			errs := extractValidationErrors(req, validationErrors)
-			return core.NewValidationError(errs)
+			return core.NewValidationError(extractValidationErrors(req, validationErrors))
 		}
 		return core.ErrBadRequest
 	}
@@ -49,7 +43,7 @@ func BindUri(c *gin.Context, req any) error {
 }
 
 func extractValidationErrors(req any, verr validator.ValidationErrors) []map[string]any {
-	var errs []map[string]any
+	errs := make([]map[string]any, 0, len(verr))
 	t := reflect.TypeOf(req)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()

@@ -8,7 +8,7 @@ import (
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
-	"scaf-gin/internal/helper"
+	handlerutil "scaf-gin/internal/handler"
 	"scaf-gin/internal/module"
 	"scaf-gin/internal/service"
 )
@@ -31,7 +31,7 @@ func BasicAuthMiddleware() gin.HandlerFunc {
 // If the token is invalid, it returns an Unauthorized error in JSON format.
 func ApiAuthMiddleware(accountModule module.AccountModule) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := helper.GetAccessToken(c)
+		token := handlerutil.GetAccessToken(c)
 		if token == "" {
 			c.Error(core.ErrAuthMissing)
 			c.Abort()
@@ -52,7 +52,7 @@ func ApiAuthMiddleware(accountModule module.AccountModule) gin.HandlerFunc {
 		}
 		payload.AccountId = accountID
 
-		c.Set(helper.CONTEXT_KEY_PAYLOAD, payload)
+		handlerutil.SetPayload(c, payload)
 		c.Next()
 	}
 }

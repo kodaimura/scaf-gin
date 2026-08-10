@@ -5,7 +5,7 @@ import (
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
-	"scaf-gin/internal/helper"
+	handlerutil "scaf-gin/internal/handler"
 	usecase "scaf-gin/internal/usecase/auth"
 )
 
@@ -47,7 +47,7 @@ func (h *handler) ApiSignup(c *gin.Context) {
 	}
 
 	var req SignupRequest
-	if err := helper.BindJSON(c, &req); err != nil {
+	if err := handlerutil.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
@@ -70,7 +70,7 @@ func (h *handler) ApiSignup(c *gin.Context) {
 // POST /api/auth/login
 func (h *handler) ApiLogin(c *gin.Context) {
 	var req LoginRequest
-	if err := helper.BindJSON(c, &req); err != nil {
+	if err := handlerutil.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
@@ -81,8 +81,8 @@ func (h *handler) ApiLogin(c *gin.Context) {
 		return
 	}
 
-	helper.SetAccessTokenCookie(c, accessToken)
-	helper.SetRefreshTokenCookie(c, refreshToken, req.RememberMe)
+	handlerutil.SetAccessTokenCookie(c, accessToken)
+	handlerutil.SetRefreshTokenCookie(c, refreshToken, req.RememberMe)
 	core.Logger.Info("account login: id=%d login_id=%s", acct.Id, acct.LoginID)
 
 	c.JSON(200, LoginResponse{
@@ -93,7 +93,7 @@ func (h *handler) ApiLogin(c *gin.Context) {
 
 // POST /api/auth/refresh
 func (h *handler) ApiRefresh(c *gin.Context) {
-	refreshToken := helper.GetRefreshToken(c)
+	refreshToken := handlerutil.GetRefreshToken(c)
 
 	payload, accessToken, err := h.usecase.Refresh(refreshToken)
 	if err != nil {
@@ -101,7 +101,7 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 		return
 	}
 
-	helper.SetAccessTokenCookie(c, accessToken)
+	handlerutil.SetAccessTokenCookie(c, accessToken)
 	core.Logger.Info("access token refreshed: id=%d login_id=%s", payload.AccountId, payload.LoginID)
 
 	c.JSON(200, RefreshResponse{
@@ -111,16 +111,16 @@ func (h *handler) ApiRefresh(c *gin.Context) {
 
 // POST /api/auth/logout
 func (h *handler) ApiLogout(c *gin.Context) {
-	core.Auth.RevokeRefreshToken(helper.GetRefreshToken(c))
-	helper.SetAccessTokenCookie(c, "")
-	helper.SetRefreshTokenCookie(c, "", false)
+	core.Auth.RevokeRefreshToken(handlerutil.GetRefreshToken(c))
+	handlerutil.SetAccessTokenCookie(c, "")
+	handlerutil.SetRefreshTokenCookie(c, "", false)
 	c.Status(204)
 }
 
 // POST /api/auth/forgot-password
 func (h *handler) ApiForgotPassword(c *gin.Context) {
 	var req ForgotPasswordRequest
-	if err := helper.BindJSON(c, &req); err != nil {
+	if err := handlerutil.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
@@ -152,7 +152,7 @@ func (h *handler) ApiVerifyResetPasswordToken(c *gin.Context) {
 // POST /api/auth/reset-password
 func (h *handler) ApiResetPassword(c *gin.Context) {
 	var req ResetPasswordRequest
-	if err := helper.BindJSON(c, &req); err != nil {
+	if err := handlerutil.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
@@ -175,10 +175,10 @@ func (h *handler) ApiPutMePassword(c *gin.Context) {
 		return
 	}
 
-	accountId := helper.GetAccountId(c)
+	accountId := handlerutil.GetAccountID(c)
 
 	var req PutMePasswordRequest
-	if err := helper.BindJSON(c, &req); err != nil {
+	if err := handlerutil.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}

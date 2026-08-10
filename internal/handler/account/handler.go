@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"scaf-gin/internal/core"
-	"scaf-gin/internal/helper"
+	handlerutil "scaf-gin/internal/handler"
 	usecase "scaf-gin/internal/usecase/account"
 )
 
@@ -51,7 +51,7 @@ func (h *handler) ApiGetAccounts(c *gin.Context) {
 // POST /api/accounts
 func (h *handler) ApiPostAccount(c *gin.Context) {
 	var req PostAccountRequest
-	if err := helper.BindJSON(c, &req); err != nil {
+	if err := handlerutil.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
@@ -97,7 +97,7 @@ func (h *handler) ApiPutAccount(c *gin.Context) {
 	}
 
 	var req PutAccountRequest
-	if err := helper.BindJSON(c, &req); err != nil {
+	if err := handlerutil.BindJSON(c, &req); err != nil {
 		c.Error(err)
 		return
 	}
@@ -155,7 +155,7 @@ func (h *handler) ApiPutAccountEnable(c *gin.Context) {
 func parseAccountID(c *gin.Context) (int, error) {
 	rawAccountID := c.Param("target_account_id")
 	if rawAccountID == "me" {
-		return helper.GetAccountId(c), nil
+		return handlerutil.GetAccountID(c), nil
 	}
 	accountID, err := strconv.Atoi(rawAccountID)
 	if err != nil {
