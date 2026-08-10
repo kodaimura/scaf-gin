@@ -13,6 +13,7 @@ The server stores and emits timestamps in UTC.
 cp .env.example .env
 make build
 make up
+make migrate
 ```
 
 Useful commands:
@@ -24,6 +25,9 @@ make shell
 make check
 make smoke
 make routes
+make migrate
+make current
+make history
 make down_volumes
 ```
 
@@ -49,6 +53,7 @@ migrations/   # numbered PostgreSQL SQL migrations
 ```
 
 Migration files are numbered sequentially from `001`.
+Applied migrations are recorded in the `schema_migrations` table.
 
 Use production compose settings with `ENV=prod`.
 
@@ -56,6 +61,7 @@ Use production compose settings with `ENV=prod`.
 cp .env.example .env
 # Edit production secrets and DATABASE_URL in .env.
 make build ENV=prod
+make migrate ENV=prod
 make up ENV=prod
 ```
 

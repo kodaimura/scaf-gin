@@ -3,10 +3,11 @@ ENV ?= dev
 DOCKER_COMPOSE_FILE := $(if $(filter prod,$(ENV)),-f docker-compose.prod.yml,-f docker-compose.yml)
 DOCKER_COMPOSE_CMD := $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
 API_SERVICE := api
+MIGRATE_SERVICE := migrate
 
 .DEFAULT_GOAL := help
 
-.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check smoke routes help
+.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check smoke routes migrate current history help
 
 ## -----------------------------
 ## Base Commands
@@ -54,6 +55,19 @@ routes:
 	$(DOCKER_COMPOSE_CMD) run --rm -e PRINT_ROUTES=true $(API_SERVICE) sh -c 'if command -v go >/dev/null 2>&1; then go run ./cmd; else /app/api; fi'
 
 ## -----------------------------
+## Migrations
+## -----------------------------
+
+migrate:
+	$(DOCKER_COMPOSE_CMD) run --rm $(MIGRATE_SERVICE)
+
+current:
+	$(DOCKER_COMPOSE_CMD) run --rm $(MIGRATE_SERVICE) sh -c 'if command -v go >/dev/null 2>&1; then go run ./cmd/migrate current; else /app/migrate current; fi'
+
+history:
+	$(DOCKER_COMPOSE_CMD) run --rm $(MIGRATE_SERVICE) sh -c 'if command -v go >/dev/null 2>&1; then go run ./cmd/migrate history; else /app/migrate history; fi'
+
+## -----------------------------
 ## Help
 ## -----------------------------
 
@@ -76,9 +90,13 @@ help:
 	@echo "  check           Run Go tests inside the api container"
 	@echo "  smoke           Call /health from the running api container"
 	@echo "  routes          Print Gin route paths from the api container"
+	@echo "  migrate         Run database migrations"
+	@echo "  current         Show current migration"
+	@echo "  history         Show applied migration history"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make build"
 	@echo "  make up"
+	@echo "  make migrate"
 	@echo "  make smoke"
 	@echo "  make build ENV=prod"

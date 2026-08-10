@@ -30,7 +30,6 @@ services:
   db:
     image: postgres:17.4
     volumes:
-      - ./migrations:/docker-entrypoint-initdb.d
       - db_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-project_db}
@@ -49,6 +48,27 @@ services:
     platform: linux/amd64
     ports:
       - "8025:8025"
+
+  migrate:
+    image: scaf-gin-api-dev
+    build:
+      context: .
+      target: dev
+    profiles:
+      - tools
+    init: true
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - .:/app
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+    depends_on:
+      db:
+        condition: service_healthy
+    command: go run ./cmd/migrate up
+    restart: "no"
 
 volumes:
   db_data:

@@ -21,6 +21,7 @@ RUN go mod download
 COPY . .
 RUN go build -o /out/api ./cmd
 RUN go build -o /out/healthcheck ./cmd/healthcheck
+RUN go build -o /out/migrate ./cmd/migrate
 
 
 FROM debian:bookworm-slim AS runtime
@@ -31,6 +32,8 @@ ENV TZ=UTC
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /out/api /app/api
 COPY --from=builder /out/healthcheck /app/healthcheck
+COPY --from=builder /out/migrate /app/migrate
+COPY --from=builder /src/migrations /app/migrations
 
 EXPOSE 8000
 

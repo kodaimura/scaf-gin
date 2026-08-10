@@ -15,3 +15,16 @@ services:
       timeout: 3s
       retries: 5
     restart: always
+
+  migrate:
+    image: scaf-gin-api-runtime
+    build:
+      context: .
+      target: runtime
+    profiles:
+      - tools
+    init: true
+    env_file:
+      - .env
+    command: /app/migrate up
+    restart: "no"
