@@ -1,15 +1,15 @@
-FROM golang:1.24 AS dev
+FROM golang:1.26 AS dev
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
-RUN go install github.com/air-verse/air@v1.62.0
+RUN go install github.com/air-verse/air@v1.67.4
 
 CMD ["air", "-c", ".air.toml"]
 
 
-FROM golang:1.24 AS builder
+FROM golang:1.26 AS builder
 
 WORKDIR /src
 
