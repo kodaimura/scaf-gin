@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -11,6 +10,7 @@ import (
 	"gorm.io/gorm/schema"
 
 	"scaf-gin/config"
+	"scaf-gin/internal/core"
 )
 
 // NewGormDB initializes a GORM database connection based on configuration.
@@ -35,24 +35,30 @@ func NewGormDB() *gorm.DB {
 	case "sqlite3":
 		db, err = gorm.Open(sqlite.Open(buildSQLiteDSN()), gormConfig)
 	default:
-		log.Panic("❌ Invalid DB_ENGINE. Please choose 'postgres', 'mysql', or 'sqlite3'.")
+		fail("invalid DB_ENGINE. Please choose 'postgres', 'mysql', or 'sqlite3'.")
 	}
 
 	if err != nil {
-		log.Panicf("❌ Failed to connect to database: %v", err)
+		fail("failed to connect to database: %v", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Panicf("❌ Failed to get generic DB object: %v", err)
+		fail("failed to get generic DB object: %v", err)
 	}
 
 	if err := sqlDB.Ping(); err != nil {
-		log.Panicf("❌ Database ping failed: %v", err)
+		fail("database ping failed: %v", err)
 	}
 
-	log.Println("✅ Successfully connected to the database via GORM.")
+	core.Logger.Info("database connected via gorm")
 	return db
+}
+
+func fail(format string, v ...any) {
+	message := fmt.Sprintf(format, v...)
+	core.Logger.Error(message)
+	panic(message)
 }
 
 // ===============================

@@ -1,15 +1,24 @@
-DOCKER_COMPOSE = docker compose
-COMPOSE_ENV ?= dev
-DOCKER_COMPOSE_FILE = $(if $(filter prod production,$(COMPOSE_ENV)),-f docker-compose.prod.yml,)
-DOCKER_COMPOSE_CMD = $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
-SMOKE_BASE_URL ?= http://localhost:8000
+DOCKER_COMPOSE := docker compose
+ENV ?= dev
+DOCKER_COMPOSE_FILE := $(if $(filter prod,$(ENV)),-f docker-compose.prod.yml,-f docker-compose.yml)
+DOCKER_COMPOSE_CMD := $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
+API_SERVICE := api
 
-.PHONY: up build down down_volumes stop in indb log ps reup check smoke routes help
+.DEFAULT_GOAL := help
+
+.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check smoke routes help
+
+## -----------------------------
+## Base Commands
+## -----------------------------
 
 up:
 	$(DOCKER_COMPOSE_CMD) up -d
 
 build:
+	$(DOCKER_COMPOSE_CMD) build
+
+build_no_cache:
 	$(DOCKER_COMPOSE_CMD) build --no-cache
 
 down:
@@ -21,14 +30,14 @@ down_volumes:
 stop:
 	$(DOCKER_COMPOSE_CMD) stop
 
-in:
-	$(DOCKER_COMPOSE_CMD) exec api sh
+exec:
+	$(DOCKER_COMPOSE_CMD) exec $(API_SERVICE) /bin/sh
 
-indb:
-	$(DOCKER_COMPOSE_CMD) exec db sh
+shell:
+	$(DOCKER_COMPOSE_CMD) run --rm $(API_SERVICE) /bin/sh
 
-log:
-	$(DOCKER_COMPOSE_CMD) logs -f
+logs:
+	$(DOCKER_COMPOSE_CMD) logs -f $(API_SERVICE)
 
 ps:
 	$(DOCKER_COMPOSE_CMD) ps
@@ -36,28 +45,40 @@ ps:
 reup: down up
 
 check:
-	$(DOCKER_COMPOSE_CMD) run --rm --no-deps api go test ./...
+	$(DOCKER_COMPOSE_CMD) run --rm --no-deps $(API_SERVICE) go test ./...
 
 smoke:
-	sh scripts/smoke.sh "$(SMOKE_BASE_URL)"
+	$(DOCKER_COMPOSE_CMD) exec -T $(API_SERVICE) sh -c 'if command -v go >/dev/null 2>&1; then go run ./cmd/healthcheck; else /app/healthcheck; fi'
 
 routes:
-	$(DOCKER_COMPOSE_CMD) run --rm -e PRINT_ROUTES=true api
+	$(DOCKER_COMPOSE_CMD) run --rm -e PRINT_ROUTES=true $(API_SERVICE) sh -c 'if command -v go >/dev/null 2>&1; then go run ./cmd; else /app/api; fi'
+
+## -----------------------------
+## Help
+## -----------------------------
 
 help:
-	@echo "Usage: make [target] [COMPOSE_ENV=dev|production]"
+	@echo "Usage: make [target] [ENV=dev|prod]"
+	@echo "All targets run through Docker. Local Go/Node is not required."
 	@echo ""
 	@echo "Targets:"
-	@echo "  up             Start containers"
-	@echo "  build          Build containers without cache"
-	@echo "  down           Stop and remove containers and networks"
-	@echo "  down_volumes   Stop and remove containers, networks, and volumes"
-	@echo "  stop           Stop containers"
-	@echo "  in             Open a shell in the api container"
-	@echo "  indb           Open a shell in the db container"
-	@echo "  log            Follow container logs"
-	@echo "  ps             Show container status"
-	@echo "  reup           Restart containers"
-	@echo "  check          Run Go tests in Docker"
-	@echo "  smoke          Check /health on a running API"
-	@echo "  routes         Print registered routes"
+	@echo "  up              Start containers (default: dev)"
+	@echo "  build           Build containers"
+	@echo "  build_no_cache  Build containers without cache"
+	@echo "  down            Stop and remove containers and networks"
+	@echo "  down_volumes    Stop and remove containers, networks, and volumes"
+	@echo "  stop            Stop containers only"
+	@echo "  exec            Enter api container shell"
+	@echo "  shell           Start a one-off api shell"
+	@echo "  logs            Show api logs"
+	@echo "  ps              Show container status"
+	@echo "  reup            Restart environment (down + up)"
+	@echo "  check           Run Go tests inside the api container"
+	@echo "  smoke           Call /health from the running api container"
+	@echo "  routes          Print Gin route paths from the api container"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make build"
+	@echo "  make up"
+	@echo "  make smoke"
+	@echo "  make build ENV=prod"

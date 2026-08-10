@@ -1,20 +1,30 @@
 services:
   api:
+    image: scaf-gin-api-dev
     build:
       context: .
       target: dev
+    init: true
     env_file:
       - path: .env
         required: false
     volumes:
       - .:/app
       - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - mailhog
-    command: go run ./cmd
+      db:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    command: air -c .air.toml
+    healthcheck:
+      test: ["CMD", "go", "run", "./cmd/healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     tty: true
 
   db:
@@ -26,14 +36,19 @@ services:
       - POSTGRES_DB=project_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d project_db"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
     platform: linux/amd64
     ports:
-      - "1025:1025"
       - "8025:8025"
 
 volumes:
   db_data:
   go_mod_cache:
+  go_build_cache:

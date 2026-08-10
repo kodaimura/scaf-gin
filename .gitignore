@@ -27,5 +27,6 @@ go.work.sum
 #.env.prod
 
 data
+tmp
 .DS_Store
 main

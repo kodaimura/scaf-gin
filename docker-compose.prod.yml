@@ -1,11 +1,17 @@
 services:
   api:
+    image: scaf-gin-api-runtime
     build:
       context: .
       target: runtime
+    init: true
     env_file:
-      - path: .env
-        required: false
+      - .env
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
     restart: always

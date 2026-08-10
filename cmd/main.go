@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -21,6 +22,9 @@ func main() {
 	core.SetLogger(logger.NewJSONLogger())
 	core.SetMailer(mailer.NewMailer())
 	core.SetAuth(auth.NewJwtAuth())
+	if config.AppEnv == "production" || os.Getenv("PRINT_ROUTES") == "true" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	r := gin.New()
 	r.Use(accessLogMiddleware())
@@ -66,7 +70,14 @@ func accessLogMiddleware() gin.HandlerFunc {
 }
 
 func printRoutes(r *gin.Engine) {
-	for _, route := range r.Routes() {
-		core.Logger.Info("route method=%s path=%s handler=%s", route.Method, route.Path, route.Handler)
+	routes := r.Routes()
+	sort.Slice(routes, func(i, j int) bool {
+		if routes[i].Path == routes[j].Path {
+			return routes[i].Method < routes[j].Method
+		}
+		return routes[i].Path < routes[j].Path
+	})
+	for _, route := range routes {
+		fmt.Printf("%s %s\n", route.Method, route.Path)
 	}
 }

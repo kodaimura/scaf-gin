@@ -14,23 +14,18 @@ import (
 	auth_h "scaf-gin/internal/handler/auth"
 )
 
-var dbConn = db.NewGormDB()
-
-//var sqlx = db.NewSqlxDB()
-
-/* DI (Module) */
-var accountModule = module.NewAccountModule(dbConn)
-var passwordResetTokenModule = module.NewPasswordResetTokenModule(dbConn)
-
-/* DI (Usecase) */
-var authUsecase = auth_uc.NewUsecase(dbConn, accountModule, passwordResetTokenModule)
-var accountUsecase = account_uc.NewUsecase(accountModule)
-
-/* DI (Handler) */
-var accountHandler = account_h.NewHandler(accountUsecase)
-var authHandler = auth_h.NewHandler(authUsecase)
-
 func SetApi(r *gin.RouterGroup) {
+	dbConn := db.NewGormDB()
+
+	accountModule := module.NewAccountModule(dbConn)
+	passwordResetTokenModule := module.NewPasswordResetTokenModule(dbConn)
+
+	authUsecase := auth_uc.NewUsecase(dbConn, accountModule, passwordResetTokenModule)
+	accountUsecase := account_uc.NewUsecase(accountModule)
+
+	accountHandler := account_h.NewHandler(accountUsecase)
+	authHandler := auth_h.NewHandler(authUsecase)
+
 	r.Use(ApiErrorHandler())
 	r.POST("/auth/signup", authHandler.ApiSignup)
 	r.POST("/auth/login", authHandler.ApiLogin)
@@ -40,7 +35,7 @@ func SetApi(r *gin.RouterGroup) {
 	r.GET("/auth/reset-password/verify", authHandler.ApiVerifyResetPasswordToken)
 	r.POST("/auth/reset-password", authHandler.ApiResetPassword)
 
-	auth := r.Group("", ApiAuthMiddleware())
+	auth := r.Group("", ApiAuthMiddleware(dbConn))
 	{
 		auth.GET("/accounts", accountHandler.ApiGetAccounts)
 		auth.POST("/accounts", accountHandler.ApiPostAccount)
