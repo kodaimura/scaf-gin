@@ -1,4 +1,4 @@
-package password_reset_token
+package model
 
 import "time"
 

@@ -1,9 +1,9 @@
 package account
 
-import accountModule "scaf-gin/internal/module/account"
+import "scaf-gin/internal/model"
 
 type ListDto struct{}
 
-func (uc *usecase) List(in ListDto) ([]accountModule.Account, error) {
+func (uc *usecase) List(in ListDto) ([]model.Account, error) {
 	return uc.accountModule.GetAll()
 }

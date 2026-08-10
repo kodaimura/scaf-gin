@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"scaf-gin/internal/core"
-	passwordResetTokenModule "scaf-gin/internal/module/password_reset_token"
+	"scaf-gin/internal/model"
 )
 
 type ResetPasswordDto struct {
@@ -56,7 +56,7 @@ func (uc *usecase) ResetPassword(in ResetPasswordDto) error {
 	})
 }
 
-func validateResetToken(token passwordResetTokenModule.PasswordResetToken) error {
+func validateResetToken(token model.PasswordResetToken) error {
 	if token.UsedAt != nil {
 		return core.ErrTokenAlreadyUsed
 	}

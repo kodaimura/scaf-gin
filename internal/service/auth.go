@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
+	"scaf-gin/internal/module"
 )
 
 func ValidateAccessTokenAccount(db *gorm.DB, payload core.AuthPayload) (int, error) {
@@ -14,7 +14,7 @@ func ValidateAccessTokenAccount(db *gorm.DB, payload core.AuthPayload) (int, err
 		return 0, core.ErrAuthInvalidPayload
 	}
 
-	account, err := accountModule.NewModule(db).GetByID(payload.AccountId)
+	account, err := module.NewAccountModule(db).GetByID(payload.AccountId)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return 0, core.ErrAuthNotFound

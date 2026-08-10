@@ -4,20 +4,20 @@ import (
 	"errors"
 
 	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
+	"scaf-gin/internal/model"
 )
 
 type DisableDto struct {
 	Id int
 }
 
-func (uc *usecase) Disable(in DisableDto) (accountModule.Account, error) {
+func (uc *usecase) Disable(in DisableDto) (model.Account, error) {
 	acct, err := uc.accountModule.GetByID(in.Id)
 	if errors.Is(err, core.ErrNotFound) {
-		return accountModule.Account{}, core.ErrAccountNotFound
+		return model.Account{}, core.ErrAccountNotFound
 	}
 	if err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 	return uc.accountModule.Disable(acct)
 }

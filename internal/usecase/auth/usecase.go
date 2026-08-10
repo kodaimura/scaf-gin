@@ -4,13 +4,13 @@ import (
 	"gorm.io/gorm"
 
 	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
-	passwordResetTokenModule "scaf-gin/internal/module/password_reset_token"
+	"scaf-gin/internal/model"
+	"scaf-gin/internal/module"
 )
 
 type Usecase interface {
-	Signup(in SignupDto) (accountModule.Account, error)
-	Login(in LoginDto) (accountModule.Account, string, string, error)
+	Signup(in SignupDto) (model.Account, error)
+	Login(in LoginDto) (model.Account, string, string, error)
 	Refresh(refreshToken string) (core.AuthPayload, string, error)
 	ForgotPassword(in ForgotPasswordDto) error
 	VerifyResetPasswordToken(in VerifyResetPasswordTokenDto) error
@@ -20,14 +20,14 @@ type Usecase interface {
 
 type usecase struct {
 	db                       *gorm.DB
-	accountModule            accountModule.Module
-	passwordResetTokenModule passwordResetTokenModule.Module
+	accountModule            module.AccountModule
+	passwordResetTokenModule module.PasswordResetTokenModule
 }
 
 func NewUsecase(
 	db *gorm.DB,
-	accountModule accountModule.Module,
-	passwordResetTokenModule passwordResetTokenModule.Module,
+	accountModule module.AccountModule,
+	passwordResetTokenModule module.PasswordResetTokenModule,
 ) Usecase {
 	return &usecase{
 		db:                       db,

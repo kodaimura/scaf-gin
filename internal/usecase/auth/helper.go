@@ -9,11 +9,11 @@ import (
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
+	"scaf-gin/internal/module"
 )
 
-func ensureUniqueLoginID(module accountModule.Module, loginID string, exceptID int) error {
-	existing, err := module.GetByLoginID(loginID)
+func ensureUniqueLoginID(accountModule module.AccountModule, loginID string, exceptID int) error {
+	existing, err := accountModule.GetByLoginID(loginID)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return nil
@@ -26,11 +26,11 @@ func ensureUniqueLoginID(module accountModule.Module, loginID string, exceptID i
 	return nil
 }
 
-func ensureUniqueEmail(module accountModule.Module, email *string, exceptID int) error {
+func ensureUniqueEmail(accountModule module.AccountModule, email *string, exceptID int) error {
 	if email == nil || *email == "" {
 		return nil
 	}
-	existing, err := module.GetByEmail(*email)
+	existing, err := accountModule.GetByEmail(*email)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
 			return nil

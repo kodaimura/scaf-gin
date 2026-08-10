@@ -2,7 +2,7 @@ package account
 
 import (
 	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
+	"scaf-gin/internal/model"
 )
 
 type CreateDto struct {
@@ -13,24 +13,24 @@ type CreateDto struct {
 	LastName  string
 }
 
-func (uc *usecase) Create(in CreateDto) (accountModule.Account, error) {
+func (uc *usecase) Create(in CreateDto) (model.Account, error) {
 	loginID, err := core.ResolveLoginID(in.LoginID, in.Email)
 	if err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 	if err := uc.ensureUniqueLoginID(loginID, 0); err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 	if err := uc.ensureUniqueEmail(in.Email, 0); err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 
 	hashed, err := hashPassword(in.Password)
 	if err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 
-	return uc.accountModule.Create(accountModule.Account{
+	return uc.accountModule.Create(model.Account{
 		LoginID:      loginID,
 		Email:        in.Email,
 		PasswordHash: hashed,

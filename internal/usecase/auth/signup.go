@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 
 	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
+	"scaf-gin/internal/model"
 )
 
 type SignupDto struct {
@@ -15,8 +15,8 @@ type SignupDto struct {
 	LastName  string
 }
 
-func (uc *usecase) Signup(in SignupDto) (accountModule.Account, error) {
-	var account accountModule.Account
+func (uc *usecase) Signup(in SignupDto) (model.Account, error) {
+	var account model.Account
 	err := uc.db.Transaction(func(tx *gorm.DB) error {
 		accountModuleTx := uc.accountModule.WithTx(tx)
 
@@ -36,7 +36,7 @@ func (uc *usecase) Signup(in SignupDto) (accountModule.Account, error) {
 			return err
 		}
 
-		account, err = accountModuleTx.Create(accountModule.Account{
+		account, err = accountModuleTx.Create(model.Account{
 			LoginID:      loginID,
 			Email:        in.Email,
 			PasswordHash: hashed,

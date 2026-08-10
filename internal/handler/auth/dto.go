@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	accountModule "scaf-gin/internal/module/account"
+	"scaf-gin/internal/model"
 )
 
 // -----------------------------
@@ -21,7 +21,7 @@ type AccountResponse struct {
 	UpdatedAt  time.Time  `json:"updated_at"`
 }
 
-func ToAccountResponse(m accountModule.Account) AccountResponse {
+func ToAccountResponse(m model.Account) AccountResponse {
 	return AccountResponse{
 		Id:         m.Id,
 		Email:      m.Email,

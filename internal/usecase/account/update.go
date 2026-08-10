@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"scaf-gin/internal/core"
-	accountModule "scaf-gin/internal/module/account"
+	"scaf-gin/internal/model"
 )
 
 type UpdateDto struct {
@@ -16,24 +16,24 @@ type UpdateDto struct {
 	LastName  string
 }
 
-func (uc *usecase) Update(in UpdateDto) (accountModule.Account, error) {
+func (uc *usecase) Update(in UpdateDto) (model.Account, error) {
 	acct, err := uc.accountModule.GetByID(in.Id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
-			return accountModule.Account{}, core.ErrAccountNotFound
+			return model.Account{}, core.ErrAccountNotFound
 		}
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 
 	loginID, err := core.ResolveLoginID(in.LoginID, in.Email)
 	if err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 	if err := uc.ensureUniqueLoginID(loginID, acct.Id); err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 	if err := uc.ensureUniqueEmail(in.Email, acct.Id); err != nil {
-		return accountModule.Account{}, err
+		return model.Account{}, err
 	}
 
 	acct.LoginID = loginID
@@ -43,7 +43,7 @@ func (uc *usecase) Update(in UpdateDto) (accountModule.Account, error) {
 	if in.Password != nil {
 		hashed, err := hashPassword(*in.Password)
 		if err != nil {
-			return accountModule.Account{}, err
+			return model.Account{}, err
 		}
 		acct.PasswordHash = hashed
 		acct.TokenVersion++

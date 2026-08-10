@@ -5,8 +5,7 @@ import (
 
 	"scaf-gin/internal/adapter/db"
 
-	"scaf-gin/internal/module/account"
-	"scaf-gin/internal/module/password_reset_token"
+	"scaf-gin/internal/module"
 
 	account_uc "scaf-gin/internal/usecase/account"
 	auth_uc "scaf-gin/internal/usecase/auth"
@@ -20,8 +19,8 @@ var dbConn = db.NewGormDB()
 //var sqlx = db.NewSqlxDB()
 
 /* DI (Module) */
-var accountModule = account.NewModule(dbConn)
-var passwordResetTokenModule = password_reset_token.NewModule(dbConn)
+var accountModule = module.NewAccountModule(dbConn)
+var passwordResetTokenModule = module.NewPasswordResetTokenModule(dbConn)
 
 /* DI (Usecase) */
 var authUsecase = auth_uc.NewUsecase(dbConn, accountModule, passwordResetTokenModule)

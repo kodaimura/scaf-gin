@@ -8,7 +8,7 @@ import (
 
 	"scaf-gin/config"
 	"scaf-gin/internal/core"
-	passwordResetTokenModule "scaf-gin/internal/module/password_reset_token"
+	"scaf-gin/internal/model"
 )
 
 type ForgotPasswordDto struct {
@@ -51,7 +51,7 @@ func (uc *usecase) ForgotPassword(in ForgotPasswordDto) error {
 		if err := tokenModuleTx.InvalidateActiveTokens(account.Id, now); err != nil {
 			return err
 		}
-		_, err := tokenModuleTx.Create(passwordResetTokenModule.PasswordResetToken{
+		_, err := tokenModuleTx.Create(model.PasswordResetToken{
 			AccountId: account.Id,
 			TokenHash: tokenHash,
 			ExpiresAt: expiresAt,
