@@ -168,11 +168,6 @@ func (h *handler) ApiResetPassword(c *gin.Context) {
 
 // PUT /api/accounts/me/password
 func (h *handler) ApiPutMePassword(c *gin.Context) {
-	if targetAccountID := c.Param("target_account_id"); targetAccountID != "" && targetAccountID != "me" {
-		c.Error(core.ErrBadRequest)
-		return
-	}
-
 	accountID := handlerutil.GetAccountID(c)
 
 	var req PutMePasswordRequest
