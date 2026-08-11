@@ -5,7 +5,7 @@ import (
 
 	"scaf-gin/internal/core"
 	"scaf-gin/internal/model"
-	"scaf-gin/internal/service"
+	helper "scaf-gin/internal/usecase"
 )
 
 type UpdateDto struct {
@@ -26,7 +26,7 @@ func (uc *usecase) Update(in UpdateDto) (model.Account, error) {
 		return model.Account{}, err
 	}
 
-	loginID, err := service.ResolveLoginID(in.LoginID, in.Email)
+	loginID, err := helper.ResolveLoginID(in.LoginID, in.Email)
 	if err != nil {
 		return model.Account{}, err
 	}

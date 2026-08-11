@@ -47,7 +47,6 @@ internal/
   handler/    # HTTP request/response handling
   model/      # database models
   module/     # persistence-oriented domain modules
-  service/    # shared business logic
   usecase/    # application use cases
 migrations/   # numbered PostgreSQL SQL migrations
 ```

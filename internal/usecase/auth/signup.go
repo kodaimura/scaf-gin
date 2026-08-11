@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 
 	"scaf-gin/internal/model"
-	"scaf-gin/internal/service"
+	helper "scaf-gin/internal/usecase"
 )
 
 type SignupDto struct {
@@ -20,7 +20,7 @@ func (uc *usecase) Signup(in SignupDto) (model.Account, error) {
 	err := uc.db.Transaction(func(tx *gorm.DB) error {
 		accountModuleTx := uc.accountModule.WithTx(tx)
 
-		loginID, err := service.ResolveLoginID(in.LoginID, in.Email)
+		loginID, err := helper.ResolveLoginID(in.LoginID, in.Email)
 		if err != nil {
 			return err
 		}

@@ -2,7 +2,7 @@ package account
 
 import (
 	"scaf-gin/internal/model"
-	"scaf-gin/internal/service"
+	helper "scaf-gin/internal/usecase"
 )
 
 type CreateDto struct {
@@ -14,7 +14,7 @@ type CreateDto struct {
 }
 
 func (uc *usecase) Create(in CreateDto) (model.Account, error) {
-	loginID, err := service.ResolveLoginID(in.LoginID, in.Email)
+	loginID, err := helper.ResolveLoginID(in.LoginID, in.Email)
 	if err != nil {
 		return model.Account{}, err
 	}

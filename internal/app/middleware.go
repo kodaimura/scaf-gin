@@ -12,7 +12,6 @@ import (
 	"scaf-gin/internal/core"
 	handlerutil "scaf-gin/internal/handler"
 	"scaf-gin/internal/module"
-	"scaf-gin/internal/service"
 )
 
 func apiAuthMiddleware(accountModule module.AccountModule, authService core.Auth) gin.HandlerFunc {
@@ -30,7 +29,7 @@ func apiAuthMiddleware(accountModule module.AccountModule, authService core.Auth
 			return
 		}
 
-		accountID, err := service.ValidateAccessTokenAccount(accountModule, payload)
+		accountID, err := validateAccessTokenAccount(accountModule, payload)
 		if err != nil {
 			c.Error(err)
 			c.Abort()
@@ -41,6 +40,30 @@ func apiAuthMiddleware(accountModule module.AccountModule, authService core.Auth
 		handlerutil.SetPayload(c, payload)
 		c.Next()
 	}
+}
+
+func validateAccessTokenAccount(accountModule module.AccountModule, payload core.AuthPayload) (int64, error) {
+	if payload.AccountID == 0 || payload.TokenVersion == 0 {
+		return 0, core.ErrAuthInvalidPayload
+	}
+
+	account, err := accountModule.GetByID(payload.AccountID)
+	if err != nil {
+		if errors.Is(err, core.ErrNotFound) {
+			return 0, core.ErrAuthNotFound
+		}
+		return 0, err
+	}
+
+	if account.DisabledAt != nil {
+		return 0, core.ErrAccountDisabled
+	}
+
+	if payload.TokenVersion != account.TokenVersion {
+		return 0, core.ErrAuthTokenRevoked
+	}
+
+	return account.ID, nil
 }
 
 func apiErrorHandler(log core.Logger) gin.HandlerFunc {
