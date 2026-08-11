@@ -34,6 +34,8 @@ make down_volumes
 The API runs at `http://localhost:8000/api`.
 Health check is available at `http://localhost:8000/health`.
 MailHog is available at `http://localhost:8025`.
+Host ports are bound to `127.0.0.1` by default. Set `API_BIND_HOST=0.0.0.0`
+only when the API must be reachable from outside the host.
 Source changes are reloaded automatically in the development container.
 
 ## Structure
