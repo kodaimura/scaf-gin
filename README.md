@@ -33,6 +33,9 @@ make history
 make down_volumes
 ```
 
+API E2E tests are organized by domain so new endpoints can add coverage at the
+same level. See [`test/e2e/README.md`](test/e2e/README.md).
+
 The API runs at `http://localhost:8000/api`.
 Health check is available at `http://localhost:8000/health`.
 MailHog is available at `http://localhost:8025`.
