@@ -2,7 +2,7 @@ name: scaf-gin
 
 services:
   api:
-    image: scaf-gin-api-dev
+    image: scaf-gin-dev
     build:
       context: .
       target: dev
@@ -52,7 +52,7 @@ services:
       - "${MAILHOG_BIND_HOST:-127.0.0.1}:${MAILHOG_PORT:-8025}:8025"
 
   migrate:
-    image: scaf-gin-api-dev
+    image: scaf-gin-dev
     build:
       context: .
       target: dev

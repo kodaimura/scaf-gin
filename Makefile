@@ -1,5 +1,6 @@
 DOCKER_COMPOSE := docker compose
 ENV ?= dev
+PROJECT_NAME ?= $(notdir $(CURDIR))
 DOCKER_COMPOSE_FILE := $(if $(filter prod,$(ENV)),-f docker-compose.prod.yml,-f docker-compose.yml)
 DOCKER_COMPOSE_CMD := $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
 E2E_COMPOSE_CMD := $(DOCKER_COMPOSE) -p scaf-gin-e2e -f docker-compose.yml -f docker-compose.test.yml
@@ -8,11 +9,14 @@ MIGRATE_SERVICE := migrate
 
 .DEFAULT_GOAL := help
 
-.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check test test_e2e smoke routes migrate current history help
+.PHONY: init up build build_no_cache down down_volumes stop exec shell logs ps reup check test test_e2e smoke routes migrate current history help
 
 ## -----------------------------
 ## Base Commands
 ## -----------------------------
+
+init:
+	./bin/scaf-init "$(PROJECT_NAME)"
 
 up:
 	$(DOCKER_COMPOSE_CMD) up -d
@@ -87,6 +91,7 @@ help:
 	@echo "All targets run through Docker. Local Go/Node is not required."
 	@echo ""
 	@echo "Targets:"
+	@echo "  init            Initialize project identifiers (defaults to directory name)"
 	@echo "  up              Start containers (default: dev)"
 	@echo "  build           Build containers"
 	@echo "  build_no_cache  Build containers without cache"

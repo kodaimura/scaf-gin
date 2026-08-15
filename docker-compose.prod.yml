@@ -2,7 +2,7 @@ name: scaf-gin
 
 services:
   api:
-    image: scaf-gin-api-runtime
+    image: scaf-gin-runtime
     build:
       context: .
       target: runtime
@@ -19,7 +19,7 @@ services:
     restart: always
 
   migrate:
-    image: scaf-gin-api-runtime
+    image: scaf-gin-runtime
     build:
       context: .
       target: runtime
