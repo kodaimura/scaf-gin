@@ -23,6 +23,7 @@ make logs
 make exec
 make shell
 make check
+make test
 make smoke
 make routes
 make migrate

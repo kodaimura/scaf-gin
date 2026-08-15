@@ -7,7 +7,7 @@ MIGRATE_SERVICE := migrate
 
 .DEFAULT_GOAL := help
 
-.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check smoke routes migrate current history help
+.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check test smoke routes migrate current history help
 
 ## -----------------------------
 ## Base Commands
@@ -45,7 +45,9 @@ ps:
 
 reup: down up
 
-check:
+check: test
+
+test:
 	$(DOCKER_COMPOSE_CMD) run --rm --no-deps $(API_SERVICE) go test ./...
 
 smoke:
@@ -88,6 +90,7 @@ help:
 	@echo "  ps              Show container status"
 	@echo "  reup            Restart environment (down + up)"
 	@echo "  check           Run Go tests inside the api container"
+	@echo "  test            Run Go tests inside the api container"
 	@echo "  smoke           Call /health from the running api container"
 	@echo "  routes          Print Gin route paths from the api container"
 	@echo "  migrate         Run database migrations"
