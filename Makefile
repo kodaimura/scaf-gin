@@ -2,12 +2,13 @@ DOCKER_COMPOSE := docker compose
 ENV ?= dev
 DOCKER_COMPOSE_FILE := $(if $(filter prod,$(ENV)),-f docker-compose.prod.yml,-f docker-compose.yml)
 DOCKER_COMPOSE_CMD := $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
+E2E_COMPOSE_CMD := $(DOCKER_COMPOSE) -p scaf-gin-e2e -f docker-compose.yml -f docker-compose.test.yml
 API_SERVICE := api
 MIGRATE_SERVICE := migrate
 
 .DEFAULT_GOAL := help
 
-.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check test smoke routes migrate current history help
+.PHONY: up build build_no_cache down down_volumes stop exec shell logs ps reup check test test_e2e smoke routes migrate current history help
 
 ## -----------------------------
 ## Base Commands
@@ -50,6 +51,14 @@ check: test
 test:
 	$(DOCKER_COMPOSE_CMD) run --rm --no-deps $(API_SERVICE) go test ./...
 
+test_e2e:
+	@set -eu; \
+	cleanup() { $(E2E_COMPOSE_CMD) down -v --remove-orphans >/dev/null 2>&1 || true; }; \
+	trap cleanup EXIT INT TERM; \
+	cleanup; \
+	$(E2E_COMPOSE_CMD) --profile tools run --rm --build $(MIGRATE_SERVICE); \
+	$(E2E_COMPOSE_CMD) --profile test run --rm --build api-test
+
 smoke:
 	$(DOCKER_COMPOSE_CMD) exec -T $(API_SERVICE) sh -c 'if command -v go >/dev/null 2>&1; then go run ./cmd/healthcheck; else /app/healthcheck; fi'
 
@@ -91,6 +100,7 @@ help:
 	@echo "  reup            Restart environment (down + up)"
 	@echo "  check           Run Go tests inside the api container"
 	@echo "  test            Run Go tests inside the api container"
+	@echo "  test_e2e        Run the full HTTP API contract in isolation"
 	@echo "  smoke           Call /health from the running api container"
 	@echo "  routes          Print Gin route paths from the api container"
 	@echo "  migrate         Run database migrations"

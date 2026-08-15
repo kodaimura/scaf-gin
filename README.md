@@ -24,6 +24,7 @@ make exec
 make shell
 make check
 make test
+make test_e2e
 make smoke
 make routes
 make migrate
