@@ -1,3 +1,5 @@
+name: scaf-gin
+
 services:
   api:
     image: scaf-gin-api-runtime
