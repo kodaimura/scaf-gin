@@ -1,5 +1,11 @@
 # scaf-gin-api
 
+Rename template identifiers after cloning directly:
+
+```sh
+bin/scaf-init my-app
+```
+
 Gin backend scaffold.
 
 This template is intended to run through Docker. Local Go and Node are not
