@@ -142,8 +142,9 @@ export const waitForResetToken = async (email) => {
     if (message) {
       const body = decodeQuotedPrintable(message.Content?.Body);
       const token = body?.match(/[?&]token=([A-Za-z0-9_-]+)/)?.[1];
-      assert.ok(token, "password reset token is missing from the email");
-      return token;
+      if (token) {
+        return token;
+      }
     }
     await new Promise((resolve) => setTimeout(resolve, 200));
   }

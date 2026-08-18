@@ -16,42 +16,43 @@ type ResetPasswordDto struct {
 }
 
 func (uc *usecase) ResetPassword(in ResetPasswordDto) error {
-	token, err := uc.passwordResetTokenModule.GetByHash(core.HashToken(in.Token))
-	if err != nil {
-		if errors.Is(err, core.ErrNotFound) {
-			return core.ErrTokenInvalid
-		}
-		return err
-	}
-	if err := validateResetToken(token); err != nil {
-		return err
-	}
-
-	account, err := uc.accountModule.GetByID(token.AccountID)
-	if err != nil {
-		if errors.Is(err, core.ErrNotFound) {
-			return core.ErrAccountNotFound
-		}
-		return err
-	}
-
-	hashed, err := hashPassword(in.NewPassword)
-	if err != nil {
-		return err
-	}
-
-	now := time.Now()
-	account.PasswordHash = hashed
-	account.TokenVersion++
-	token.UsedAt = &now
-
 	return uc.db.Transaction(func(tx *gorm.DB) error {
 		accountModuleTx := uc.accountModule.WithTx(tx)
 		tokenModuleTx := uc.passwordResetTokenModule.WithTx(tx)
+
+		token, err := tokenModuleTx.GetByHashForUpdate(core.HashToken(in.Token))
+		if err != nil {
+			if errors.Is(err, core.ErrNotFound) {
+				return core.ErrTokenInvalid
+			}
+			return err
+		}
+		if err := validateResetToken(token); err != nil {
+			return err
+		}
+
+		account, err := accountModuleTx.GetByID(token.AccountID)
+		if err != nil {
+			if errors.Is(err, core.ErrNotFound) {
+				return core.ErrAccountNotFound
+			}
+			return err
+		}
+
+		hashed, err := hashPassword(in.NewPassword)
+		if err != nil {
+			return err
+		}
+
+		now := time.Now()
+		account.PasswordHash = hashed
+		account.TokenVersion++
+		token.UsedAt = &now
+
 		if _, err := accountModuleTx.Update(account); err != nil {
 			return err
 		}
-		_, err := tokenModuleTx.Update(token)
+		_, err = tokenModuleTx.Update(token)
 		return err
 	})
 }

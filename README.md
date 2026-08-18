@@ -20,6 +20,9 @@ make init
 `make init PROJECT_NAME=another-name`. webscaf runs the same initialization
 automatically. Skip initialization only when developing this scaffold itself.
 
+After pushing a new repository to GitHub, complete the one-time
+[`docs/GITHUB_SETTINGS.md`](docs/GITHUB_SETTINGS.md) checklist.
+
 This template is intended to run through Docker. Local Go and Node are not
 required for normal development.
 PostgreSQL is the supported database. Configure it with `DATABASE_URL`.
@@ -43,6 +46,7 @@ make shell
 make check
 make test
 make test_e2e
+make build_prod
 make smoke
 make routes
 make migrate
@@ -53,6 +57,23 @@ make down_volumes
 
 API E2E tests are organized by domain so new endpoints can add coverage at the
 same level. See [`test/e2e/README.md`](test/e2e/README.md).
+
+Application code follows HUMQ v1.1.0 through its Go-specific mapping. Read
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) before changing Handlers,
+Usecases, Modules, Queries, business rules, or transaction behavior.
+
+## Authorization
+
+Authentication identifies the caller, but this scaffold does not define the
+product's roles, ownership rules, or administrative permissions. Before
+production use, enforce authorization in every Usecase, especially for account
+collection routes and routes accepting a target account ID. Deny access when no
+rule explicitly allows it and test both allowed and denied operations.
+
+Pull requests run the same checks in GitHub Actions. See
+[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md), report vulnerabilities through
+[`docs/SECURITY.md`](docs/SECURITY.md), and complete
+[`docs/RUNBOOK.md`](docs/RUNBOOK.md) before the first deployment.
 
 The API runs at `http://localhost:8000/api`.
 Health check is available at `http://localhost:8000/health`.

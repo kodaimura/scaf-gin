@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"scaf-gin/internal/core"
 	"scaf-gin/internal/model"
@@ -12,6 +13,7 @@ import (
 type PasswordResetTokenModule interface {
 	Create(entity model.PasswordResetToken) (model.PasswordResetToken, error)
 	GetByHash(tokenHash string) (model.PasswordResetToken, error)
+	GetByHashForUpdate(tokenHash string) (model.PasswordResetToken, error)
 	FindLatestByAccountID(accountID int64) (model.PasswordResetToken, error)
 	InvalidateActiveTokens(accountID int64, now time.Time) error
 	Update(entity model.PasswordResetToken) (model.PasswordResetToken, error)
@@ -38,6 +40,15 @@ func (m *passwordResetTokenModule) Create(entity model.PasswordResetToken) (mode
 func (m *passwordResetTokenModule) GetByHash(tokenHash string) (model.PasswordResetToken, error) {
 	var token model.PasswordResetToken
 	err := m.db.Where("token_hash = ?", tokenHash).First(&token).Error
+	return token, core.HandleGormError(err)
+}
+
+func (m *passwordResetTokenModule) GetByHashForUpdate(tokenHash string) (model.PasswordResetToken, error) {
+	var token model.PasswordResetToken
+	err := m.db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("token_hash = ?", tokenHash).
+		First(&token).
+		Error
 	return token, core.HandleGormError(err)
 }
 

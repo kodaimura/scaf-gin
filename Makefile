@@ -9,7 +9,7 @@ MIGRATE_SERVICE := migrate
 
 .DEFAULT_GOAL := help
 
-.PHONY: init up build build_no_cache down down_volumes stop exec shell logs ps reup check test test_e2e smoke routes migrate current history help
+.PHONY: init up build build_no_cache build_prod down down_volumes stop exec shell logs ps reup check lint format format_check test test_e2e smoke routes migrate current history help
 
 ## -----------------------------
 ## Base Commands
@@ -26,6 +26,9 @@ build:
 
 build_no_cache:
 	$(DOCKER_COMPOSE_CMD) build --no-cache
+
+build_prod:
+	docker build --target runtime --tag "$(PROJECT_NAME)-runtime" .
 
 down:
 	$(DOCKER_COMPOSE_CMD) down
@@ -50,7 +53,16 @@ ps:
 
 reup: down up
 
-check: test
+check: format_check lint test
+
+lint:
+	$(DOCKER_COMPOSE_CMD) run --rm --no-deps $(API_SERVICE) go vet ./...
+
+format:
+	$(DOCKER_COMPOSE_CMD) run --rm --no-deps $(API_SERVICE) sh -c 'gofmt -w $$(find . -type f -name "*.go")'
+
+format_check:
+	$(DOCKER_COMPOSE_CMD) run --rm --no-deps $(API_SERVICE) sh -c 'files="$$(gofmt -l $$(find . -type f -name "*.go"))"; test -z "$$files" || { echo "$$files"; exit 1; }'
 
 test:
 	$(DOCKER_COMPOSE_CMD) run --rm --no-deps $(API_SERVICE) go test ./...
@@ -95,6 +107,7 @@ help:
 	@echo "  up              Start containers (default: dev)"
 	@echo "  build           Build containers"
 	@echo "  build_no_cache  Build containers without cache"
+	@echo "  build_prod      Build the production API image"
 	@echo "  down            Stop and remove containers and networks"
 	@echo "  down_volumes    Stop and remove containers, networks, and volumes"
 	@echo "  stop            Stop containers only"
@@ -103,7 +116,10 @@ help:
 	@echo "  logs            Show api logs"
 	@echo "  ps              Show container status"
 	@echo "  reup            Restart environment (down + up)"
-	@echo "  check           Run Go tests inside the api container"
+	@echo "  check           Run format checks, Go vet, and tests"
+	@echo "  lint            Run Go vet inside the api container"
+	@echo "  format          Format Go files with gofmt"
+	@echo "  format_check    Check Go formatting"
 	@echo "  test            Run Go tests inside the api container"
 	@echo "  test_e2e        Run the full HTTP API contract in isolation"
 	@echo "  smoke           Call /health from the running api container"
