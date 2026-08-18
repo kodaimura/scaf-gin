@@ -73,7 +73,10 @@ test_e2e:
 	trap cleanup EXIT INT TERM; \
 	cleanup; \
 	$(E2E_COMPOSE_CMD) --profile tools run --rm --build $(MIGRATE_SERVICE); \
-	$(E2E_COMPOSE_CMD) --profile test run --rm --build api-test
+	if ! $(E2E_COMPOSE_CMD) --profile test run --rm --build api-test; then \
+		$(E2E_COMPOSE_CMD) logs --no-color $(API_SERVICE) db mailhog >&2 || true; \
+		exit 1; \
+	fi
 
 smoke:
 	$(DOCKER_COMPOSE_CMD) exec -T $(API_SERVICE) sh -c 'if command -v go >/dev/null 2>&1; then go run ./cmd/healthcheck; else /app/healthcheck; fi'

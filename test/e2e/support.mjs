@@ -129,6 +129,19 @@ const decodeQuotedPrintable = (body) =>
       String.fromCharCode(Number.parseInt(hex, 16)),
     );
 
+export const resetTokenFromMessage = (message) => {
+  const headers = message.Content?.Headers ?? {};
+  const transferEncoding = Object.entries(headers).find(
+    ([name]) => name.toLowerCase() === "content-transfer-encoding",
+  )?.[1]?.[0];
+  const rawBody = message.Content?.Body;
+  const body =
+    transferEncoding?.toLowerCase() === "quoted-printable"
+      ? decodeQuotedPrintable(rawBody)
+      : rawBody;
+  return body?.match(/[?&]token=([A-Za-z0-9_-]+)/)?.[1];
+};
+
 export const waitForResetToken = async (email) => {
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const response = await fetch(`${mailhogUrl}/api/v2/messages?limit=50`);
@@ -140,8 +153,7 @@ export const waitForResetToken = async (email) => {
       ),
     );
     if (message) {
-      const body = decodeQuotedPrintable(message.Content?.Body);
-      const token = body?.match(/[?&]token=([A-Za-z0-9_-]+)/)?.[1];
+      const token = resetTokenFromMessage(message);
       if (token) {
         return token;
       }
