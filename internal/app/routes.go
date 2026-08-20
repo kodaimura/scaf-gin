@@ -6,14 +6,13 @@ import (
 	"scaf-gin/internal/core"
 	account_handler "scaf-gin/internal/handler/account"
 	auth_handler "scaf-gin/internal/handler/auth"
-	"scaf-gin/internal/module"
 )
 
 func registerAPIRoutes(
 	r *gin.RouterGroup,
 	accountHandler account_handler.Handler,
 	authHandler auth_handler.Handler,
-	accountModule module.AccountModule,
+	authUsecase accessTokenAuthorizer,
 	authService core.Auth,
 	log core.Logger,
 ) {
@@ -26,7 +25,7 @@ func registerAPIRoutes(
 	r.GET("/auth/reset-password/verify", authHandler.ApiVerifyResetPasswordToken)
 	r.POST("/auth/reset-password", authHandler.ApiResetPassword)
 
-	auth := r.Group("", apiAuthMiddleware(accountModule, authService))
+	auth := r.Group("", apiAuthMiddleware(authUsecase, authService))
 	{
 		auth.GET("/accounts", accountHandler.ApiGetAccounts)
 		auth.POST("/accounts", accountHandler.ApiPostAccount)

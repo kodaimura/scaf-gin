@@ -3,8 +3,10 @@
 ## Status and source
 
 This project adopts [HUMQ](https://github.com/kodaimura/humq) v1.1.0 and maps
-its responsibilities to Go, Gin, and GORM. This document is the local contract;
-a later HUMQ version does not change the scaffold automatically.
+its responsibilities to Go, Gin, and GORM. It was reviewed against upstream
+commit [`d3c9150`](https://github.com/kodaimura/humq/commit/d3c9150a2b824e6197fbc87230a1dc6940631313).
+This document is the local contract; a later HUMQ version does not change the
+scaffold automatically.
 
 ## Responsibility mapping
 
@@ -60,9 +62,14 @@ and transaction success or rollback.
 
 Usecase may hold interfaces for its dependencies. Keep DTOs and result types
 close to the action or domain package. Avoid generic service, manager, or helper
-packages that hide the sequence. Reusable pure decisions belong in an
-unexported policy function; shared database-dependent behavior belongs in a
-narrow unexported operation only after genuine reuse exists.
+packages that hide the sequence. An exported Usecase action must not call
+another exported action as a reuse mechanism. Reusable pure decisions belong in
+an unexported policy function.
+
+Keep database-dependent behavior in each action by default. Use a narrow
+unexported operation only when multiple actions must preserve the same
+invariant and divergent validation, errors, locks, or update order would cause
+a concrete inconsistency. Similar code or a long action is not sufficient.
 
 Usecase must not issue GORM queries directly. The exception is opening
 `db.Transaction` to own a transaction boundary; all reads and writes inside it
@@ -88,6 +95,12 @@ The Usecase starts `db.Transaction` when multiple changes must succeed or fail
 together. Construct transaction-bound Modules with `WithTx` inside the
 callback. Let returned errors roll back the callback.
 
+HUMQ does not structurally guarantee multi-table consistency. A Usecase can
+omit a required Module call while following every dependency rule. Protect
+representable invariants with database constraints and test business branches
+and rollback behavior. Use a structurally protective design for a domain that
+cannot accept implementation-level enforcement.
+
 Row locking and conditional writes belong to the owning Module. Read a value
 with a lock inside the same transaction that validates and updates it. Database
 constraints remain the final guard for representable invariants.
@@ -103,6 +116,10 @@ rules for the product and deny access when no rule allows an operation.
 Collection routes and routes accepting a target account ID require explicit
 authorization before production use.
 
+Middleware may verify token format and signature, but account-state validation
+such as existence, disabled state, and token version goes through an
+authentication Usecase rather than calling a Module directly.
+
 ## Testing and evolution
 
 - Test pure policies and branch-heavy Usecase actions with Go tests.
@@ -114,5 +131,6 @@ authorization before production use.
   migration changes.
 
 A deliberate exception must be narrow, documented here with its reason and
-covered at the level where its risk appears.
-
+covered at the level where its risk appears. Treat increasing Operations or
+shared invariants that dominate a domain as a signal to consider an
+aggregate-centered or other domain-specific architecture for that domain.

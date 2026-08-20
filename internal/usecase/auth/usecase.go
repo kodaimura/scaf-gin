@@ -9,6 +9,7 @@ import (
 )
 
 type Usecase interface {
+	AuthorizeAccessToken(payload core.AuthPayload) (int64, error)
 	Signup(in SignupDto) (model.Account, error)
 	Login(in LoginDto) (model.Account, string, string, error)
 	Refresh(refreshToken string) (core.AuthPayload, string, error)

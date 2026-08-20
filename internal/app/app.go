@@ -74,7 +74,7 @@ func New(cfg config.Config) (*App, error) {
 	engine.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
-	registerAPIRoutes(engine.Group("/api"), accountHandler, authHandler, accountModule, authService, log)
+	registerAPIRoutes(engine.Group("/api"), accountHandler, authHandler, authUsecase, authService, log)
 
 	return &App{
 		Engine: engine,
