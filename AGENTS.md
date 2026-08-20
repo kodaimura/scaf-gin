@@ -8,7 +8,7 @@
 
 ## Architecture
 
-- This project follows HUMQ v1.1.0, reviewed at upstream commit `d3c9150`, through the Go-specific contract in `docs/ARCHITECTURE.md`.
+- This project follows HUMQ v1.1.0 through the Go-specific contract in `docs/ARCHITECTURE.md`.
 - Before designing, reviewing, or changing application code under `internal/`, read and follow `docs/ARCHITECTURE.md`.
 - Treat `docs/ARCHITECTURE.md` as the local source of truth for responsibility boundaries, dependency direction, state ownership, and testing expectations.
 - Update the implementation and architecture document together when a requested change intentionally alters those rules.

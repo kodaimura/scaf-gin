@@ -3,10 +3,8 @@
 ## Status and source
 
 This project adopts [HUMQ](https://github.com/kodaimura/humq) v1.1.0 and maps
-its responsibilities to Go, Gin, and GORM. It was reviewed against upstream
-commit [`d3c9150`](https://github.com/kodaimura/humq/commit/d3c9150a2b824e6197fbc87230a1dc6940631313).
-This document is the local contract; a later HUMQ version does not change the
-scaffold automatically.
+its responsibilities to Go, Gin, and GORM. This document is the local contract;
+a later HUMQ version does not change the scaffold automatically.
 
 ## Responsibility mapping
 
